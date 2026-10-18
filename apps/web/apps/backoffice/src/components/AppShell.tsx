@@ -34,7 +34,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="md:grid md:h-dvh md:grid-cols-[232px_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)] lg:grid-cols-[264px_minmax(0,1fr)] print:!block print:!h-auto">
       <header className="sticky top-0 z-30 flex h-[60px] items-center gap-3 border-b-[1.5px] border-ink bg-paper px-4 md:hidden print:hidden">
         <D.Root open={open} onOpenChange={setOpen}>
-          <D.Trigger className="grid size-11 place-items-center rounded border-[1.5px] border-ink bg-slip" aria-label={t('Buka menu')}>
+          <D.Trigger
+            className="grid size-11 flex-none place-items-center rounded border-[1.5px] border-ink bg-slip transition-colors hover:bg-tint-2 active:bg-tint aria-expanded:bg-tint"
+            aria-label={t('Buka menu')}
+          >
             <MenuIcon />
           </D.Trigger>
           <D.Portal>
@@ -44,20 +47,23 @@ export function AppShell({ children }: { children: ReactNode }) {
               aria-describedby={undefined}
             >
               <D.Title className="sr-only">{t('Menu backoffice')}</D.Title>
-              <D.Close className="absolute right-3 top-3 grid size-11 place-items-center rounded hover:bg-tint" aria-label={t('Tutup menu')}>
-                <CloseIcon />
-              </D.Close>
-              <SidebarBody />
+              <SidebarBody
+                close={
+                  <D.Close className="-mr-1 grid size-11 flex-none place-items-center rounded hover:bg-tint" aria-label={t('Tutup menu')}>
+                    <CloseIcon />
+                  </D.Close>
+                }
+              />
             </D.Content>
           </D.Portal>
         </D.Root>
         <Link to="/" preload="intent" preloadDelay={0} aria-label={t('Ringkasan')} className="flex-none">
           <Wordmark size={20} labelClassName="max-[359px]:sr-only" />
         </Link>
-        {/* min-w-0 + truncate: on a narrow phone the plan tag shortens instead of widening the page. */}
+        {/* min-w-0 + truncate: the plan tag shortens instead of widening the page; below 400px only the days show. */}
         <Tag className="ml-auto block min-w-0 truncate">
-          {t(PLAN_NAME[sub.plan])} ·{' '}
-          {sub.plan === 'unlimited' ? t('selamanya') : sub.state === 'expired' ? t('berakhir') : t('{n} hari lagi', { n: sub.daysLeft })}
+          <span className="max-[399px]:sr-only">{t(PLAN_NAME[sub.plan])} · </span>
+          {sub.plan === 'unlimited' ? t('selamanya') : sub.state === 'expired' ? t('berakhir') : t('{n} hari', { n: sub.daysLeft })}
         </Tag>
       </header>
       <aside
@@ -74,7 +80,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-function SidebarBody() {
+/** `close`: the drawer's ✕, set beside the wordmark so it never sits on top of it. */
+function SidebarBody({ close }: { close?: ReactNode }) {
   const app = useApp();
   const { t } = useI18n();
   const c = app.counts;
@@ -87,9 +94,12 @@ function SidebarBody() {
     { to: '/vouchers', label: 'Voucher', meta: c.vouchers },
   ];
   return (
-    <div className="flex min-h-full flex-col px-4 pb-5 pt-6">
+    <div className={cn('flex min-h-full flex-col px-4 pb-5', close ? 'pt-3' : 'pt-6')}>
       <div className="px-2.5">
-        <Wordmark size={32} />
+        <div className="flex items-center justify-between gap-2">
+          <Wordmark size={close ? 26 : 32} />
+          {close}
+        </div>
         <p className="mt-2 truncate font-mono text-[13px] text-mute">backoffice · {app.business.name || '[NAMA BISNIS]'}</p>
       </div>
       <nav aria-label={t('Menu utama')} className="mt-7">
