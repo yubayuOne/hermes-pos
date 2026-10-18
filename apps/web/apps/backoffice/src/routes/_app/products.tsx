@@ -10,7 +10,7 @@ import { PageLoading } from '../../components/PageLoading';
 import { Pagination, pageOf } from '../../components/Pagination';
 import { useApp, useLock } from '../../lib/app';
 import { categorySchema, productSchema } from '../../lib/schemas';
-import type { Category, Product } from '../../lib/types';
+import type { Category, Product, ProductSale } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
 import { useForm } from '../../lib/useForm';
 import { createCategory, listCatalog, saveProduct, setProductActive } from '../../server/manage';
@@ -32,7 +32,7 @@ export const Route = createFileRoute('/_app/products')({
     const today = isoDay(new Date(), tz);
     const range = periodRange(deps, today);
     const outletId = deps.outlet ?? context.app.outlets[0]?.id;
-    if (!outletId) return { outletId: null, categories: [], products: [], sold: {} as Record<string, number>, range, today };
+    if (!outletId) return { outletId: null, categories: [], products: [], sold: {} as Record<string, ProductSale>, range, today };
     const [catalog, sold] = await Promise.all([listCatalog({ data: { outletId } }), listProductSales({ data: { outletId, ...range, tz } })]);
     return { outletId, ...catalog, sold, range, today };
   },
@@ -189,7 +189,7 @@ function Products() {
                     {p.trackStock ? amount(p.stock) : <span className="font-sans text-mute">{t('tanpa stok')}</span>}
                   </td>
                   <td data-l={t('Terjual')} className="num">
-                    {sold ? amount(sold[p.id] ?? 0) : '-'}
+                    {sold ? amount(sold[p.id]?.qty ?? 0) : '-'}
                   </td>
                   <td data-l={t('Aktif')}>
                     <Switch

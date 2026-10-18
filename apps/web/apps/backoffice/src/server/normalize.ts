@@ -1,5 +1,22 @@
 import { DEFAULT_TZ, dayDiff, isoDay } from '@hermes-pos/ui';
-import type { Business, Expense, ExpenseList, Notification, Payment, PlanCode, Pnl, Report, Subscription, Voucher } from '../lib/types';
+import type {
+  Bill,
+  BillEdit,
+  BillItem,
+  BillSnapshot,
+  BillList,
+  BillRefund,
+  Business,
+  Expense,
+  ExpenseList,
+  Notification,
+  Payment,
+  PlanCode,
+  Pnl,
+  Report,
+  Subscription,
+  Voucher,
+} from '../lib/types';
 
 // Maps database rows to the shapes the screens use. get_subscription_status and list_notifications come from
 // migration 030; the readers accept the few key spellings that migration may use.
@@ -251,5 +268,70 @@ export function toPayment(r: Row): Payment {
     rejectReason: (r.reject_reason as string | null) ?? null,
     newExpiresAt: (r.new_expires_at as string | null) ?? null,
     createdAt: str(r.created_at),
+  };
+}
+
+export function toBillList(raw: unknown): BillList {
+  const r = (raw ?? {}) as Row;
+  return {
+    total: num(r.total),
+    rows: rows(r.rows).map((b): Bill => ({
+      id: str(b.id),
+      number: str(b.number),
+      status: str(b.status, 'completed') as Bill['status'],
+      total: num(b.total),
+      paymentMethod: b.paymentMethod === 'cash' || b.paymentMethod === 'qris' ? b.paymentMethod : null,
+      createdAt: str(b.createdAt),
+      customerName: str(b.customerName),
+      tableNumber: str(b.tableNumber),
+      outletId: str(b.outletId),
+      outletName: str(b.outletName),
+      cashierName: str(b.cashierName),
+      voidReason: b.voidReason ? str(b.voidReason) : null,
+      discount: num(b.discount),
+      refundedTotal: num(b.refundedTotal),
+      editCount: num(b.editCount),
+    })),
+  };
+}
+
+export function toBillItem(r: Row): BillItem {
+  return {
+    itemId: str(r.itemId),
+    productId: str(r.productId),
+    productName: str(r.productName),
+    quantity: num(r.quantity),
+    unitPrice: num(r.unitPrice),
+    subtotal: num(r.subtotal),
+    discount: num(r.discount),
+    note: str(r.note),
+    refundedQty: num(r.refundedQty),
+  };
+}
+
+export function toBillRefund(r: Row): BillRefund {
+  return { id: str(r.id), createdAt: str(r.createdAt), cashierName: str(r.cashierName), method: str(r.method), amount: num(r.amount), reason: str(r.reason) };
+}
+
+function toSnapshot(raw: unknown): BillSnapshot {
+  const r = (raw ?? {}) as Row;
+  return {
+    total: num(r.total),
+    paymentMethod: str(r.paymentMethod),
+    customerName: str(r.customerName),
+    tableNumber: str(r.tableNumber),
+    items: rows(r.items).map((i) => ({ productName: str(i.productName), quantity: num(i.quantity) })),
+  };
+}
+
+export function toBillEdit(r: Row): BillEdit {
+  const kind = r.kind === 'void' || r.kind === 'payment' || r.kind === 'details' ? r.kind : 'items';
+  return {
+    id: str(r.id),
+    createdAt: str(r.createdAt),
+    kind,
+    reason: r.reason ? str(r.reason) : null,
+    before: toSnapshot(r.before),
+    after: toSnapshot(r.after),
   };
 }

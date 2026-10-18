@@ -162,6 +162,57 @@ export type ExpenseList = {
   totals: { total: number; operasional: number; belanja: number };
 };
 
+/** A bill from owner_list_bills (migrations 028, 034). Money comes from the database. */
+export type Bill = {
+  id: string;
+  number: string;
+  status: 'completed' | 'held' | 'voided' | 'cancelled';
+  total: number;
+  paymentMethod: 'cash' | 'qris' | null;
+  createdAt: string;
+  customerName: string;
+  tableNumber: string;
+  outletId: string;
+  outletName: string;
+  cashierName: string;
+  voidReason: string | null;
+  discount: number;
+  refundedTotal: number;
+  /** Owner edits logged since migration 067. */
+  editCount: number;
+};
+export type BillList = { rows: Bill[]; total: number };
+export type BillItem = {
+  itemId: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+  discount: number;
+  note: string;
+  refundedQty: number;
+};
+/** One owner edit with the bill before and after it (migration 067). */
+export type BillSnapshot = {
+  total: number;
+  paymentMethod: string;
+  customerName: string;
+  tableNumber: string;
+  items: { productName: string; quantity: number }[];
+};
+export type BillEdit = {
+  id: string;
+  createdAt: string;
+  kind: 'void' | 'payment' | 'details' | 'items';
+  reason: string | null;
+  before: BillSnapshot;
+  after: BillSnapshot;
+};
+export type BillRefund = { id: string; createdAt: string; cashierName: string; method: string; amount: number; reason: string };
+/** Completed bills only, refunds not subtracted; sales = line totals after item discounts (migration 066). */
+export type ProductSale = { qty: number; sales: number };
+
 export type Outlet = {
   id: string;
   name: string;

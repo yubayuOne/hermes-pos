@@ -717,6 +717,15 @@ Tiga tab chip di bawah header: **Profil**, **Bisnis dan struk**, **Langganan**.
 | ≤ 980px | sidebar 232px |
 | ≤ 760px | bilah atas dan laci, tabel jadi kartu, header ringkas (tombol bahasa dan lonceng sebaris, filter outlet selebar layar) |
 
+## D13. Transaksi
+
+**Yang sudah dibangun** (`/transactions`, migrasi 066 dan 067). Menu di sidebar tepat di bawah Ringkasan. Dua chip tab: **Bill** dan **Produk terjual** (`?tab=products`), lalu filter periode yang sama dengan Ringkasan.
+
+- **Bill:** filter outlet (boleh semua), chip status Selesai (bawaan), Dibatalkan, Semua, dan kotak Cari bill (nomor, nama, atau meja; dikirim saat Enter). Tabel Bill (nomor sebagai tombol, nama, meja, outlet bila semua outlet, tag `dibatalkan`, `refund`, atau `refund sebagian`, dan `diubah nx`), Waktu, Kasir, Bayar, Total. 50 per halaman dari server.
+- **Dialog Bill {nomor}** (560px): item dengan harga satuan, catatan, diskon, dan "Direfund n"; Diskon, Total, Bayar, Refund dan Bersih; daftar refund; **Riwayat perubahan** (waktu, jenis, alasan, sebelum dan sesudah). Tombol kecil: **Ubah nama, meja, catatan**, **Ubah item**, **Ganti ke QRIS/tunai**, **Batalkan bill** (`btn-ink`). Bill yang sudah direfund hanya bisa diubah nama, meja, dan catatannya; bill batal tidak bisa diubah; langganan berakhir mengunci semua tombol.
+- Setiap ubahan membuka dialognya sendiri dengan tombol Kembali. Ubah item dan ganti metode bayar wajib **Alasan perubahan**. Bill dari hari sebelumnya menampilkan catatan bergaris fire: laporan hari itu dan selisih kas shift-nya ikut berubah. **Ubah item:** jumlah per baris (0 = hapus) dan Tambah produk (harga katalog hari ini). Total, diskon, stok, dan kas shift dihitung ulang server; toast menyebut total baru. **Ganti metode bayar** menjelaskan uang yang masuk atau keluar dari kas laci. **Batalkan bill** wajib alasan, mengembalikan stok, dan tidak bisa diurungkan. Untuk shift yang sudah ditutup, kas seharusnya dan selisih dihitung ulang; hitungan uang kasir tetap.
+- **Produk terjual:** satu outlet (produk milik outlet). Semua produk, termasuk yang 0 terjual dan yang nonaktif, dengan Terjual dan Penjualan (setelah diskon item, refund belum dikurangi). Chip urut: Terlaris (bawaan), Penjualan terbesar, Nama A-Z. 20 per halaman.
+
 ---
 
 # E. Halaman pendukung

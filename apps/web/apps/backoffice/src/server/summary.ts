@@ -2,19 +2,19 @@ import { createServerFn } from '@tanstack/react-start';
 import { addDays, dayDiff } from '@hermes-pos/ui';
 import { z } from 'zod';
 import { parser, productSalesSchema, rangeCheck, summarySchema, timezones } from '../lib/schemas';
-import type { SalesSummary } from '../lib/types';
+import type { ProductSale, SalesSummary } from '../lib/types';
 
 const OFFSET: Record<string, number> = { 'Asia/Jakarta': 7, 'Asia/Makassar': 8, 'Asia/Jayapura': 9 };
 /** Start of a calendar day in the business time zone, as an ISO UTC timestamp (no DST in Indonesia). */
 export const startOf = (day: string, tz: string) => new Date(Date.parse(`${day}T00:00:00Z`) - (OFFSET[tz] ?? 7) * 3_600_000).toISOString();
 
 /**
- * Quantity sold per product id for the Produk page (migration 061). null when the query fails, so the
- * catalog still opens (for example before 061 is applied); the page then says the column could not load.
+ * Quantity and sales per product id for the Produk page and the Produk terjual tab (migrations 061, 066). null when the
+ * query fails, so the catalog still opens; the page then says the numbers could not load.
  */
 export const listProductSales = createServerFn({ method: 'GET' })
   .validator(parser(productSalesSchema))
-  .handler(async ({ data }): Promise<Record<string, number> | null> => {
+  .handler(async ({ data }): Promise<Record<string, ProductSale> | null> => {
     const { supabaseServer } = await import('./supabase.server');
     const { data: res, error } = await supabaseServer().rpc('owner_product_sales', {
       p_outlet_id: data.outletId,
@@ -22,7 +22,12 @@ export const listProductSales = createServerFn({ method: 'GET' })
       p_to: startOf(addDays(data.to, 1), data.tz),
     });
     if (error) return null;
-    return Object.fromEntries(Object.entries((res ?? {}) as Record<string, unknown>).map(([id, qty]) => [id, Number(qty) || 0]));
+    return Object.fromEntries(
+      Object.entries((res ?? {}) as Record<string, { qty?: unknown; sales?: unknown }>).map(([id, v]) => [
+        id,
+        { qty: Number(v?.qty) || 0, sales: Number(v?.sales) || 0 },
+      ]),
+    );
   });
 
 export function toSummary(raw: unknown): SalesSummary {

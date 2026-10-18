@@ -81,7 +81,7 @@ Deliberate differences from the design:
 ## Routes
 
 Backoffice routes are English: `/login`, `/register`, `/forgot-password`, `/reset-password`, `/onboarding`,
-`/subscription`, `/auth/callback`, then `/` (Summary), `/reports`, `/outlets`, `/cashiers`, `/products`, `/expenses`,
+`/subscription`, `/auth/callback`, then `/` (Summary), `/transactions` (`?tab=products`), `/reports`, `/outlets`, `/cashiers`, `/products`, `/expenses`,
 `/vouchers`, `/settings` (`?tab=profile|business|receipt|notifications|subscription`). Paths, query keys and values, and
 anchors are English only; there are no Indonesian aliases. Page titles follow the language read when the page loads.
 

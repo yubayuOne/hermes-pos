@@ -225,6 +225,46 @@ export const notifySchema = z.object({ subscription: z.boolean(), cash_variance:
 export const summarySchema = z.object({ from: day, to: day, outletId: uuid.nullable() });
 export const productSalesSchema = z.object({ outletId: uuid, from: day, to: day, tz: z.enum(timezones) }).refine(...rangeCheck);
 
+// ---------- Transactions (migrations 028, 034, 066, 067) ----------
+export const billListSchema = z
+  .object({
+    outletId: uuid.nullable(),
+    from: day,
+    to: day,
+    tz: z.enum(timezones),
+    status: z.enum(['completed', 'voided', 'all']),
+    q: z.string().trim().max(40),
+    page: z.number().int().min(1).max(10_000),
+  })
+  .refine(...rangeCheck);
+export const billRefSchema = z.object({ id: uuid });
+export const billVoidSchema = z.object({
+  id: uuid,
+  reason: z.string().trim().min(3, 'Tulis alasan pembatalan, minimal 3 huruf.').max(200, 'Maksimal 200 karakter.'),
+});
+/** Item and payment changes are logged with a reason (migration 067). */
+const editReason = z.string().trim().min(3, 'Tulis alasan perubahan, minimal 3 huruf.').max(200, 'Maksimal 200 karakter.');
+export const billPaymentSchema = z.object({ id: uuid, method: z.enum(['cash', 'qris']), reason: editReason });
+// Same limits as the POS and migration 066.
+export const billDetailsSchema = z.object({
+  id: uuid,
+  customerName: z.string().trim().max(40, 'Nama pelanggan maksimal 40 karakter.'),
+  tableNumber: z.string().trim().max(6, 'Nomor meja maksimal 6 karakter.'),
+  notes: z.record(uuid, z.string().trim().max(200, 'Catatan item maksimal 200 karakter.')),
+});
+const lineQty = z.number({ error: 'Jumlah harus angka.' }).int('Jumlah tanpa koma.').min(0, 'Jumlah tidak boleh minus.').max(9999, 'Jumlah maksimal 9.999.');
+export const billItemsSchema = z.object({
+  id: uuid,
+  items: z
+    .array(
+      // A line already on the bill (itemId) or a new product (productId), never both.
+      z.object({ itemId: uuid.optional(), productId: uuid.optional(), quantity: lineQty }).refine((v) => !v.itemId !== !v.productId, 'Data tidak valid.'),
+    )
+    .max(200, 'Maksimal 200 item.')
+    .refine((v) => v.some((i) => i.quantity > 0), 'Bill harus berisi minimal satu item.'),
+  reason: editReason,
+});
+
 // ---------- Billing ----------
 export const paymentSchema = z.object({
   plan: z.enum(['monthly', 'semiannual', 'annual']),
