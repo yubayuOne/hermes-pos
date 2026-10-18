@@ -52,7 +52,7 @@ export const Route = createFileRoute('/_app/')({
 function SummaryLoading() {
   const { t } = useI18n();
   return (
-    <Page title={t('Ringkasan')} slimBanner>
+    <Page title={t('Ringkasan')}>
       <Loading className="grid gap-5">
         <div className="grid items-start gap-5 xl:grid-cols-[7fr_5fr]">
           <SkCard />
@@ -96,7 +96,7 @@ function Summary() {
           : t('Sama dengan {n} hari sebelumnya ({amount}).', vars);
 
   return (
-    <Page title={t('Ringkasan')} slimBanner tools={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}>
+    <Page title={t('Ringkasan')} tools={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}>
       <PeriodFilter value={search} range={data.range} today={data.today} onChange={set}>
         <p className="w-full pt-1 text-[14px] text-mute sm:ml-2 sm:w-auto sm:pt-0">{t('Grafik selalu 7 hari terakhir dan jam hari ini.')}</p>
         {/* The full report (A4, print or PDF) for the same period and outlet as this page. */}

@@ -68,9 +68,6 @@ export const EN: Dict = {
   'Aplikasi tetap terbuka, tetapi penjualan baru dan perubahan data terkunci. Laporan dan riwayat masih bisa dilihat.':
     'The app stays open, but new sales and data changes are locked. Reports and history are still visible.',
   'Perpanjang paket': 'Renew plan',
-  'Pilih paket sebelum trial habis supaya kasir tetap bisa berjualan.': 'Choose a plan before the trial ends so cashiers can keep selling.',
-  'Perpanjangan menambah sisa waktu, jadi tidak ada hari yang hilang.': 'Renewing adds to the remaining time, so no days are lost.',
-  'Lihat paket': 'See plans',
   'Terkunci: langganan berakhir': 'Locked: subscription ended',
   Terkunci: 'Locked',
 
@@ -938,6 +935,8 @@ export const EN: Dict = {
   Bersih: 'Net',
   'Ubah nama, meja, catatan': 'Edit name, table, notes',
   'Ubah bill': 'Edit bill',
+  'Buka bill {number}': 'Open bill {number}',
+  'Ubah produk {name}': 'Edit product {name}',
   'Item dan jumlah': 'Items and quantities',
   'Ubah tanggal': 'Change dates',
   'Ganti ke tunai': 'Change to cash',

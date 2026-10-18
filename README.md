@@ -196,7 +196,7 @@ one signed with the release key; send its offline queue first.
 
 All schema changes live in [`supabase/migrations`](supabase/migrations), numbered and applied in order.
 
-- **Never edit an applied migration.** Add the next number (`069_…sql`).
+- **Never edit an applied migration.** Add the next number (`070_…sql`).
 - Apply migrations with the Supabase CLI from `apps/pos-mobile` (`npm run db:push`), or run each file in the SQL editor.
   Apply a migration before deploying the app build that calls it: the backoffice needs 061 (Produk), 062 (Ringkasan,
   sidebar), 063 (Laporan), and 066 to 068 (Transaksi; the Produk page reads the new `owner_product_sales` shape too); the POS build that reads the business time zone needs 064. Apply 059 only after every

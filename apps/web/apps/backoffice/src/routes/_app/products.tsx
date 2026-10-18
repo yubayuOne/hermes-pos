@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, amount, isoDay, money, useI18n } from '@hermes-pos/ui';
+import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, amount, isoDay, money, useI18n, PencilIcon } from '@hermes-pos/ui';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
 import { listProductSales } from '../../server/summary';
@@ -167,11 +167,13 @@ function Products() {
                   <td data-l={t('Produk')}>
                     <button
                       type="button"
-                      className="text-left font-semibold underline-offset-4 hover:underline disabled:no-underline"
+                      className="inline-flex items-center gap-1.5 text-left font-semibold underline-offset-4 hover:underline disabled:no-underline"
                       onClick={() => setEditing(p)}
                       disabled={lock.locked}
+                      aria-label={t('Ubah produk {name}', { name: p.name })}
                     >
                       {p.name}
+                      <PencilIcon />
                     </button>
                     <span className="block text-[14px] text-mute">{(p.categoryId && catName.get(p.categoryId)) || t('Tanpa kategori')}</span>
                   </td>

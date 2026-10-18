@@ -184,7 +184,7 @@ Easing standar: `cubic-bezier(.2,.8,.2,1)`. Gerak hanya untuk menunjukkan sebab 
 
 ## 6. Ikon dan ilustrasi
 
-- **Tidak memakai pustaka ikon.** Hanya ada tiga ikon SVG buatan sendiri: lonceng notifikasi, silang tutup, dan tiga garis hamburger. Ketiganya memakai garis 2px `--ink`.
+- **Tidak memakai pustaka ikon.** Hanya ada empat ikon SVG buatan sendiri: lonceng notifikasi, silang tutup, tiga garis hamburger, dan pensil 16px. Semuanya memakai garis 2px `--ink`. Pensil ditaruh setelah nama yang membuka dialog ubah (bill di Transaksi, produk, kode voucher), supaya jelas nama itu bisa diklik.
 - **Ilustrasi adalah antarmuka produk itu sendiri:** struk, tiket dapur, antrean offline, buku kas, laporan harian, dan mockup Backoffice. Tidak ada gambar stok, maskot, atau ilustrasi orang.
 - **Logo:** wordmark "hermes pos" huruf kecil dengan Bricolage 800. Belum ada simbol. Logo bisnis pengguna hanya muncul di struk dan laporan, sebagai placeholder `[LOGO]` sampai diunggah.
 
@@ -518,7 +518,7 @@ Papan turunan: `BackofficeExpired.dc.html` (status berakhir) dan `BackofficePhon
 **Tablet (761 sampai 980px):** sidebar tetap di kiri dengan lebar 232px.
 
 **Ponsel (≤ 760px)**
-- Bilah atas setinggi 60px berisi hamburger 44px, wordmark, dan lonceng 44px di kanan (sejak 18 Okt 2026 menggantikan tag paket; sisa langganan ada di Pengaturan, Langganan). Di ponsel lonceng tidak diulang di header halaman.
+- Bilah atas setinggi 60px berisi hamburger 44px di kiri dan lonceng 44px di kanan, tanpa logo dan nama (18 Okt 2026; logo tetap ada di laci). Sisa langganan ada di Pengaturan, Langganan. Di ponsel lonceng tidak diulang di header halaman.
 - Sidebar jadi laci dari kiri: lebar min(300px, 86vw), bayangan 6px, latar redup pine 45%, dan tombol ✕.
 - Laci tertutup lewat ✕, ketuk latar, Esc, atau memilih menu. Fokus terkunci di dalam laci, lalu kembali ke hamburger.
 
@@ -531,10 +531,10 @@ Papan turunan: `BackofficeExpired.dc.html` (status berakhir) dan `BackofficePhon
 
 | | aktif | trial | berakhir |
 |---|---|---|---|
-| Kartu sidebar | Bulanan · 7 hari lagi | Trial · 2 hari lagi | Bulanan · 0 hari tersisa |
+| Sisa waktu | Pengaturan, Langganan | Pengaturan, Langganan | Pengaturan, Langganan |
 | Batas per outlet | 3 kasir, 100 produk | 2 kasir, 40 produk | 3 kasir, 100 produk |
-| Banner | ramping, di Ringkasan | ramping, di Ringkasan | besar, di semua halaman |
-| Notifikasi | pengingat 30, 21, 14, dan 7 hari | pengingat 2 dan 1 hari | langganan berakhir |
+| Banner | tidak ada | tidak ada | besar, di semua halaman |
+| Notifikasi | satu pengingat tiap hari di 30 hari terakhir, yang kemarin diganti (069) | satu pengingat tiap hari selama trial | langganan berakhir |
 | Yang terkunci | | | penjualan baru, shift baru, tambah outlet, kasir, produk, dan pengeluaran, ubah pengaturan |
 | Tetap terbuka | semua | semua | laporan, riwayat, lihat data, bayar |
 

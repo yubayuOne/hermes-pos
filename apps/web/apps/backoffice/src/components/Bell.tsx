@@ -123,6 +123,7 @@ function NotificationText({ n }: { n: Notification }) {
     );
   }
   if (/expired/.test(n.kind)) return <>{t('Langganan berakhir. Perpanjang paket untuk membuka kunci.')}</>;
+  if (/expiring/.test(n.kind) && days === 0) return <>{t('Langganan berakhir hari ini, {date}.', vars)}</>;
   if (/trial/.test(n.kind)) return <>{t('Trial berakhir {date}, {n} hari lagi.', vars)}</>;
   if (/subscription|expir|reminder/.test(n.kind)) return <>{t('Langganan berakhir {date}, {n} hari lagi.', vars)}</>;
   if (/variance/.test(n.kind)) return <>{t('Ada selisih kas di shift yang baru ditutup.')}</>;

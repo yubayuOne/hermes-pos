@@ -129,7 +129,8 @@ select pg_temp.ok('C1 quote monthly', public.plan_quote('monthly',0) = 149000);
 select pg_temp.ok('C2 quote 6 months with 2 extra outlets', public.plan_quote('semiannual',2) = 699000 + 2*99000*6);
 select pg_temp.ok('C3 quote annual', public.plan_quote('annual',0) = 1399000);
 select pg_temp.fails('C4 unknown plan refused', $q$select public.plan_quote('trial',0)$q$, 'Pilih paket');
-select pg_temp.fails('C5 future transfer date refused', $q$select public.owner_submit_payment('monthly',0,'Rina Sari','BCA',current_setting('t.today')::date+1,149000,'')$q$, 'setelah hari ini');
+-- +2, not +1: this business moved to Asia/Makassar in B2, which is a day ahead of Jakarta between 23.00 and 24.00 WIB.
+select pg_temp.fails('C5 future transfer date refused', $q$select public.owner_submit_payment('monthly',0,'Rina Sari','BCA',current_setting('t.today')::date+2,149000,'')$q$, 'setelah hari ini');
 select pg_temp.fails('C6 old transfer date refused', $q$select public.owner_submit_payment('monthly',0,'Rina Sari','BCA',current_setting('t.today')::date-31,149000,'')$q$, '30 hari');
 select pg_temp.fails('C7 missing sender refused', $q$select public.owner_submit_payment('monthly',0,' ','BCA',current_setting('t.today')::date,149000,'')$q$, 'nama pengirim');
 select pg_temp.ok('C8 submit payment gives invoice number', (public.owner_submit_payment('monthly',1,'Rina Sari','BCA',current_setting('t.today')::date,248000,'transfer pagi')->>'invoice_number') ~ '^INV-\d{8}-\d{5}$');

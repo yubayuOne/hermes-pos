@@ -19,6 +19,7 @@ import {
   money,
   toast,
   useI18n,
+  PencilIcon,
 } from '@hermes-pos/ui';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
@@ -123,10 +124,11 @@ function Vouchers() {
                         type="button"
                         disabled={lock.locked}
                         onClick={() => setEditing(v)}
-                        className="rounded border-[1.5px] border-dashed border-ink px-2 py-1 font-mono text-[15px] font-semibold tracking-wider hover:bg-tint-2 disabled:hover:bg-transparent"
+                        className="inline-flex items-center gap-1.5 rounded border-[1.5px] border-dashed border-ink px-2 py-1 font-mono text-[15px] font-semibold tracking-wider hover:bg-tint-2 disabled:hover:bg-transparent"
                         aria-label={t('Ubah voucher {code}', { code: v.code })}
                       >
                         {v.code}
+                        <PencilIcon />
                       </button>
                       <button type="button" className="lnk px-1 text-[14px]" onClick={() => copy(v.code)}>
                         {t('Salin')}

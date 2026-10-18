@@ -1,7 +1,9 @@
 import { useEffect, type ReactNode } from 'react';
 import { HeadContent, Outlet, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router';
-import { LangProvider, UI_EN, storedLang, useI18n, type Lang } from '@hermes-pos/ui';
+import { LANG_KEY, LangProvider, UI_EN, storedLang, useI18n, type Lang } from '@hermes-pos/ui';
 import appCss from '../styles.css?url';
+import bricolage from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url';
+import instrument from '@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2?url';
 import { ErrorPage } from '../components/ErrorPage';
 import { EN } from '../dict';
 import { getLang } from '../lang';
@@ -9,7 +11,11 @@ import { getLang } from '../lang';
 const DICT = { ...UI_EN, ...EN };
 
 export const Route = createRootRoute({
-  beforeLoad: async () => ({ lang: await getLang() }),
+  // The server reads the cookie for the first paint; in the browser the same cookie is read directly, because this runs
+  // on every navigation and a server call here made each menu change wait for one extra round trip.
+  beforeLoad: async () => ({
+    lang: typeof document === 'undefined' ? await getLang() : document.cookie.split('; ').includes(`${LANG_KEY}=en`) ? ('en' as const) : ('id' as const),
+  }),
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
@@ -20,6 +26,9 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
+      // The two text fonts start downloading with the CSS instead of after it, so the first paint keeps its typeface.
+      { rel: 'preload', href: bricolage, as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
+      { rel: 'preload', href: instrument, as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
       { rel: 'icon', href: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
       { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
     ],

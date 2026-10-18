@@ -20,6 +20,7 @@ import {
   time,
   toast,
   useI18n,
+  PencilIcon,
 } from '@hermes-pos/ui';
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
@@ -179,8 +180,14 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
                 {bills.rows.map((b) => (
                   <tr key={b.id}>
                     <td data-l={t('Bill')}>
-                      <button type="button" className="text-left font-semibold underline-offset-4 hover:underline" onClick={() => setOpen(b)}>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1.5 text-left font-semibold underline-offset-4 hover:underline"
+                        onClick={() => setOpen(b)}
+                        aria-label={t('Buka bill {number}', { number: b.number })}
+                      >
                         {b.number}
+                        <PencilIcon />
                       </button>
                       <span className="block text-[14px] text-mute">
                         {[b.customerName, b.tableNumber && t('Meja {n}', { n: b.tableNumber }), !search.outlet && b.outletName].filter(Boolean).join(' · ')}

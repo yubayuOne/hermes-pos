@@ -56,9 +56,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             </D.Content>
           </D.Portal>
         </D.Root>
-        <Link to="/" preload="intent" preloadDelay={0} aria-label={t('Ringkasan')} className="flex-none">
-          <Wordmark size={20} labelClassName="max-[359px]:sr-only" />
-        </Link>
         {/* The bell lives here on phones (owner's request, 18 Oct 2026); time left is in Pengaturan, Langganan. */}
         <Bell className="ml-auto size-11" />
       </header>
