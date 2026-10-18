@@ -14,11 +14,11 @@ Voids and refunds need the owner's code. Money taken from the drawer lowers the 
 
 ## Download
 
-<!-- Replace the placeholders below when the APK is published. -->
+<!-- The APK link points at one EAS build; replace it after each new release build. -->
 
 | | |
 | --- | --- |
-| **Android app (APK)** | [`DOWNLOAD LINK TO BE ADDED`](#download) |
+| **Android app (APK)** | [Download hermes-pos.apk](https://expo.dev/artifacts/eas/gHm_LNlaP2icBywE8yhDFQY5WK-5ope4WajMUEc62O4.apk) |
 | **Version** | 1.0.0 |
 | **Requires** | Android phone or tablet, Bluetooth for receipt printing |
 | **Backoffice (owner)** | [backoffice.hermes-pos.com](https://backoffice.hermes-pos.com) |
