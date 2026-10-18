@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useRouterState } from '@tanstack/react-router';
 import { Dialog as D } from 'radix-ui';
-import { CloseIcon, MenuIcon, Tag, Wordmark, cn, useI18n } from '@hermes-pos/ui';
+import { CloseIcon, MenuIcon, Wordmark, cn, useI18n } from '@hermes-pos/ui';
 import { useApp } from '../lib/app';
 import { rememberAppContext } from '../lib/appContextCache';
-import { PLAN_NAME } from '../lib/plans';
+import { Bell } from './Bell';
 
 type NavItem = { to: '/' | '/transactions' | '/outlets' | '/cashiers' | '/products' | '/expenses' | '/vouchers'; label: string; meta?: string | number };
 
@@ -28,7 +28,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     content.current?.scrollTo({ top: 0 });
     window.scrollTo({ top: 0 });
   }, [path]);
-  const sub = app.subscription;
   return (
     // minmax(0,1fr) row: an auto row grows to the page's height and scrolls the whole window, sidebar included.
     <div className="md:grid md:h-dvh md:grid-cols-[232px_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)] lg:grid-cols-[264px_minmax(0,1fr)] print:!block print:!h-auto">
@@ -60,11 +59,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link to="/" preload="intent" preloadDelay={0} aria-label={t('Ringkasan')} className="flex-none">
           <Wordmark size={20} labelClassName="max-[359px]:sr-only" />
         </Link>
-        {/* min-w-0 + truncate: the plan tag shortens instead of widening the page; below 400px only the days show. */}
-        <Tag className="ml-auto block min-w-0 truncate">
-          <span className="max-[399px]:sr-only">{t(PLAN_NAME[sub.plan])} · </span>
-          {sub.plan === 'unlimited' ? t('selamanya') : sub.state === 'expired' ? t('berakhir') : t('{n} hari', { n: sub.daysLeft })}
-        </Tag>
+        {/* The bell lives here on phones (owner's request, 18 Oct 2026); time left is in Pengaturan, Langganan. */}
+        <Bell className="ml-auto size-11" />
       </header>
       <aside
         aria-label={t('Navigasi backoffice')}

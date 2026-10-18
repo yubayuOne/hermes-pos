@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { DropdownMenu as Menu } from 'radix-ui';
 import {
   Button,
+  btn,
   Chip,
   Dialog,
   Empty,
@@ -127,17 +129,18 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
   return (
     <>
       <div className="mt-5 flex flex-wrap items-end gap-4">
-        <div role="group" aria-label={t('Status bill')} className="flex flex-wrap gap-2">
-          {STATUSES.map((s) => (
-            <Chip
-              key={s.value}
-              pressed={(search.status ?? 'completed') === s.value}
-              onClick={() => set({ status: s.value === 'completed' ? undefined : s.value, page: undefined })}
-            >
-              {t(s.label)}
-            </Chip>
-          ))}
-        </div>
+        <Field label={t('Status bill')} className="w-full sm:w-[200px]">
+          <Select
+            value={search.status ?? 'completed'}
+            onChange={(e) => set({ status: e.target.value === 'completed' ? undefined : (e.target.value as Search['status']), page: undefined })}
+          >
+            {STATUSES.map((s) => (
+              <option key={s.value} value={s.value}>
+                {t(s.label)}
+              </option>
+            ))}
+          </Select>
+        </Field>
         <form
           className="min-w-[220px] flex-1 md:max-w-[340px]"
           onSubmit={(e) => {
@@ -380,22 +383,45 @@ function BillDialog({ bill: b, onClose }: { bill: Bill; onClose: () => void }) {
           <EditHistory edits={detail.edits} />
           {editable && (
             <div className="grid gap-3 border-t-[1.5px] border-ink pt-4">
-              <div className="flex flex-wrap gap-2">
-                <Button sm onClick={() => setMode('details')}>
-                  {t('Ubah nama, meja, catatan')}
-                </Button>
+              {/* One menu for the edits and one button for the void, instead of four buttons in a row (owner's request, 18 Oct 2026). */}
+              <div className="flex flex-wrap justify-between gap-2">
+                {moneyEdits ? (
+                  <Menu.Root>
+                    <Menu.Trigger className={btn('plain', { sm: true })}>{t('Ubah bill')} ▾</Menu.Trigger>
+                    <Menu.Portal>
+                      <Menu.Content
+                        align="start"
+                        sideOffset={4}
+                        collisionPadding={12}
+                        className="z-[70] min-w-[220px] rounded border-[1.5px] border-ink bg-slip p-1 shadow-[var(--shadow-hard-3)]"
+                      >
+                        {(
+                          [
+                            ['details', t('Nama, meja, catatan')],
+                            ['items', t('Item dan jumlah')],
+                            ['payment', b.paymentMethod === 'qris' ? t('Ganti ke tunai') : t('Ganti ke QRIS')],
+                          ] as const
+                        ).map(([m, label]) => (
+                          <Menu.Item
+                            key={m}
+                            onSelect={() => setMode(m)}
+                            className="flex min-h-11 cursor-pointer items-center rounded px-3 text-[16px] outline-none data-[highlighted]:bg-tint-2"
+                          >
+                            {label}
+                          </Menu.Item>
+                        ))}
+                      </Menu.Content>
+                    </Menu.Portal>
+                  </Menu.Root>
+                ) : (
+                  <Button sm onClick={() => setMode('details')}>
+                    {t('Ubah nama, meja, catatan')}
+                  </Button>
+                )}
                 {moneyEdits && (
-                  <>
-                    <Button sm onClick={() => setMode('items')}>
-                      {t('Ubah item')}
-                    </Button>
-                    <Button sm onClick={() => setMode('payment')}>
-                      {b.paymentMethod === 'qris' ? t('Ganti ke tunai') : t('Ganti ke QRIS')}
-                    </Button>
-                    <Button sm variant="ink" onClick={() => setMode('void')}>
-                      {t('Batalkan bill')}
-                    </Button>
-                  </>
+                  <Button sm variant="ink" onClick={() => setMode('void')}>
+                    {t('Batalkan bill')}
+                  </Button>
                 )}
               </div>
               {!moneyEdits && <p className="text-[14px] text-mute">{t('Bill yang sudah direfund hanya bisa diubah nama, meja, dan catatannya.')}</p>}
@@ -637,13 +663,15 @@ function ProductsTab({
     );
   return (
     <>
-      <div className="mt-5 flex flex-wrap items-center gap-2" role="group" aria-label={t('Urutkan')}>
-        {SORTS.map((s) => (
-          <Chip key={s.value} pressed={sort === s.value} onClick={() => set({ sort: s.value === 'qty' ? undefined : s.value, page: undefined })}>
-            {t(s.label)}
-          </Chip>
-        ))}
-      </div>
+      <Field label={t('Urutkan')} className="mt-5 w-full sm:w-[240px]">
+        <Select value={sort} onChange={(e) => set({ sort: e.target.value === 'qty' ? undefined : (e.target.value as Search['sort']), page: undefined })}>
+          {SORTS.map((s) => (
+            <option key={s.value} value={s.value}>
+              {t(s.label)}
+            </option>
+          ))}
+        </Select>
+      </Field>
       <p className="mt-4 text-[14px] text-mute">
         {t('{period}, dari bill selesai. Penjualan setelah diskon item, refund belum dikurangi.', { period: periodLabel })}
       </p>

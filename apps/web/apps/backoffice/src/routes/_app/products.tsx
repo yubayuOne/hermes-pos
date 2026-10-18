@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, Chip, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, amount, isoDay, money, useI18n } from '@hermes-pos/ui';
+import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, amount, isoDay, money, useI18n } from '@hermes-pos/ui';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
 import { listProductSales } from '../../server/summary';
@@ -53,7 +53,6 @@ function Products() {
   const navigate = useNavigate({ from: '/products' });
   const set = (patch: Partial<Search>) => navigate({ search: (s: Search) => ({ ...s, ...patch }), replace: true });
   const [editing, setEditing] = useState<Product | 'new' | null>(null);
-  const [newCat, setNewCat] = useState(false);
   const toggle = useAction();
   const [q, setQ] = useState(search.q ?? '');
 
@@ -91,8 +90,10 @@ function Products() {
           )}
         </div>
       )}
+      {/* One toolbar: search, category, and the main action (owner's request, 18 Oct 2026: fewer rows of buttons).
+          A new category is made from the product dialog. */}
       <div className="flex flex-wrap items-end gap-4">
-        <Field label={t('Cari produk')} className="min-w-[220px] flex-1 md:max-w-[340px]">
+        <Field label={t('Cari produk')} className="min-w-[200px] flex-1 md:max-w-[300px]">
           <Input
             type="search"
             placeholder={t('Nama produk')}
@@ -104,18 +105,8 @@ function Products() {
             onBlur={() => set({ q: q || undefined })}
           />
         </Field>
-        <p className="pb-3 font-mono text-[14px]" role="status">
-          {t('{n} / {max} produk aktif', { n: active, max: limit })}
-        </p>
-        {products.length > 0 && (
-          <Button variant="fire" className="ml-auto" onClick={() => setEditing('new')} {...lock.props}>
-            {lock.label(t('Tambah produk'))}
-          </Button>
-        )}
-      </div>
-      {/* A dropdown, not a row of chips: an outlet can have many categories (owner's request, 17 Oct 2026). */}
-      <div className="mt-5 flex flex-wrap items-end gap-3">
-        <Field label={t('Kategori')} className="min-w-[220px] md:max-w-[340px]">
+        {/* A dropdown, not a row of chips: an outlet can have many categories (owner's request, 17 Oct 2026). */}
+        <Field label={t('Kategori')} className="min-w-[200px] flex-1 md:max-w-[260px]">
           <Select value={search.cat ?? ''} onChange={(e) => set({ cat: e.target.value || undefined, page: undefined })}>
             <option value="">{t('Semua kategori')}</option>
             {categories.map((c) => (
@@ -125,10 +116,15 @@ function Products() {
             ))}
           </Select>
         </Field>
-        <Chip dashed onClick={() => setNewCat(true)} disabled={lock.locked}>
-          + {t('Kategori baru')}
-        </Chip>
+        {products.length > 0 && (
+          <Button variant="fire" className="w-full sm:ml-auto sm:w-auto" onClick={() => setEditing('new')} {...lock.props}>
+            {lock.label(t('Tambah produk'))}
+          </Button>
+        )}
       </div>
+      <p className="mt-3 font-mono text-[14px] text-mute" role="status">
+        {t('{n} / {max} produk aktif', { n: active, max: limit })}
+      </p>
 
       {products.length === 0 ? (
         <Empty
@@ -215,7 +211,6 @@ function Products() {
           onClose={() => setEditing(null)}
         />
       )}
-      {newCat && outletId && <CategoryDialog outletId={outletId} onClose={() => setNewCat(false)} />}
     </Page>
   );
 }

@@ -518,7 +518,7 @@ Papan turunan: `BackofficeExpired.dc.html` (status berakhir) dan `BackofficePhon
 **Tablet (761 sampai 980px):** sidebar tetap di kiri dengan lebar 232px.
 
 **Ponsel (≤ 760px)**
-- Bilah atas setinggi 60px berisi hamburger 44px, wordmark, dan tag paket ("Bulanan · 7 hari lagi").
+- Bilah atas setinggi 60px berisi hamburger 44px, wordmark, dan lonceng 44px di kanan (sejak 18 Okt 2026 menggantikan tag paket; sisa langganan ada di Pengaturan, Langganan). Di ponsel lonceng tidak diulang di header halaman.
 - Sidebar jadi laci dari kiri: lebar min(300px, 86vw), bayangan 6px, latar redup pine 45%, dan tombol ✕.
 - Laci tertutup lewat ✕, ketuk latar, Esc, atau memilih menu. Fokus terkunci di dalam laci, lalu kembali ke hamburger.
 
@@ -555,7 +555,7 @@ Papan turunan: `BackofficeExpired.dc.html` (status berakhir) dan `BackofficePhon
 ## D4. Ringkasan
 
 1. **Banner langganan** versi ramping.
-2. **Periode (`PeriodFilter`, sama di Ringkasan, Pengeluaran, dan Produk):** chip Hari ini (bawaan), Bulan ini (tanggal 1 sampai hari ini), Bulan lalu (sebulan penuh), dan Pilih tanggal. Pilih tanggal membuka dua isian, Dari dan Sampai, dengan aturan: keduanya wajib, akhir tidak setelah hari ini, akhir tidak sebelum mulai, dan rentang maksimal 366 hari. Server memeriksa ulang tanggal dan rentangnya. Di ujung baris chip: "Grafik selalu 7 hari terakhir dan jam hari ini." dan tombol **Laporan**, yang membuka Laporan untuk periode dan outlet yang sama.
+2. **Periode (`PeriodFilter`, sama di Ringkasan, Transaksi, Pengeluaran, dan Produk):** satu dropdown berlabel Periode (220px, selebar layar di ponsel) berisi Hari ini (bawaan), Bulan ini (tanggal 1 sampai hari ini), Bulan lalu (sebulan penuh), dan Pilih tanggal; setelah tanggal dipilih, pilihan itu menampilkan rentangnya dan tombol kecil **Ubah tanggal** muncul di sebelahnya. Pilih tanggal membuka dua isian, Dari dan Sampai, dengan aturan: keduanya wajib, akhir tidak setelah hari ini, akhir tidak sebelum mulai, dan rentang maksimal 366 hari. Server memeriksa ulang tanggal dan rentangnya. Di sebelah dropdown: "Grafik selalu 7 hari terakhir dan jam hari ini." dan tombol **Laporan**, yang membuka Laporan untuk periode dan outlet yang sama.
 3. **Baris 7/5, tinggi kedua kartu sama:**
    - **Kiri, Total omset:** label "Total omset, bersih setelah refund · periode · outlet", angka utama dengan spidol, lalu satu kalimat perbandingan mute: "Naik/Turun Rp… dari hari sebelumnya" untuk periode satu hari, atau "dari {n} hari sebelumnya" untuk periode lebih panjang, beserta angka pembandingnya. Di bawah garis, delapan angka dua kolom: Omset tunai, Omset QRIS, Jumlah bill, Rata-rata per bill, Item terjual, Diskon diberikan, Void, Refund.
    - **Kanan, Omset setelah pengeluaran:** angka pine, catatan "Semua pengeluaran dikurangkan, dari kas laci maupun dari luar laci.", lalu Pengeluaran, Dari kas laci, Dari luar laci, Laba kotor (nominal saja, tanpa persen), dan Selisih kas terakhir.
@@ -569,7 +569,7 @@ Semua isi Ringkasan datang dari satu panggilan `owner_dashboard` (migrasi 062).
 
 ## D5. Laporan
 
-**Yang sudah dibangun.** Halaman `/reports` menampilkan laporan sebagai enam lembar A4 (bagian F), dari satu panggilan `owner_report_page` (migrasi 063). Halaman ini tidak punya menu: dibuka dari tombol Laporan di Ringkasan dengan periode dan outlet yang sama, dan "Kembali ke Ringkasan" kembali ke chip periode yang sama. Tanpa periode, laporan memakai Hari ini. Tombol **Cetak / simpan PDF** (`btn-ink`) mencetak lembar yang sama lewat browser. Teks terkecil di lembar laporan 12px.
+**Yang sudah dibangun.** Halaman `/reports` menampilkan laporan sebagai enam lembar A4 (bagian F), dari satu panggilan `owner_report_page` (migrasi 063). Halaman ini tidak punya menu: dibuka dari tombol Laporan di Ringkasan dengan periode dan outlet yang sama, dan "Kembali ke Ringkasan" kembali ke periode yang sama. Tanpa periode, laporan memakai Hari ini. Tombol **Cetak / simpan PDF** (`btn-ink`) mencetak lembar yang sama lewat browser. Teks terkecil di lembar laporan 12px.
 
 **Rancangan berikut (belum dibangun):**
 
@@ -615,7 +615,7 @@ Semua isi Ringkasan datang dari satu panggilan `owner_dashboard` (migrasi 062).
 
 - Filter outlet di header. Di bawah header, paling atas: filter periode (sama dengan Ringkasan) dengan keterangan "Kolom Terjual: {periode}, dari bill selesai." Kalau jumlah terjual gagal dimuat, muncul kalimat galat dan kolomnya berisi "-", tetapi daftar produk tetap tampil.
 - Lalu pencarian, pemakaian "6 / 100 produk aktif", dan tombol **Tambah produk**.
-- Kategori dipilih lewat dropdown (Semua kategori dan kategori yang ada), karena satu outlet bisa punya banyak kategori, ditambah chip "+ Kategori baru" bergaris putus-putus.
+- Kategori dipilih lewat dropdown (Semua kategori dan kategori yang ada), karena satu outlet bisa punya banyak kategori. Cari produk, Kategori, dan **Tambah produk** ada di satu baris; jumlah produk aktif di bawahnya. Kategori baru dibuat dari dialog produk ("Kategori belum ada? Buat baru").
 - Tabel berisi Produk (foto kecil, nama, dan kategori), Harga, HPP, Stok ("tanpa stok" atau angka), Terjual (jumlah pada periode terpilih, dari `owner_product_sales`, migrasi 061), dan Aktif (sakelar).
   - **Foto kecil** 64 × 48 (rasio 4:3) di kiri nama, menampilkan versi yang tampil di kasir. Mengetuknya langsung membuka pemilih berkas untuk mengganti foto, jadi produk lama bisa diberi foto tanpa membuka dialog. Produk tanpa foto menampilkan kotak putus-putus "+ foto".
   - Setelah foto diganti, muncul toast "Foto Kopi susu diperbarui. Kasir melihatnya setelah katalog dimuat ulang." dengan **Batalkan**.
@@ -719,12 +719,12 @@ Tiga tab chip di bawah header: **Profil**, **Bisnis dan struk**, **Langganan**.
 
 ## D13. Transaksi
 
-**Yang sudah dibangun** (`/transactions`, migrasi 066 dan 067). Menu di sidebar tepat di bawah Ringkasan. Dua chip tab: **Bill** dan **Produk terjual** (`?tab=products`), lalu filter periode yang sama dengan Ringkasan.
+**Yang sudah dibangun** (`/transactions`, migrasi 066 dan 067). Menu di sidebar tepat di bawah Ringkasan. Dua chip tab: **Bill** dan **Produk terjual** (`?tab=products`), lalu dropdown periode yang sama dengan Ringkasan.
 
-- **Bill:** filter outlet (boleh semua), chip status Selesai (bawaan), Dibatalkan, Semua, dan kotak Cari bill (nomor, nama, atau meja; dikirim saat Enter). Tabel Bill (nomor sebagai tombol, nama, meja, outlet bila semua outlet, tag `dibatalkan`, `refund`, atau `refund sebagian`, dan `diubah nx`), Waktu, Kasir, Bayar, Total. 50 per halaman dari server.
-- **Dialog Bill {nomor}** (560px): item dengan harga satuan, catatan, diskon, dan "Direfund n"; Diskon, Total, Bayar, Refund dan Bersih; daftar refund; **Riwayat perubahan** (waktu, jenis, alasan, sebelum dan sesudah). Tombol kecil: **Ubah nama, meja, catatan**, **Ubah item**, **Ganti ke QRIS/tunai**, **Batalkan bill** (`btn-ink`). Bill yang sudah direfund hanya bisa diubah nama, meja, dan catatannya; bill batal tidak bisa diubah; langganan berakhir mengunci semua tombol.
+- **Bill:** filter outlet (boleh semua), dropdown Status bill (Selesai bawaan, Dibatalkan, Semua), dan kotak Cari bill (nomor, nama, atau meja; dikirim saat Enter). Tabel Bill (nomor sebagai tombol, nama, meja, outlet bila semua outlet, tag `dibatalkan`, `refund`, atau `refund sebagian`, dan `diubah nx`), Waktu, Kasir, Bayar, Total. 50 per halaman dari server.
+- **Dialog Bill {nomor}** (560px): item dengan harga satuan, catatan, diskon, dan "Direfund n"; Diskon, Total, Bayar, Refund dan Bersih; daftar refund; **Riwayat perubahan** (waktu, jenis, alasan, sebelum dan sesudah). Dua kontrol saja: menu **Ubah bill ▾** (Nama, meja, catatan; Item dan jumlah; Ganti ke QRIS/tunai) dan **Batalkan bill** (`btn-ink`) di kanan. Bill yang sudah direfund hanya bisa diubah nama, meja, dan catatannya; bill batal tidak bisa diubah; langganan berakhir mengunci semua tombol.
 - Setiap ubahan membuka dialognya sendiri dengan tombol Kembali. Ubah item dan ganti metode bayar wajib **Alasan perubahan**. Bill dari hari sebelumnya menampilkan catatan bergaris fire: laporan hari itu dan selisih kas shift-nya ikut berubah. **Ubah item:** jumlah per baris (0 = hapus) dan Tambah produk (harga katalog hari ini). Total, diskon, stok, dan kas shift dihitung ulang server; toast menyebut total baru. **Ganti metode bayar** menjelaskan uang yang masuk atau keluar dari kas laci. **Batalkan bill** wajib alasan, mengembalikan stok, dan tidak bisa diurungkan. Untuk shift yang sudah ditutup, kas seharusnya dan selisih dihitung ulang; hitungan uang kasir tetap.
-- **Produk terjual:** satu outlet (produk milik outlet). Semua produk, termasuk yang 0 terjual dan yang nonaktif, dengan Terjual dan Penjualan (setelah diskon item, refund belum dikurangi). Chip urut: Terlaris (bawaan), Penjualan terbesar, Nama A-Z. 20 per halaman.
+- **Produk terjual:** satu outlet (produk milik outlet). Semua produk, termasuk yang 0 terjual dan yang nonaktif, dengan Terjual dan Penjualan (setelah diskon item, refund belum dikurangi). Dropdown Urutkan: Terlaris (bawaan), Penjualan terbesar, Nama A-Z. 20 per halaman.
 
 ---
 

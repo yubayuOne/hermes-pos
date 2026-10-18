@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from '@tanstack/react-router';
 import { Popover } from 'radix-ui';
-import { BellIcon, Sk, dateShort, money, time, useI18n, type Vars } from '@hermes-pos/ui';
+import { BellIcon, Sk, cn, dateShort, money, time, useI18n, type Vars } from '@hermes-pos/ui';
 import { useApp } from '../lib/app';
 import type { Notification } from '../lib/types';
 import { listNotifications, markNotificationsRead } from '../server/app';
@@ -11,7 +11,7 @@ import { listNotifications, markNotificationsRead } from '../server/app';
  * never leaves the content area, orange dot for unread and grey for read, and "Tandai sudah dibaca".
  * Text is built here from kind and params, so it follows the chosen language (PRD G2).
  */
-export function Bell() {
+export function Bell({ className }: { className?: string }) {
   const app = useApp();
   const router = useRouter();
   const { t, lang } = useI18n();
@@ -40,7 +40,7 @@ export function Bell() {
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger
-        className="relative grid size-12 place-items-center rounded border-[1.5px] border-ink bg-slip hover:bg-tint-2"
+        className={cn('relative grid size-12 flex-none place-items-center rounded border-[1.5px] border-ink bg-slip hover:bg-tint-2', className)}
         aria-label={unread ? t('Notifikasi, {n} belum dibaca', { n: unread }) : t('Notifikasi')}
       >
         <BellIcon />

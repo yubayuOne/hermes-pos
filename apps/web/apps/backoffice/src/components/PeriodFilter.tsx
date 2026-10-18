@@ -1,15 +1,19 @@
 import { useState } from 'react';
-import { Chip, dateRange, useI18n } from '@hermes-pos/ui';
+import { Button, Select, dateRange, useI18n } from '@hermes-pos/ui';
 import type { PeriodSearch } from '../lib/period';
 import { CustomRange } from './CustomRange';
 
-const PRESETS = [
+const OPTIONS = [
   ['today', 'Hari ini'],
   ['month', 'Bulan ini'],
   ['last-month', 'Bulan lalu'],
+  ['custom', 'Pilih tanggal'],
 ] as const;
 
-/** Hari ini, Bulan ini, Bulan lalu, Pilih tanggal. `children` sits at the end of the chip row. */
+/**
+ * Hari ini, Bulan ini, Bulan lalu, Pilih tanggal as one dropdown (owner's request, 18 Oct 2026: fewer buttons in a row).
+ * Pilih tanggal opens the date form under it; it closes once the dates are shown, and Ubah tanggal opens it again. `children` sits next to the dropdown (a note, or a link such as Laporan).
+ */
 export function PeriodFilter({
   value,
   range,
@@ -23,33 +27,47 @@ export function PeriodFilter({
   onChange: (patch: PeriodSearch) => void;
   children?: React.ReactNode;
 }) {
-  const { t } = useI18n();
-  const [custom, setCustom] = useState(value.period === 'custom');
+  const { t, lang } = useI18n();
+  const [editing, setEditing] = useState(false);
+  const current = editing ? 'custom' : (value.period ?? 'today');
   return (
     <>
-      {/* Phone: the four chips as an even 2 × 2 grid; from sm up one wrapping row. */}
-      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center" role="group" aria-label={t('Periode')}>
-        {PRESETS.map(([v, l]) => (
-          <Chip
-            key={v}
-            className="justify-center"
-            pressed={(value.period ?? 'today') === v && !custom}
-            onClick={() => {
-              setCustom(false);
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+        <label className="flex w-full items-center gap-3 sm:w-auto">
+          <span className="flex-none text-[15px] font-semibold">{t('Periode')}</span>
+          <Select
+            className="min-w-0 flex-1 sm:w-[220px]"
+            value={current}
+            onChange={(e) => {
+              const v = e.target.value as (typeof OPTIONS)[number][0];
+              setEditing(v === 'custom');
+              if (v === 'custom') return;
               onChange({ period: v === 'today' ? undefined : v, from: undefined, to: undefined });
             }}
           >
-            {t(l)}
-          </Chip>
-        ))}
-        <Chip className="justify-center" pressed={custom} onClick={() => setCustom(true)} aria-expanded={custom}>
-          {t('Pilih tanggal')}
-        </Chip>
-        {/* Below sm the extras take a full row of their own; from sm they flow on with the chips. */}
-        {children && <div className="col-span-2 flex flex-wrap items-center gap-2 sm:contents">{children}</div>}
+            {OPTIONS.map(([v, l]) => (
+              <option key={v} value={v}>
+                {v === 'custom' && value.period === 'custom' ? dateRange(range.from, range.to, lang) : t(l)}
+              </option>
+            ))}
+          </Select>
+        </label>
+        {value.period === 'custom' && !editing && (
+          <Button sm onClick={() => setEditing(true)}>
+            {t('Ubah tanggal')}
+          </Button>
+        )}
+        {children}
       </div>
-      {custom && (
-        <CustomRange today={today} initial={value.period === 'custom' ? range : undefined} onApply={(from, to) => onChange({ period: 'custom', from, to })} />
+      {editing && (
+        <CustomRange
+          today={today}
+          initial={value.period === 'custom' ? range : undefined}
+          onApply={(from, to) => {
+            setEditing(false);
+            onChange({ period: 'custom', from, to });
+          }}
+        />
       )}
     </>
   );
