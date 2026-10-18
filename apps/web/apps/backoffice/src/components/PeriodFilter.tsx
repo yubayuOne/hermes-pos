@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Select, dateRange, useI18n } from '@hermes-pos/ui';
+import { Button, Field, Select, dateRange, useI18n } from '@hermes-pos/ui';
 import type { PeriodSearch } from '../lib/period';
 import { CustomRange } from './CustomRange';
 
@@ -32,11 +32,9 @@ export function PeriodFilter({
   const current = editing ? 'custom' : (value.period ?? 'today');
   return (
     <>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-        <label className="flex w-full items-center gap-3 sm:w-auto">
-          <span className="flex-none text-[15px] font-semibold">{t('Periode')}</span>
+      <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
+        <Field label={t('Periode')} className="w-full sm:w-[240px]">
           <Select
-            className="min-w-0 flex-1 sm:w-[220px]"
             value={current}
             onChange={(e) => {
               const v = e.target.value as (typeof OPTIONS)[number][0];
@@ -51,9 +49,9 @@ export function PeriodFilter({
               </option>
             ))}
           </Select>
-        </label>
+        </Field>
         {value.period === 'custom' && !editing && (
-          <Button sm onClick={() => setEditing(true)}>
+          <Button sm className="mb-1" onClick={() => setEditing(true)}>
             {t('Ubah tanggal')}
           </Button>
         )}

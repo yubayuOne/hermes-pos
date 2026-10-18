@@ -4,7 +4,7 @@ import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Swit
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
 import { listProductSales } from '../../server/summary';
-import { OutletFilter } from '../../components/OutletFilter';
+import { FilterBar, OutletField, SearchBox } from '../../components/Filters';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination, pageOf } from '../../components/Pagination';
@@ -72,41 +72,45 @@ function Products() {
   }
 
   return (
-    <Page
-      title={t('Produk|menu')}
-      tools={<OutletFilter all={false} value={outletId} onChange={(id) => set({ outlet: id ?? undefined, cat: undefined, page: undefined })} />}
-    >
-      {products.length > 0 && (
-        <div className="mb-5">
-          <PeriodFilter value={search} range={range} today={today} onChange={(patch) => set({ ...patch, page: undefined })}>
-            <p className="w-full pt-1 text-[14px] text-mute sm:ml-2 sm:w-auto sm:pt-0">
-              {t('Kolom Terjual: {period}, dari bill selesai.', { period: periodLabel })}
-            </p>
-          </PeriodFilter>
-          {sold === null && (
-            <p role="status" className="mt-3 text-[14px] font-semibold text-error">
-              {t('Jumlah terjual belum bisa dimuat. Muat ulang halaman sebentar lagi.')}
-            </p>
-          )}
-        </div>
-      )}
-      {/* One toolbar: search, category, and the main action (owner's request, 18 Oct 2026: fewer rows of buttons).
-          A new category is made from the product dialog. */}
-      <div className="flex flex-wrap items-end gap-4">
-        <Field label={t('Cari produk')} className="min-w-[200px] flex-1 md:max-w-[300px]">
-          <Input
-            type="search"
-            placeholder={t('Nama produk')}
+    <Page title={t('Produk|menu')}>
+      {/* Search, one Filter button (outlet, period of the Terjual column, category), and the main action. A new category
+          is made from the product dialog. */}
+      <FilterBar
+        search={
+          <SearchBox
+            label={t('Cari produk')}
+            placeholder={t('Cari nama produk')}
             value={q}
-            onChange={(e) => {
-              setQ(e.target.value);
+            onChange={(v) => {
+              setQ(v);
               if (search.page) set({ page: undefined });
             }}
-            onBlur={() => set({ q: q || undefined })}
+            onSubmit={() => set({ q: q.trim() || undefined })}
           />
-        </Field>
+        }
+        active={(search.outlet && search.outlet !== app.outlets[0]?.id ? 1 : 0) + (search.period ? 1 : 0) + (search.cat ? 1 : 0)}
+        summary={[
+          app.outlets.find((o) => o.id === outletId)?.name,
+          t('Terjual {period}', { period: periodLabel }),
+          (search.cat && catName.get(search.cat)) || t('Semua kategori'),
+          t('{n} / {max} produk aktif', { n: active, max: limit }),
+        ]
+          .filter(Boolean)
+          .join(' · ')}
+        onReset={() => set({ outlet: undefined, period: undefined, from: undefined, to: undefined, cat: undefined, page: undefined })}
+        action={
+          products.length > 0 && (
+            <Button variant="fire" className="w-full sm:w-auto" onClick={() => setEditing('new')} {...lock.props}>
+              {lock.label(t('Tambah produk'))}
+            </Button>
+          )
+        }
+      >
+        <OutletField all={false} value={outletId} onChange={(id) => set({ outlet: id ?? undefined, cat: undefined, page: undefined })} />
+        <PeriodFilter value={search} range={range} today={today} onChange={(patch) => set({ ...patch, page: undefined })} />
+        <p className="-mt-2 text-[14px] text-mute">{t('Periode untuk kolom Terjual, dari bill selesai.')}</p>
         {/* A dropdown, not a row of chips: an outlet can have many categories (owner's request, 17 Oct 2026). */}
-        <Field label={t('Kategori')} className="min-w-[200px] flex-1 md:max-w-[260px]">
+        <Field label={t('Kategori')}>
           <Select value={search.cat ?? ''} onChange={(e) => set({ cat: e.target.value || undefined, page: undefined })}>
             <option value="">{t('Semua kategori')}</option>
             {categories.map((c) => (
@@ -116,15 +120,12 @@ function Products() {
             ))}
           </Select>
         </Field>
-        {products.length > 0 && (
-          <Button variant="fire" className="w-full sm:ml-auto sm:w-auto" onClick={() => setEditing('new')} {...lock.props}>
-            {lock.label(t('Tambah produk'))}
-          </Button>
-        )}
-      </div>
-      <p className="mt-3 font-mono text-[14px] text-mute" role="status">
-        {t('{n} / {max} produk aktif', { n: active, max: limit })}
-      </p>
+      </FilterBar>
+      {sold === null && (
+        <p role="status" className="mt-3 text-[14px] font-semibold text-error">
+          {t('Jumlah terjual belum bisa dimuat. Muat ulang halaman sebentar lagi.')}
+        </p>
+      )}
 
       {products.length === 0 ? (
         <Empty

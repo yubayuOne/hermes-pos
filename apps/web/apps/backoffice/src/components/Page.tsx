@@ -27,7 +27,7 @@ export function Page({ title, tools, children }: { title: string; tools?: ReactN
       <div className="mt-5 grid gap-3 empty:hidden print:hidden">
         <SubscriptionBanner />
       </div>
-      <ToastHost className="mt-3 print:hidden" />
+      <ToastHost className="print:hidden" />
       <div className="mt-6 print:mt-0">{children}</div>
     </main>
   );

@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { useI18n } from '../i18n';
 import { cn } from '../lib/utils';
+import { CloseIcon } from './icons';
 
 /**
- * Toast (DESIGN.md B): shown right under the content header, role="status", always has Close; reversible
+ * Toast (DESIGN.md B): floats at the bottom of the screen, role="status", always has Close; reversible
  * actions also get Undo, which restores the previous state. Success = pine-soft, error = fire-soft.
  */
 type Toast = { id: number; tone: 'ok' | 'err'; text: string; undo?: () => void | Promise<void> };
@@ -29,33 +30,44 @@ export function ToastHost({ className }: { className?: string }) {
   const { items, dismiss } = useToasts();
   const { t } = useI18n();
   return (
-    <div role="status" aria-live="polite" className={cn('grid gap-2 empty:hidden', className)}>
+    // Floating (owner's request, 18 Oct 2026): bottom centre on phones, bottom right from sm up, never moves the page.
+    <div
+      role="status"
+      aria-live="polite"
+      className={cn(
+        'pointer-events-none fixed inset-x-4 bottom-[max(16px,env(safe-area-inset-bottom))] z-[80] grid justify-items-center gap-2 empty:hidden sm:left-auto sm:right-6 sm:justify-items-end',
+        className,
+      )}
+    >
       {items.map((it) => (
         <div
           key={it.id}
           className={cn(
-            'flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded border-[1.5px] border-ink py-1 pl-4 pr-2 animate-pop',
+            'pointer-events-auto flex w-full max-w-[360px] items-center gap-2 rounded border-[1.5px] border-ink py-1 pl-3 pr-1 text-[14px] shadow-[var(--shadow-hard-3)] animate-pop',
             it.tone === 'ok' ? 'bg-pine-soft' : 'bg-fire-soft',
           )}
         >
-          <span className="py-2 font-semibold">{it.text}</span>
-          <span className="flex gap-2">
-            {it.undo && (
-              <button
-                type="button"
-                className="lnk px-2"
-                onClick={async () => {
-                  dismiss(it.id);
-                  await it.undo?.();
-                }}
-              >
-                {t('Batalkan')}
-              </button>
-            )}
-            <button type="button" className="lnk px-2" onClick={() => dismiss(it.id)}>
-              {t('Tutup')}
+          <span className="min-w-0 flex-1 py-1.5 font-semibold">{it.text}</span>
+          {it.undo && (
+            <button
+              type="button"
+              className="lnk flex-none px-2"
+              onClick={async () => {
+                dismiss(it.id);
+                await it.undo?.();
+              }}
+            >
+              {t('Batalkan')}
             </button>
-          </span>
+          )}
+          <button
+            type="button"
+            className="grid size-9 flex-none place-items-center rounded hover:bg-tint"
+            aria-label={t('Tutup')}
+            onClick={() => dismiss(it.id)}
+          >
+            <CloseIcon />
+          </button>
         </div>
       ))}
     </div>

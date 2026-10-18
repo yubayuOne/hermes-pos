@@ -88,7 +88,7 @@ function Checkout() {
         </div>
       </header>
       <main id="content" className="mx-auto max-w-[1180px] px-4 pb-16 pt-6 md:px-10 md:pt-8">
-        <ToastHost className="mb-5" />
+        <ToastHost />
         {search.tab === 'history' ? (
           <History payments={payments} selected={search.invoice} onSelect={(id) => navigate({ search: { tab: 'history', invoice: id } })} />
         ) : (

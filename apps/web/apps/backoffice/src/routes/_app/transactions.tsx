@@ -22,7 +22,7 @@ import {
   useI18n,
   PencilIcon,
 } from '@hermes-pos/ui';
-import { OutletFilter } from '../../components/OutletFilter';
+import { FilterBar, OutletField, SearchBox } from '../../components/Filters';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination, pageOf } from '../../components/Pagination';
@@ -94,16 +94,12 @@ export const Route = createFileRoute('/_app/transactions')({
 /** Bills of the period with owner edits (migration 066), and every product of an outlet with what it sold. */
 function Transactions() {
   const { t } = useI18n();
-  const search = Route.useSearch();
   const data = Route.useLoaderData();
   const navigate = useNavigate({ from: '/transactions' });
   const set = (patch: Partial<Search>) => navigate({ search: (s: Search) => ({ ...s, ...patch }), replace: true });
   return (
-    <Page
-      title={t('Transaksi|menu')}
-      tools={<OutletFilter all={data.tab === 'bills'} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />}
-    >
-      <nav aria-label={t('Bagian transaksi')} className="flex flex-wrap gap-2">
+    <Page title={t('Transaksi|menu')}>
+      <nav aria-label={t('Bagian transaksi')} className="mb-5 flex flex-wrap gap-2">
         <Chip aria-current={data.tab === 'bills' ? 'page' : undefined} onClick={() => set({ tab: undefined, page: undefined })}>
           {t('Bill')}
         </Chip>
@@ -111,12 +107,36 @@ function Transactions() {
           {t('Produk terjual')}
         </Chip>
       </nav>
-      <div className="mt-5">
-        <PeriodFilter value={search} range={data.range} today={data.today} onChange={(patch) => set({ ...patch, page: undefined })} />
-      </div>
       {data.tab === 'bills' ? <BillsTab bills={data.bills} set={set} /> : <ProductsTab products={data.products} sold={data.sold} set={set} />}
     </Page>
   );
+}
+
+/** Outlet and period, the first two fields of both tabs' Filter dialog. */
+function CommonFilters({ set, all }: { set: (p: Partial<Search>) => void; all: boolean }) {
+  const search = Route.useSearch();
+  const data = Route.useLoaderData();
+  return (
+    <>
+      <OutletField all={all} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />
+      <PeriodFilter value={search} range={data.range} today={data.today} onChange={(patch) => set({ ...patch, page: undefined })} />
+    </>
+  );
+}
+
+/** Filters that differ from the default, and the outlet and period part of the summary line. */
+function useCommon(all: boolean) {
+  const { t } = useI18n();
+  const app = useApp();
+  const search = Route.useSearch();
+  const data = Route.useLoaderData();
+  const outletName = app.outlets.find((o) => o.id === data.outletId)?.name ?? t('Semua outlet');
+  const outletSet = all ? !!search.outlet : !!search.outlet && search.outlet !== app.outlets[0]?.id;
+  return {
+    active: (outletSet ? 1 : 0) + (search.period ? 1 : 0),
+    summary: [outletName, usePeriodLabel(search, data.range)],
+    reset: { outlet: undefined, period: undefined, from: undefined, to: undefined, page: undefined } satisfies Partial<Search>,
+  };
 }
 
 function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set: (p: Partial<Search>) => void }) {
@@ -127,12 +147,28 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
   const [open, setOpen] = useState<Bill | null>(null);
   const tz = app.business.timezone;
   const pages = Math.max(1, Math.ceil(bills.total / BILL_PAGE));
+  const common = useCommon(true);
+  const status = search.status ?? 'completed';
   return (
     <>
-      <div className="mt-5 flex flex-wrap items-end gap-4">
-        <Field label={t('Status bill')} className="w-full sm:w-[200px]">
+      <FilterBar
+        search={
+          <SearchBox
+            label={t('Cari bill')}
+            placeholder={t('Cari nomor, nama, atau meja')}
+            value={q}
+            onChange={setQ}
+            onSubmit={() => (q.trim() || undefined) !== search.q && set({ q: q.trim() || undefined, page: undefined })}
+          />
+        }
+        active={common.active + (search.status ? 1 : 0)}
+        summary={[...common.summary, t(STATUSES.find((s) => s.value === status)?.label ?? ''), t('{n} bill', { n: bills.total })].join(' · ')}
+        onReset={() => set({ ...common.reset, status: undefined })}
+      >
+        <CommonFilters set={set} all />
+        <Field label={t('Status bill')}>
           <Select
-            value={search.status ?? 'completed'}
+            value={status}
             onChange={(e) => set({ status: e.target.value === 'completed' ? undefined : (e.target.value as Search['status']), page: undefined })}
           >
             {STATUSES.map((s) => (
@@ -142,28 +178,14 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
             ))}
           </Select>
         </Field>
-        <form
-          className="min-w-[220px] flex-1 md:max-w-[340px]"
-          onSubmit={(e) => {
-            e.preventDefault();
-            set({ q: q.trim() || undefined, page: undefined });
-          }}
-        >
-          <Field label={t('Cari bill')}>
-            <Input type="search" maxLength={40} placeholder={t('Nomor, nama, atau meja')} value={q} onChange={(e) => setQ(e.target.value)} />
-          </Field>
-        </form>
-      </div>
+      </FilterBar>
       {bills.rows.length === 0 ? (
-        <Empty className="mt-6" title={t('Tidak ada bill di periode ini.')}>
+        <Empty className="mt-6" title={search.q ? t('Tidak ada bill yang cocok.') : t('Tidak ada bill di periode ini.')}>
           {t('Bill yang dibayar di aplikasi kasir muncul di sini.')}
         </Empty>
       ) : (
         <>
-          <p className="mt-6 font-mono text-[14px] text-mute" role="status">
-            {t('{n} bill', { n: bills.total })}
-          </p>
-          <div className="tbl-wrap mt-3">
+          <div className="tbl-wrap mt-5">
             <table className="tbl tbl-card">
               <thead>
                 <tr>
@@ -654,70 +676,90 @@ function ProductsTab({
 }) {
   const { t } = useI18n();
   const search = Route.useSearch();
-  const range = Route.useLoaderData().range;
-  const periodLabel = usePeriodLabel(search, range);
+  const common = useCommon(false);
+  // Searched in the browser: the tab already holds every product of the outlet.
+  const [q, setQ] = useState('');
   const sort: Sort = search.sort ?? 'qty';
   const of = (id: string) => sold?.[id] ?? { qty: 0, sales: 0 };
-  const sorted = [...products].sort((a, z) =>
-    sort === 'name' ? a.name.localeCompare(z.name) : of(z.id)[sort] - of(a.id)[sort] || a.name.localeCompare(z.name),
-  );
+  const needle = q.trim().toLowerCase();
+  const sorted = products
+    .filter((p) => !needle || p.name.toLowerCase().includes(needle))
+    .sort((a, z) => (sort === 'name' ? a.name.localeCompare(z.name) : of(z.id)[sort] - of(a.id)[sort] || a.name.localeCompare(z.name)));
   const view = pageOf(sorted, search.page ?? 1);
-  if (products.length === 0)
-    return (
-      <Empty className="mt-6" title={t('Belum ada produk.')}>
-        {t('Produk dibuat di menu Produk.')}
-      </Empty>
-    );
   return (
     <>
-      <Field label={t('Urutkan')} className="mt-5 w-full sm:w-[240px]">
-        <Select value={sort} onChange={(e) => set({ sort: e.target.value === 'qty' ? undefined : (e.target.value as Search['sort']), page: undefined })}>
-          {SORTS.map((s) => (
-            <option key={s.value} value={s.value}>
-              {t(s.label)}
-            </option>
-          ))}
-        </Select>
-      </Field>
-      <p className="mt-4 text-[14px] text-mute">
-        {t('{period}, dari bill selesai. Penjualan setelah diskon item, refund belum dikurangi.', { period: periodLabel })}
-      </p>
+      <FilterBar
+        search={
+          <SearchBox
+            label={t('Cari produk')}
+            placeholder={t('Cari nama produk')}
+            value={q}
+            onChange={(v) => {
+              setQ(v);
+              if (search.page) set({ page: undefined });
+            }}
+          />
+        }
+        active={common.active + (search.sort ? 1 : 0)}
+        summary={[...common.summary, t(SORTS.find((s) => s.value === sort)?.label ?? ''), t('{n} produk', { n: sorted.length })].join(' · ')}
+        onReset={() => set({ ...common.reset, sort: undefined })}
+      >
+        <CommonFilters set={set} all={false} />
+        <Field label={t('Urutkan')}>
+          <Select value={sort} onChange={(e) => set({ sort: e.target.value === 'qty' ? undefined : (e.target.value as Search['sort']), page: undefined })}>
+            {SORTS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {t(s.label)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <p className="text-[14px] text-mute">{t('Dari bill selesai. Penjualan setelah diskon item, refund belum dikurangi.')}</p>
+      </FilterBar>
       {sold === null && (
         <p role="status" className="mt-3 text-[14px] font-semibold text-error">
           {t('Jumlah terjual belum bisa dimuat. Muat ulang halaman sebentar lagi.')}
         </p>
       )}
-      <div className="tbl-wrap mt-4">
-        <table className="tbl tbl-card">
-          <thead>
-            <tr>
-              <th scope="col">{t('Produk')}</th>
-              <th scope="col" className="num">
-                {t('Terjual')}
-              </th>
-              <th scope="col" className="num">
-                {t('Penjualan')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {view.rows.map((p) => (
-              <tr key={p.id}>
-                <td data-l={t('Produk')}>
-                  <span className="font-semibold">{p.name}</span>
-                  {!p.isActive && <span className="block text-[14px] text-mute">{t('nonaktif')}</span>}
-                </td>
-                <td data-l={t('Terjual')} className="num">
-                  {amount(of(p.id).qty)}
-                </td>
-                <td data-l={t('Penjualan')} className="num">
-                  {money(of(p.id).sales)}
-                </td>
+      {products.length === 0 ? (
+        <Empty className="mt-6" title={t('Belum ada produk.')}>
+          {t('Produk dibuat di menu Produk.')}
+        </Empty>
+      ) : sorted.length === 0 ? (
+        <p className="slipc mt-5 text-mute">{t('Tidak ada produk yang cocok. Ubah pencarian atau kategori.')}</p>
+      ) : (
+        <div className="tbl-wrap mt-5">
+          <table className="tbl tbl-card">
+            <thead>
+              <tr>
+                <th scope="col">{t('Produk')}</th>
+                <th scope="col" className="num">
+                  {t('Terjual')}
+                </th>
+                <th scope="col" className="num">
+                  {t('Penjualan')}
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {view.rows.map((p) => (
+                <tr key={p.id}>
+                  <td data-l={t('Produk')}>
+                    <span className="font-semibold">{p.name}</span>
+                    {!p.isActive && <span className="block text-[14px] text-mute">{t('nonaktif')}</span>}
+                  </td>
+                  <td data-l={t('Terjual')} className="num">
+                    {amount(of(p.id).qty)}
+                  </td>
+                  <td data-l={t('Penjualan')} className="num">
+                    {money(of(p.id).sales)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       <Pagination page={view.page} pages={view.pages} onPage={(p) => set({ page: p > 1 ? p : undefined })} />
     </>
   );

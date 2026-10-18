@@ -318,9 +318,9 @@ Saat proses berjalan, labelnya berubah, misalnya "Mengirim...", "Menyusun lapora
 
 ### Toast
 
-- Letaknya tepat di bawah header konten, dengan `role="status"`.
-- Sukses memakai pine-soft, galat memakai fire-soft. Garis 1.5px ink, radius 4px.
-- Selalu ada tombol **Tutup**. Aksi yang bisa dibalik juga punya tombol **Batalkan**, yang mengembalikan data ke kondisi sebelumnya.
+- Melayang di bawah layar (18 Okt 2026): di ponsel di tengah dengan jarak 16px dari tepi, mulai `sm` di pojok kanan bawah. Tidak menggeser isi halaman; `role="status"`, di atas dialog (z 80).
+- Lebar maksimal 360px, teks 14px tebal, bayangan keras 3px. Sukses memakai pine-soft, galat memakai fire-soft. Garis 1.5px ink, radius 4px. Hilang sendiri setelah 6 detik (9 detik kalau ada Batalkan), paling banyak 3 sekaligus.
+- Selalu ada tombol tutup (ikon silang 36px, berlabel "Tutup"). Aksi yang bisa dibalik juga punya tautan **Batalkan**, yang mengembalikan data ke kondisi sebelumnya.
 
 ### Banner langganan
 
@@ -615,7 +615,7 @@ Semua isi Ringkasan datang dari satu panggilan `owner_dashboard` (migrasi 062).
 
 - Filter outlet di header. Di bawah header, paling atas: filter periode (sama dengan Ringkasan) dengan keterangan "Kolom Terjual: {periode}, dari bill selesai." Kalau jumlah terjual gagal dimuat, muncul kalimat galat dan kolomnya berisi "-", tetapi daftar produk tetap tampil.
 - Lalu pencarian, pemakaian "6 / 100 produk aktif", dan tombol **Tambah produk**.
-- Kategori dipilih lewat dropdown (Semua kategori dan kategori yang ada), karena satu outlet bisa punya banyak kategori. Cari produk, Kategori, dan **Tambah produk** ada di satu baris; jumlah produk aktif di bawahnya. Kategori baru dibuat dari dialog produk ("Kategori belum ada? Buat baru").
+- Kategori dipilih lewat dropdown (Semua kategori dan kategori yang ada), karena satu outlet bisa punya banyak kategori. Toolbar satu baris (`FilterBar`): kotak cari, tombol **Filter**, dan **Tambah produk**. Dialog Filter berisi Outlet, Periode (untuk kolom Terjual), dan Kategori; tiap perubahan langsung berlaku, ada **Atur ulang** dan **Selesai**. Tombol Filter memberi angka jumlah filter yang tidak bawaan. Di bawah toolbar satu baris teks abu: outlet · Terjual {periode} · kategori · {n} / {maks} produk aktif. Kategori baru dibuat dari dialog produk ("Kategori belum ada? Buat baru").
 - Tabel berisi Produk (foto kecil, nama, dan kategori), Harga, HPP, Stok ("tanpa stok" atau angka), Terjual (jumlah pada periode terpilih, dari `owner_product_sales`, migrasi 061), dan Aktif (sakelar).
   - **Foto kecil** 64 × 48 (rasio 4:3) di kiri nama, menampilkan versi yang tampil di kasir. Mengetuknya langsung membuka pemilih berkas untuk mengganti foto, jadi produk lama bisa diberi foto tanpa membuka dialog. Produk tanpa foto menampilkan kotak putus-putus "+ foto".
   - Setelah foto diganti, muncul toast "Foto Kopi susu diperbarui. Kasir melihatnya setelah katalog dimuat ulang." dengan **Batalkan**.
@@ -719,12 +719,12 @@ Tiga tab chip di bawah header: **Profil**, **Bisnis dan struk**, **Langganan**.
 
 ## D13. Transaksi
 
-**Yang sudah dibangun** (`/transactions`, migrasi 066 dan 067). Menu di sidebar tepat di bawah Ringkasan. Dua chip tab: **Bill** dan **Produk terjual** (`?tab=products`), lalu dropdown periode yang sama dengan Ringkasan.
+**Yang sudah dibangun** (`/transactions`, migrasi 066 dan 067). Menu di sidebar tepat di bawah Ringkasan. Dua chip tab: **Bill** dan **Produk terjual** (`?tab=products`), lalu toolbar satu baris (`FilterBar`, sama dengan Produk): kotak cari dan tombol **Filter**, dengan ringkasan filter aktif di bawahnya.
 
-- **Bill:** filter outlet (boleh semua), dropdown Status bill (Selesai bawaan, Dibatalkan, Semua), dan kotak Cari bill (nomor, nama, atau meja; dikirim saat Enter). Tabel Bill (nomor sebagai tombol, nama, meja, outlet bila semua outlet, tag `dibatalkan`, `refund`, atau `refund sebagian`, dan `diubah nx`), Waktu, Kasir, Bayar, Total. 50 per halaman dari server.
+- **Bill:** cari nomor, nama, atau meja (dikirim saat Enter atau saat kotak ditinggalkan). Dialog Filter: Outlet (boleh semua), Periode, Status bill (Selesai bawaan, Dibatalkan, Semua). Ringkasan: outlet · periode · status · {n} bill. Tabel Bill (nomor sebagai tombol, nama, meja, outlet bila semua outlet, tag `dibatalkan`, `refund`, atau `refund sebagian`, dan `diubah nx`), Waktu, Kasir, Bayar, Total. 50 per halaman dari server.
 - **Dialog Bill {nomor}** (560px): item dengan harga satuan, catatan, diskon, dan "Direfund n"; Diskon, Total, Bayar, Refund dan Bersih; daftar refund; **Riwayat perubahan** (waktu, jenis, alasan, sebelum dan sesudah). Dua kontrol saja: menu **Ubah bill ▾** (Nama, meja, catatan; Item dan jumlah; Ganti ke QRIS/tunai) dan **Batalkan bill** (`btn-ink`) di kanan. Bill yang sudah direfund hanya bisa diubah nama, meja, dan catatannya; bill batal tidak bisa diubah; langganan berakhir mengunci semua tombol.
 - Setiap ubahan membuka dialognya sendiri dengan tombol Kembali. Ubah item dan ganti metode bayar wajib **Alasan perubahan**. Bill dari hari sebelumnya menampilkan catatan bergaris fire: laporan hari itu dan selisih kas shift-nya ikut berubah. **Ubah item:** jumlah per baris (0 = hapus) dan Tambah produk (harga katalog hari ini). Total, diskon, stok, dan kas shift dihitung ulang server; toast menyebut total baru. **Ganti metode bayar** menjelaskan uang yang masuk atau keluar dari kas laci. **Batalkan bill** wajib alasan, mengembalikan stok, dan tidak bisa diurungkan. Untuk shift yang sudah ditutup, kas seharusnya dan selisih dihitung ulang; hitungan uang kasir tetap.
-- **Produk terjual:** satu outlet (produk milik outlet). Semua produk, termasuk yang 0 terjual dan yang nonaktif, dengan Terjual dan Penjualan (setelah diskon item, refund belum dikurangi). Dropdown Urutkan: Terlaris (bawaan), Penjualan terbesar, Nama A-Z. 20 per halaman.
+- **Produk terjual:** satu outlet (produk milik outlet). Semua produk, termasuk yang 0 terjual dan yang nonaktif, dengan Terjual dan Penjualan (setelah diskon item, refund belum dikurangi). Cari nama produk langsung saat mengetik. Dialog Filter: Outlet, Periode, Urutkan (Terlaris bawaan, Penjualan terbesar, Nama A-Z). Ringkasan: outlet · periode · urutan · {n} produk. 20 per halaman.
 
 ---
 
