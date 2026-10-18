@@ -106,7 +106,9 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
   const sub = app.subscription;
   const tz = app.business.timezone;
   const expired = sub.state === 'expired';
-  const [plan, setPlan] = useState<PaidCode>(pending?.planCode ?? (sub.plan === 'trial' ? 'monthly' : (sub.plan as PaidCode)));
+  const [plan, setPlan] = useState<PaidCode>(
+    (pending?.planCode as PaidCode | undefined) ?? (sub.plan === 'trial' || sub.plan === 'unlimited' ? 'monthly' : sub.plan),
+  );
   const [step, setStep] = useState(pending ? 3 : 0);
   const [submitted, setSubmitted] = useState<Payment | null>(pending);
   const p = planByCode(plan);

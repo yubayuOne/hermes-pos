@@ -7,7 +7,8 @@ export const BRAND_UPPER = 'HERMES POS';
 export const BRAND_MARK = '/brand/hermes-pos-mark.webp';
 
 /** Wordmark: the emblem plus the name in Bricolage 800 (DESIGN.md A6). The name stays text, so it reads and translates. */
-export function Wordmark({ size = 26, className }: { size?: number; className?: string }) {
+/** `labelClassName` styles the name only, for example to keep just the mark on a very narrow header. */
+export function Wordmark({ size = 26, className, labelClassName }: { size?: number; className?: string; labelClassName?: string }) {
   const mark = Math.round(size * 1.4);
   return (
     <span
@@ -22,7 +23,7 @@ export function Wordmark({ size = 26, className }: { size?: number; className?: 
         className="shrink-0 rounded-[6px] border-[1.5px] border-ink"
         style={{ width: mark, height: mark }}
       />
-      {BRAND}
+      <span className={labelClassName}>{BRAND}</span>
     </span>
   );
 }

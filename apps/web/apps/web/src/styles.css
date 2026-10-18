@@ -3,6 +3,12 @@
 @source '../src';
 @source '../../../packages/ui/src';
 
+/* Nav links glide to their section and stop below the sticky header (--hdr, set by Header.tsx). theme.css turns the
+   glide off for reduced motion. */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--hdr, 120px);
+}
 /* Landing body text is 18px (DESIGN.md A3). */
 body {
   font-size: 18px;

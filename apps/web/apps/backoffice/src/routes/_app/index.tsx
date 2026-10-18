@@ -100,7 +100,7 @@ function Summary() {
       <PeriodFilter value={search} range={data.range} today={data.today} onChange={set}>
         <p className="w-full pt-1 text-[14px] text-mute sm:ml-2 sm:w-auto sm:pt-0">{t('Grafik selalu 7 hari terakhir dan jam hari ini.')}</p>
         {/* The full report (A4, print or PDF) for the same period and outlet as this page. */}
-        <Link to="/reports" search={search} className={`{btn('plain')} w-full sm:ml-auto sm:w-auto`}>
+        <Link to="/reports" search={search} className={`${btn('plain')} w-full sm:ml-auto sm:w-auto`}>
           {t('Laporan')}
         </Link>
       </PeriodFilter>

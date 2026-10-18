@@ -151,6 +151,8 @@ export function planLabel(s: Pick<SubscriptionStatus, 'planCode' | 'planName'> |
       return t('6 bulan|paket');
     case 'annual':
       return t('Tahunan');
+    case 'unlimited':
+      return t('Unlimited');
     default:
       return s?.planName ?? '-';
   }

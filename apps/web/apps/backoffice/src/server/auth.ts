@@ -21,13 +21,14 @@ export const getSession = createServerFn({ method: 'GET' }).handler(async (): Pr
 export const signIn = createServerFn({ method: 'POST' })
   .validator(parser(loginSchema))
   .handler(async ({ data }): Promise<ActionResult> => {
-    const { supabaseServer, serviceClient, REMEMBER_COOKIE } = await import('./supabase.server');
+    const { supabaseServer, REMEMBER_COOKIE } = await import('./supabase.server');
     const { setCookie } = await import('@tanstack/react-start/server');
     let email = data.identifier.toLowerCase();
     if (!email.includes('@')) {
-      const admin = serviceClient();
-      if (!admin) return { ok: false, field: 'identifier', error: 'Masuk dengan username belum aktif di server ini. Masuk dengan email.' };
-      const { data: resolved } = await admin.rpc('resolve_login_email', { p_identifier: email });
+      // Same lookup as the POS (migration 060): the email comes back only with the right password, and ten wrong ones
+      // lock the username for 15 minutes. No service-role key needed.
+      const { data: resolved, error: lookup } = await supabaseServer().rpc('pos_login_email', { p_username: email, p_password: data.password });
+      if (lookup) return { ok: false, error: lookup.hint === 'login_locked' ? lookup.message : describeError(lookup) };
       // Same message as a wrong password, so the form cannot be used to find out which usernames exist.
       if (!resolved) return { ok: false, error: describeError('invalid login credentials') };
       email = String(resolved);

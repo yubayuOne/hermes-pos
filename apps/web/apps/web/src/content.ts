@@ -2,9 +2,9 @@
 // Placeholders in square brackets must be replaced before release (DESIGN.md H1).
 
 export const SITE = {
-  url: import.meta.env?.VITE_LANDING_URL ?? 'http://localhost:3000',
-  /** Defaults to localhost for testing. Set VITE_BACKOFFICE_URL for production (PRD open question 18). */
-  backoffice: import.meta.env?.VITE_BACKOFFICE_URL ?? 'http://localhost:3001',
+  // The env values win; otherwise localhost while developing and the real domains in a build.
+  url: import.meta.env?.VITE_LANDING_URL ?? (import.meta.env?.DEV ? 'http://localhost:3000' : 'https://hermes-pos.com'),
+  backoffice: import.meta.env?.VITE_BACKOFFICE_URL ?? (import.meta.env?.DEV ? 'http://localhost:3001' : 'https://backoffice.hermes-pos.com'),
   whatsapp: '0851-5858-3200',
   email: 'yubayu2004@gmail.com',
   bankAccount: 'BCA 0865432122 a.n. [ATAS NAMA]',

@@ -1,4 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { getCookie, getCookies, setCookie } from '@tanstack/react-start/server';
 import { describeError } from '../lib/errors';
@@ -9,8 +8,10 @@ function env(name: string): string {
   return v;
 }
 
+/** Base of every link in auth emails. Without APP_URL a production build still points at the real domain, never localhost. */
 export function appUrl(): string {
-  return (process.env.APP_URL || 'http://localhost:3001').replace(/\/$/, '');
+  const fallback = process.env.NODE_ENV === 'production' ? 'https://backoffice.hermes-pos.com' : 'http://localhost:3001';
+  return (process.env.APP_URL || fallback).replace(/\/$/, '');
 }
 
 /** "Ingat saya" off: auth cookies become session cookies that end when the browser closes. */
@@ -37,16 +38,6 @@ export function supabaseServer() {
       },
     },
   });
-}
-
-/**
- * Service-role client, used for exactly one thing: turning a username into an email at sign-in
- * (resolve_login_email is not callable by users). Never returned to the browser.
- */
-export function serviceClient() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) return null;
-  return createClient(env('SUPABASE_URL'), key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
 export async function requireClient() {

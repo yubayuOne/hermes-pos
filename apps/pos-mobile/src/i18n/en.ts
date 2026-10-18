@@ -25,6 +25,8 @@ export const EN: Record<string, string | [string, string]> = {
   Bulanan: 'Monthly',
   '6 bulan|paket': '6 months',
   Tahunan: 'Annual',
+  Unlimited: 'Unlimited',
+  selamanya: 'forever',
   Bar: 'Bar',
   Batal: 'Cancel',
   Batalkan: 'Undo',

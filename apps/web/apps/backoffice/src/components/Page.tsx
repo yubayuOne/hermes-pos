@@ -13,17 +13,16 @@ export function Page({ title, tools, slimBanner, children }: { title: string; to
   const { lang } = useI18n();
   return (
     <main id="content" className="px-4 pb-[72px] pt-[22px] md:px-5 md:pt-6 lg:px-10 lg:pt-[30px] print:!p-0">
-      <header className="relative flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border-b-[1.5px] border-ink pb-5 print:hidden">
-        <div className="min-w-0">
+      {/* Phone: title and bell share the first row, the page's filter takes the full second row. */}
+      <header className="relative flex flex-wrap items-end gap-x-6 gap-y-4 border-b-[1.5px] border-ink pb-5 print:hidden">
+        <div className="min-w-0 flex-1">
           <p className="hidden font-mono text-[14px] text-mute md:block">{dateLong(new Date(), lang, app.business.timezone)}</p>
-          <h1 className="page-t mt-1">{title}</h1>
+          <h1 className="page-t mt-1 break-words">{title}</h1>
         </div>
-        <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
-          <div className="ml-auto md:order-last md:ml-0">
-            <Bell />
-          </div>
-          {tools}
+        <div className="flex-none md:order-last">
+          <Bell />
         </div>
+        {tools && <div className="w-full min-w-0 md:w-auto">{tools}</div>}
       </header>
       <div className="mt-5 grid gap-3 empty:hidden print:hidden">
         <SubscriptionBanner slim={slimBanner} />

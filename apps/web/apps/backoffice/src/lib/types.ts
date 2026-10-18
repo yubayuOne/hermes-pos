@@ -3,7 +3,8 @@ export type ActionResult<T = undefined> = { ok: true; data?: T; message?: string
 export type Session = { email: string; userId: string; businessId: string | null; username: string | null };
 
 export type SubState = 'trial' | 'active' | 'expired';
-export type PlanCode = 'trial' | 'monthly' | 'semiannual' | 'annual';
+/** 'unlimited' is granted by the admin only (migration 065): never ends, not for sale. */
+export type PlanCode = 'trial' | 'monthly' | 'semiannual' | 'annual' | 'unlimited';
 
 /** Subscription as shown in the sidebar card, banners, and Settings (G1). */
 export type Subscription = {

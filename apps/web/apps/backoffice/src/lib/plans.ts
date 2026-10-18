@@ -11,7 +11,7 @@ export const PAID_PLANS = [
 export type PaidPlan = (typeof PAID_PLANS)[number];
 export type PaidCode = PaidPlan['code'];
 
-export const PLAN_NAME: Record<PlanCode, string> = { trial: 'Trial', monthly: 'Bulanan', semiannual: '6 bulan', annual: 'Tahunan' };
+export const PLAN_NAME: Record<PlanCode, string> = { trial: 'Trial', monthly: 'Bulanan', semiannual: '6 bulan', annual: 'Tahunan', unlimited: 'Unlimited' };
 
 export const planByCode = (c: string): PaidPlan => PAID_PLANS.find((p) => p.code === c) ?? PAID_PLANS[0];
 export const perMonth = (p: PaidPlan) => Math.round(p.price / p.months);
@@ -29,8 +29,8 @@ export function addMonths(day: string, months: number) {
 // Payment and support details (owner, 18 Oct 2026). Square brackets: still to be given by the owner.
 export const BANK = { bank: 'BCA', account: '0865432122', holder: '[ATAS NAMA]' };
 export const SUPPORT = { whatsapp: '0851-5858-3200', email: 'yubayu2004@gmail.com', hours: 'pukul 07.00–24.00 WIB setiap hari' };
-/** Landing page (hermes-pos.com). Defaults to localhost for testing; set VITE_LANDING_URL for production (PRD open question 18). */
-export const LANDING_URL = import.meta.env?.VITE_LANDING_URL ?? 'http://localhost:3000';
+/** Landing page. VITE_LANDING_URL wins; otherwise localhost while developing and the real domain in a build. */
+export const LANDING_URL = import.meta.env?.VITE_LANDING_URL ?? (import.meta.env?.DEV ? 'http://localhost:3000' : 'https://hermes-pos.com');
 /** Terms of service and privacy policy live on the landing page. */
 export const TERMS_URL = `${LANDING_URL}/terms`;
 export const PRIVACY_URL = `${LANDING_URL}/privacy`;

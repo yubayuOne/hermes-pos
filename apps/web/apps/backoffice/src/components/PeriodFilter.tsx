@@ -27,10 +27,12 @@ export function PeriodFilter({
   const [custom, setCustom] = useState(value.period === 'custom');
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('Periode')}>
+      {/* Phone: the four chips as an even 2 × 2 grid; from sm up one wrapping row. */}
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center" role="group" aria-label={t('Periode')}>
         {PRESETS.map(([v, l]) => (
           <Chip
             key={v}
+            className="justify-center"
             pressed={(value.period ?? 'today') === v && !custom}
             onClick={() => {
               setCustom(false);
@@ -40,10 +42,11 @@ export function PeriodFilter({
             {t(l)}
           </Chip>
         ))}
-        <Chip pressed={custom} onClick={() => setCustom(true)} aria-expanded={custom}>
+        <Chip className="justify-center" pressed={custom} onClick={() => setCustom(true)} aria-expanded={custom}>
           {t('Pilih tanggal')}
         </Chip>
-        {children}
+        {/* Below sm the extras take a full row of their own; from sm they flow on with the chips. */}
+        {children && <div className="col-span-2 flex flex-wrap items-center gap-2 sm:contents">{children}</div>}
       </div>
       {custom && (
         <CustomRange today={today} initial={value.period === 'custom' ? range : undefined} onApply={(from, to) => onChange({ period: 'custom', from, to })} />

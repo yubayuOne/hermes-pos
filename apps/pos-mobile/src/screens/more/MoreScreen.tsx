@@ -64,6 +64,7 @@ export function MoreScreen({
       ? Math.max(1, Math.round((new Date(status.expiresAt).getTime() - new Date(status.startedAt).getTime()) / 86400000))
       : 30;
   const left = status?.daysLeft ?? 0;
+  const forever = status?.planCode === 'unlimited';
   const pointer = () =>
     void notify.dialog({
       title: t('Menu dikelola di backoffice'),
@@ -103,13 +104,18 @@ export function MoreScreen({
           <View className="mt-1 flex-row items-end justify-between gap-2">
             <Display size={26}>{planLabel(status)}</Display>
             <Mono className="font-mono-600 text-[15px]" style={{ color: status.state === 'expired' ? colors.error : colors.ink }}>
-              {status.state === 'expired' ? t('berakhir') : t('{n} hari lagi', { n: left })}
+              {forever ? t('selamanya') : status.state === 'expired' ? t('berakhir') : t('{n} hari lagi', { n: left })}
             </Mono>
           </View>
-          <View className="mt-2 h-[8px] border border-ink bg-tint2">
-            <View className="h-full bg-pine" style={{ width: `${Math.min(100, (left / totalDays) * 100)}%` }} />
-          </View>
-          <Text className="mt-2 text-[14px] text-mute">{t('Berlaku sampai {date}', { date: status.expiresAt ? fmtDate(status.expiresAt) : '-' })}</Text>
+          {/* Unlimited (migration 065) has no end date, so no countdown bar or date. */}
+          {forever ? null : (
+            <>
+              <View className="mt-2 h-[8px] border border-ink bg-tint2">
+                <View className="h-full bg-pine" style={{ width: `${Math.min(100, (left / totalDays) * 100)}%` }} />
+              </View>
+              <Text className="mt-2 text-[14px] text-mute">{t('Berlaku sampai {date}', { date: status.expiresAt ? fmtDate(status.expiresAt) : '-' })}</Text>
+            </>
+          )}
         </>
       ) : (
         <Text className="mt-1 text-[14px] text-mute">{t('Status langganan belum dimuat.')}</Text>

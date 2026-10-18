@@ -9,7 +9,7 @@ const num = (v: unknown, d = 0) => (v === null || v === undefined || v === '' ||
 const str = (v: unknown, d = '') => (typeof v === 'string' ? v : v === null || v === undefined ? d : String(v));
 const pick = (r: Row, ...keys: string[]) => keys.map((k) => r[k]).find((v) => v !== undefined && v !== null);
 
-const PLAN_CODES: PlanCode[] = ['trial', 'monthly', 'semiannual', 'annual'];
+const PLAN_CODES: PlanCode[] = ['trial', 'monthly', 'semiannual', 'annual', 'unlimited'];
 function planCode(v: unknown): PlanCode {
   const s = str(v).toLowerCase();
   if ((PLAN_CODES as string[]).includes(s)) return s as PlanCode;
@@ -18,7 +18,7 @@ function planCode(v: unknown): PlanCode {
   if (s.includes('trial')) return 'trial';
   return 'monthly';
 }
-const PERIOD_DAYS: Record<PlanCode, number> = { trial: 3, monthly: 30, semiannual: 182, annual: 365 };
+const PERIOD_DAYS: Record<PlanCode, number> = { trial: 3, monthly: 30, semiannual: 182, annual: 365, unlimited: 0 };
 
 export function toSubscription(raw: unknown): Subscription {
   const r = (raw ?? {}) as Row;

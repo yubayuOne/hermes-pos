@@ -533,14 +533,21 @@ function SubscriptionTab() {
               {expired ? t('Berakhir') : sub.state === 'trial' ? 'Trial' : t('Aktif')}
             </Tag>
           </div>
-          <p className="mt-4 flex flex-wrap items-baseline gap-x-3">
-            <span className="font-display text-[clamp(96px,11vw,140px)] font-extrabold leading-[0.85] tracking-[-0.05em]">{sub.daysLeft}</span>
-            <span className="text-[26px] font-medium">{expired ? t('hari tersisa') : t('hari lagi')}</span>
-          </p>
-          <dl className="mt-6 grid grid-cols-2 gap-6 border-t-[1.5px] border-ink pt-5 sm:max-w-[420px]">
-            <Stat label={t('Berlaku sampai')} value={date} />
-            <Stat label={t('Sisa waktu')} value={expired ? t('Habis {n} hari lalu', { n: daysAgo }) : t('{n} hari', { n: sub.daysLeft })} />
-          </dl>
+          {sub.plan === 'unlimited' ? (
+            // Granted by the admin (migration 065): no end date to count down to.
+            <p className="mt-4 font-display text-[clamp(56px,7vw,96px)] font-extrabold leading-[0.9] tracking-[-0.04em]">{t('Selamanya')}</p>
+          ) : (
+            <>
+              <p className="mt-4 flex flex-wrap items-baseline gap-x-3">
+                <span className="font-display text-[clamp(96px,11vw,140px)] font-extrabold leading-[0.85] tracking-[-0.05em]">{sub.daysLeft}</span>
+                <span className="text-[26px] font-medium">{expired ? t('hari tersisa') : t('hari lagi')}</span>
+              </p>
+              <dl className="mt-6 grid grid-cols-2 gap-6 border-t-[1.5px] border-ink pt-5 sm:max-w-[420px]">
+                <Stat label={t('Berlaku sampai')} value={date} />
+                <Stat label={t('Sisa waktu')} value={expired ? t('Habis {n} hari lalu', { n: daysAgo }) : t('{n} hari', { n: sub.daysLeft })} />
+              </dl>
+            </>
+          )}
           {expired && (
             <p className="mt-5">
               {t(

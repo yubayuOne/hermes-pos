@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useRouterState } from '@tanstack/react-router';
 import { Dialog as D } from 'radix-ui';
 import { CloseIcon, MenuIcon, Tag, Wordmark, cn, useI18n } from '@hermes-pos/ui';
@@ -21,7 +21,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
-  useEffect(() => setOpen(false), [path]);
+  const content = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    setOpen(false);
+    // A new menu starts at its top: on tablet and desktop the content column scrolls, not the window.
+    content.current?.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0 });
+  }, [path]);
   const sub = app.subscription;
   return (
     // minmax(0,1fr) row: an auto row grows to the page's height and scrolls the whole window, sidebar included.
@@ -45,11 +51,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             </D.Content>
           </D.Portal>
         </D.Root>
-        <Link to="/" preload="intent" preloadDelay={0} aria-label={t('Ringkasan')}>
-          <Wordmark size={26} />
+        <Link to="/" preload="intent" preloadDelay={0} aria-label={t('Ringkasan')} className="flex-none">
+          <Wordmark size={20} labelClassName="max-[359px]:sr-only" />
         </Link>
-        <Tag className="ml-auto">
-          {t(PLAN_NAME[sub.plan])} · {sub.state === 'expired' ? t('berakhir') : t('{n} hari lagi', { n: sub.daysLeft })}
+        {/* min-w-0 + truncate: on a narrow phone the plan tag shortens instead of widening the page. */}
+        <Tag className="ml-auto block min-w-0 truncate">
+          {t(PLAN_NAME[sub.plan])} ·{' '}
+          {sub.plan === 'unlimited' ? t('selamanya') : sub.state === 'expired' ? t('berakhir') : t('{n} hari lagi', { n: sub.daysLeft })}
         </Tag>
       </header>
       <aside
@@ -59,7 +67,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         <SidebarBody />
       </aside>
       {/* relative: absolute children (sr-only chart captions) must scroll inside this column, not stretch the window. */}
-      <div className="min-w-0 md:relative md:overflow-y-auto print:!overflow-visible">{children}</div>
+      <div ref={content} className="min-w-0 md:relative md:overflow-y-auto print:!overflow-visible">
+        {children}
+      </div>
     </div>
   );
 }

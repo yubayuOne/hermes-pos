@@ -39,6 +39,10 @@ android/local.properties
 ios/build/
 ios/Pods/
 
+# Vercel and Netlify local build output
+.vercel/
+.netlify/
+
 # Supabase CLI local state
 supabase/.temp/
 supabase/.branches/

@@ -33,8 +33,11 @@ and password `rahasia123`. Scenarios: `http://localhost:54400/__scenario?status=
 
 See `apps/backoffice/.env.example` and `apps/web/.env.example`.
 
-- `SUPABASE_SERVICE_ROLE_KEY` is optional and only enables sign-in with a username. It is used in one server
-  function and never reaches the browser; without it, sign-in by email still works.
+- Sign-in with a username uses `pos_login_email` (migration 060), like the POS: no service-role key is needed, so
+  leave `SUPABASE_SERVICE_ROLE_KEY` out of the hosting settings. Ten wrong passwords for one username lock username
+  sign-in for 15 minutes; sign-in by email keeps working.
+- Without `APP_URL`, `VITE_LANDING_URL`, or `VITE_BACKOFFICE_URL`, a production build falls back to
+  `https://backoffice.hermes-pos.com` and `https://hermes-pos.com` (localhost only in development).
 - Google sign-in needs the Google provider enabled in Supabase (Authentication, Providers) and the redirect URL
   `http://localhost:3001/auth/callback` (production: `https://backoffice.hermes-pos.com/auth/callback`).
 - The session lives in HttpOnly cookies. With "Ingat saya" (remember me) off, they end when the browser closes.
