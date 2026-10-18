@@ -266,7 +266,7 @@ When a subscription expires, the backoffice and POS stay open but features are l
 | Active | Paid plan not yet expired | Plan limits apply |
 | Expired | Past the expiry date | Features locked, data stays and can be viewed, nothing is deleted |
 
-**Warning schedule (069).** One reminder a day: paid plans in the last 30 days before expiry, a trial for its whole length. Each day's reminder replaces yesterday's, so the bell shows one current count; after a renewal outside the window, the reminder goes away. Ringkasan shows no countdown banner; only an expired plan gets a banner, on every page.
+**Warning schedule (070).** Paid plans: one reminder at 30, 21, 14, and 7 days before expiry, then one every day from 3 days left until the last day. Trial (3 days): one every day. Reminders are kept; after a renewal, the schedule starts again. Ringkasan shows no countdown banner; only an expired plan gets a banner, on every page.
 
 | ID | User story | Acceptance criteria | Priority |
 | --- | --- | --- | --- |
@@ -474,7 +474,7 @@ On 11 October 2026 the POS core, the backoffice foundation, and the subscription
 | Business | Standalone outlet | Business with many outlets | One owner, one subscription, cross-outlet reports |
 | Monetization | None | 3-day trial, three paid plans, extra outlet IDR 99,000 per month | Approved by the product owner |
 | When a subscription expires | Undecided | App stays open with features locked; data not deleted | Approved by the product owner |
-| Warnings | None | Notification bell in backoffice and POS; one reminder a day in the last 30 days (trial: every day) | Requested by the product owner |
+| Warnings | None | Notification bell in backoffice and POS; 30, 21, 14, 7 days, then every day from 3 days left (trial: every day) | Requested by the product owner |
 | Display | Portrait only | Portrait and landscape, phone and tablet | Requested by the product owner |
 | Language | Indonesian | Indonesian and English | Requested by the product owner |
 | Payment | Cash | Cash and QRIS with manual confirmation; no payment gateway | QRIS is common at cafes; a gateway needs a provider contract, so confirmation stays manual |

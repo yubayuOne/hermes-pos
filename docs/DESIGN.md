@@ -534,7 +534,7 @@ Papan turunan: `BackofficeExpired.dc.html` (status berakhir) dan `BackofficePhon
 | Sisa waktu | Pengaturan, Langganan | Pengaturan, Langganan | Pengaturan, Langganan |
 | Batas per outlet | 3 kasir, 100 produk | 2 kasir, 40 produk | 3 kasir, 100 produk |
 | Banner | tidak ada | tidak ada | besar, di semua halaman |
-| Notifikasi | satu pengingat tiap hari di 30 hari terakhir, yang kemarin diganti (069) | satu pengingat tiap hari selama trial | langganan berakhir |
+| Notifikasi | pengingat 30, 21, 14, dan 7 hari, lalu setiap hari sejak sisa 3 hari (070) | setiap hari (trial 3 hari) | langganan berakhir |
 | Yang terkunci | | | penjualan baru, shift baru, tambah outlet, kasir, produk, dan pengeluaran, ubah pengaturan |
 | Tetap terbuka | semua | semua | laporan, riwayat, lihat data, bayar |
 

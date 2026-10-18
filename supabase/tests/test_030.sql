@@ -97,12 +97,13 @@ select pg_temp.ok('K3 stok berkurang', (select stock from public.products where 
 
 -- ===== pengingat
 reset role;
+-- The trial's daily reminders (070) from the checks above are not part of this schedule.
+delete from public.notifications where business_id = current_setting('t.b1')::uuid;
 update public.subscriptions set expires_at = now() + interval '20 days 2 hours' where business_id = current_setting('t.b1')::uuid;
 set role authenticated;
 select public.get_subscription_status();
--- Since 069 the reminder is daily (one per day, yesterday's removed) instead of at thresholds.
-select pg_temp.ok('N1 satu pengingat hari ini untuk 20 hari lagi',
-  jsonb_array_length(public.list_notifications()) = 1 and (public.list_notifications() -> 0 -> 'params' ->> 'days_left')::int between 20 and 21);
+select pg_temp.ok('N1 hanya satu pengingat (ambang 21) untuk 20 hari lagi',
+  jsonb_array_length(public.list_notifications()) = 1 and (public.list_notifications() -> 0 -> 'params' ->> 'threshold') = '21');
 select public.get_subscription_status();
 select pg_temp.ok('N2 tidak dobel saat dipanggil lagi', jsonb_array_length(public.list_notifications()) = 1);
 select pg_temp.ok('N3 jumlah belum dibaca', (public.get_subscription_status() ->> 'unread')::int = 1);
@@ -112,8 +113,7 @@ reset role;
 update public.subscriptions set expires_at = now() + interval '6 days' where business_id = current_setting('t.b1')::uuid;
 set role authenticated;
 select public.get_subscription_status();
-select pg_temp.ok('N6 pengingat baru 6 hari, yang lama diganti', jsonb_array_length(public.list_notifications()) = 1
-  and (public.list_notifications() -> 0 ->> 'kind') = 'subscription_expiring' and (public.list_notifications() -> 0 -> 'params' ->> 'days_left')::int between 6 and 7);
+select pg_temp.ok('N6 ambang 7 hari', (public.list_notifications() -> 0 ->> 'kind') = 'subscription_expiring' and (public.list_notifications() -> 0 -> 'params' ->> 'threshold') = '7');
 select pg_temp.ok('N7 tandai sebagian dengan id', public.mark_notifications_read(array[(public.list_notifications() -> 0 ->> 'id')::uuid]) = 1);
 
 -- ===== berakhir
@@ -169,7 +169,7 @@ set role authenticated;
 select pg_temp.fails('I1 akun tanpa bisnis tidak punya status', 'select public.get_subscription_status()', 'Hanya owner');
 select public.register_business('Warung Dedi', 'Dedi 1', null);
 select pg_temp.ok('I2 bisnis kedua mendapat trial sendiri', (public.get_subscription_status() ->> 'state') = 'trial');
--- A new trial gets its own daily reminder (069); nothing from the first business shows up.
+-- A new trial (3 days) gets its own daily reminder (070); nothing from the first business shows up.
 select pg_temp.ok('I3 notifikasi bisnis lain tidak terlihat', jsonb_array_length(public.list_notifications()) = 1
   and public.list_notifications() -> 0 ->> 'kind' = 'trial_expiring');
 select pg_temp.ok('I4 hanya langganan sendiri yang terbaca', (select count(*) from public.subscriptions) = 1);
