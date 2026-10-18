@@ -1,0 +1,20 @@
+{
+  "name": "hermes-pos-web",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @hermes-pos/web",
+    "dev:backoffice": "npm run dev -w @hermes-pos/backoffice",
+    "build": "npm run build -w @hermes-pos/web && npm run build -w @hermes-pos/backoffice",
+    "typecheck": "npm run typecheck -w @hermes-pos/web && npm run typecheck -w @hermes-pos/backoffice",
+    "mock": "node e2e/mock-supabase.mjs",
+    "test:e2e": "e2e run"
+  },
+  "devDependencies": {
+    "@e2e-dev/web": "^0.14.0",
+    "e2e": "^0.20.0"
+  }
+}

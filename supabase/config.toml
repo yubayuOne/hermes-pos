@@ -1,0 +1,9 @@
+project_id = "hermes-pos"
+[api]
+enabled = true
+[db]
+major_version = 17
+[studio]
+enabled = true
+[auth]
+enabled = true

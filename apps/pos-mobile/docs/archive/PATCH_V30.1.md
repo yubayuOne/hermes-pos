@@ -1,0 +1,1 @@
+Fix Shift Card: tombol Buka Shift, Riwayat Shift, Tutup Shift kembali muncul dan memperbaiki bug JSX Jam Ramai.

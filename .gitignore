@@ -1,0 +1,63 @@
+# Dependencies and build output (each app adds its own rules in its .gitignore)
+node_modules/
+.output/
+.nitro/
+.tanstack/
+.vite/
+.expo/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Secrets: only the .env.example files are committed
+.env
+.env.*
+!.env.example
+*.local
+*.keystore
+!debug.keystore
+*.jks
+*.p12
+*.pfx
+*.pem
+*.key
+service-account*.json
+google-services.json
+GoogleService-Info.plist
+
+# App binaries: publish them as a GitHub Release or on your own host, not in git
+*.apk
+*.aab
+
+# Android and iOS build state (the android/ sources are committed, its build output is not)
+android/.gradle/
+android/build/
+android/app/build/
+android/app/.cxx/
+android/local.properties
+ios/build/
+ios/Pods/
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
+
+# Test output and scratch files
+.e2e/
+__pycache__/
+*.pyc
+*.log
+
+# AI assistant files stay on this machine: rules, skills, local state, and generated reports
+CLAUDE.md
+.claude/
+anti-slop/
+design-system/
+
+# Editors and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

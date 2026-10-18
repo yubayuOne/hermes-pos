@@ -1,0 +1,21 @@
+node_modules/
+.expo/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+android/build/
+android/app/build/
+android/app/.cxx/
+android/.gradle/
+ios/build/
+ios/Pods/
+*.apk
+*.aab
+# Release signing keys live outside the repository (root README, "Build an APK"); debug.keystore stays tracked.
+*.keystore
+!android/app/debug.keystore
+*.jks
+credentials.json
+.idea/

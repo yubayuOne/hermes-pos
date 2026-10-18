@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "HERMES POS",
+    "slug": "hermes-pos",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "light",
+    "scheme": "hermespos",
+    "icon": "./assets/icon.png",
+    "plugins": [
+      "./plugins/withHermesPosPrinter",
+      "./plugins/withHttpPing",
+      "expo-secure-store",
+      "expo-sqlite"
+    ],
+    "android": {
+      "package": "com.hermespos.pos",
+      "allowBackup": false,
+      "softwareKeyboardLayoutMode": "resize",
+      "icon": "./assets/icon.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon-adaptive.png",
+        "backgroundColor": "#FD5B05"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
+    "backgroundColor": "#EEF0EA",
+    "extra": {
+      "eas": {
+        "projectId": "2933feeb-8ebf-43d4-8a35-8653576d5485"
+      }
+    }
+  }
+}
