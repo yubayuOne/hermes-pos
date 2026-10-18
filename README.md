@@ -19,10 +19,10 @@ Voids and refunds need the owner's code. Money taken from the drawer lowers the 
 | | |
 | --- | --- |
 | **Android app (APK)** | [`DOWNLOAD LINK TO BE ADDED`](#download) |
-| **Version** | `[VERSION]` |
+| **Version** | 1.0.0 |
 | **Requires** | Android phone or tablet, Bluetooth for receipt printing |
-| **Backoffice (owner)** | `[BACKOFFICE URL TO BE ADDED]` |
-| **Website** | `[LANDING PAGE URL TO BE ADDED]` |
+| **Backoffice (owner)** | [backoffice.hermes-pos.com](https://backoffice.hermes-pos.com) |
+| **Website** | [hermes-pos.com](https://hermes-pos.com) |
 
 **Install from an APK file:** open the download link on the device, allow installation from this source when Android asks,
 open the file, and sign in. A free 3-day trial is available to new businesses: register in the backoffice, create a
@@ -296,7 +296,8 @@ npx prettier --check "src/**/*.{ts,tsx}"     # run inside each app; --write to f
 
 ## Contact and license
 
-- Support: `[WHATSAPP NUMBER]` · `[EMAIL ADDRESS]`
+- Support: WhatsApp [0851-5858-3200](https://wa.me/6285158583200) · [yubayu2004@gmail.com](mailto:yubayu2004@gmail.com),
+  every day 07.00–24.00 WIB
 - License: `[LICENSE TO BE DECIDED]`
 
 <!-- Fill these in before publishing the repository. -->
