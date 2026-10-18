@@ -40,19 +40,13 @@ function Cashiers() {
 
   return (
     <Page title={t('Kasir|menu')}>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="max-w-[46em] text-mute">
-          {t(
-            'Kasir tidak punya email. Di aplikasi, kasir memilih namanya lalu mengetik PIN 6 digit. Lima kali salah PIN mengunci kasir itu selama 5 menit. Batas {n} kasir aktif per outlet.',
-            { n: app.subscription.limits.cashiers },
-          )}
-        </p>
-        {cashiers.length > 0 && (
-          <Button variant="fire" onClick={() => setAdding(true)} {...lock.props}>
+      {cashiers.length > 0 && (
+        <div className="flex justify-end">
+          <Button variant="fire" className="w-full sm:w-auto" onClick={() => setAdding(true)} {...lock.props}>
             {lock.label(t('Tambah kasir'))}
           </Button>
-        )}
-      </div>
+        </div>
+      )}
       {cashiers.length === 0 ? (
         <Empty
           className="mt-6"
@@ -82,7 +76,7 @@ function Cashiers() {
                 return (
                   <tr key={c.cashierId} style={{ animationDelay: `${i * 50}ms` }}>
                     <td data-l={t('Kasir')}>
-                      <span className="font-display text-[20px] font-extrabold tracking-[-0.02em]">{c.name}</span>
+                      <span className="font-semibold">{c.name}</span>
                       {locked && (
                         <Tag tone="fire" className="ml-2">
                           {t('terkunci sampai {time}', { time: time(c.lockedUntil!, app.business.timezone) })}

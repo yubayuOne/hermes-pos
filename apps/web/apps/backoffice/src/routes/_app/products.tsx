@@ -93,7 +93,7 @@ function Products() {
           app.outlets.find((o) => o.id === outletId)?.name,
           t('Terjual {period}', { period: periodLabel }),
           (search.cat && catName.get(search.cat)) || t('Semua kategori'),
-          t('{n} / {max} produk aktif', { n: active, max: limit }),
+          app.subscription.plan === 'unlimited' ? t('{n} produk aktif', { n: active }) : t('{n} / {max} produk aktif', { n: active, max: limit }),
         ]
           .filter(Boolean)
           .join(' · ')}

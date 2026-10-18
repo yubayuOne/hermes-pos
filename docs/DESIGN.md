@@ -715,7 +715,7 @@ Tiga tab chip di bawah header: **Profil**, **Bisnis dan struk**, **Langganan**.
 |---|---|
 | ≤ 1100px | grid 7/5 dan 1/1 jadi satu kolom, pratinjau struk tidak lagi menempel |
 | ≤ 980px | sidebar 232px |
-| ≤ 760px | bilah atas dan laci, tabel jadi kartu, header ringkas (tombol bahasa dan lonceng sebaris, filter outlet selebar layar) |
+| ≤ 760px | bilah atas dan laci, header ringkas, tabel jadi kartu ringkas (`.tbl-card`, 19 Okt 2026): kolom pertama jadi kepala kartu selebar kartu (nama dan teks sekunder, garis bawah tipis), kolom lain dua per baris dengan label mono 12px di atas nilai 15px; padding 12/14px, jarak antarkartu 10px. Tombol utama halaman selebar layar. Halaman Kasir dan Voucher tanpa paragraf pembuka. |
 
 ## D13. Transaksi
 

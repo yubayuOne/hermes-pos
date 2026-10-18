@@ -75,18 +75,13 @@ function Vouchers() {
 
   return (
     <Page title={t('Voucher|menu')}>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="max-w-[46em] text-mute">
-          {t(
-            'Kasir mengetik kode voucher di aplikasi, lalu server memeriksa syaratnya dan memotong total. Voucher bisa untuk seluruh bill atau produk tertentu.',
-          )}
-        </p>
-        {vouchers.length > 0 && (
-          <Button variant="fire" onClick={() => setEditing('new')} {...lock.props}>
+      {vouchers.length > 0 && (
+        <div className="flex justify-end">
+          <Button variant="fire" className="w-full sm:w-auto" onClick={() => setEditing('new')} {...lock.props}>
             {lock.label(t('Buat voucher'))}
           </Button>
-        )}
-      </div>
+        </div>
+      )}
       {vouchers.length === 0 ? (
         <Empty
           className="mt-6"

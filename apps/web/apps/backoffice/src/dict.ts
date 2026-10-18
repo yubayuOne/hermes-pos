@@ -528,8 +528,6 @@ export const EN: Dict = {
     'Contact us on WhatsApp {wa} with your business name and how many outlets you need. Once paid, the new outlet appears here and in the cashier app.',
 
   // Cashiers
-  'Kasir tidak punya email. Di aplikasi, kasir memilih namanya lalu mengetik PIN 6 digit. Lima kali salah PIN mengunci kasir itu selama 5 menit. Batas {n} kasir aktif per outlet.':
-    'Cashiers have no email. In the app, a cashier picks their name and types a 6-digit PIN. Five wrong PINs lock that cashier for 5 minutes. Up to {n} active cashiers per outlet.',
   'Tambah kasir': 'Add cashier',
   'Belum ada kasir.': 'No cashiers yet.',
   'Buat kasir pertama supaya aplikasi kasir bisa dipakai berjualan.': 'Create the first cashier so the cashier app can start selling.',
@@ -580,8 +578,6 @@ export const EN: Dict = {
   'Maksimal 20 huruf.': 'At most 20 characters.',
 
   // Vouchers
-  'Kasir mengetik kode voucher di aplikasi, lalu server memeriksa syaratnya dan memotong total. Voucher bisa untuk seluruh bill atau produk tertentu.':
-    'The cashier types the voucher code in the app; the server checks the conditions and reduces the total. A voucher can cover the whole bill or chosen products.',
   'Buat voucher': 'Create voucher',
   'Belum ada voucher.': 'No vouchers yet.',
   'Buat kode untuk promo, misalnya potongan 10% untuk belanja di atas Rp50.000.': 'Create a promo code, for example 10% off purchases over Rp50.000.',
@@ -941,6 +937,7 @@ export const EN: Dict = {
   'Cari nama produk': 'Search product name',
   'Dari bill selesai. Penjualan setelah diskon item, refund belum dikurangi.': 'From completed bills. Sales after item discounts, refunds not subtracted.',
   'Terjual {period}': 'Sold {period}',
+  '{n} produk aktif': '{n} active products',
   'Periode untuk kolom Terjual, dari bill selesai.': 'Period for the Sold column, from completed bills.',
   'Buka bill {number}': 'Open bill {number}',
   'Ubah produk {name}': 'Edit product {name}',
