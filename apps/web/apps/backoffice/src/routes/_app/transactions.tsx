@@ -7,6 +7,7 @@ import {
   Empty,
   Field,
   FormAlert,
+  Input,
   Select,
   Tag,
   Textarea,
@@ -15,6 +16,7 @@ import {
   isoDay,
   money,
   time,
+  toast,
   useI18n,
   PencilIcon,
 } from '@hermes-pos/ui';
@@ -28,7 +30,8 @@ import { describeError } from '../../lib/errors';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
 import type { Bill, BillEdit, BillItem, BillRefund, BillSnapshot, Product } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
-import { BILL_PAGE, getBill, listBills, voidBill } from '../../server/bills';
+import { BILL_PAGE, correctBill, getBill, listBills, voidBill } from '../../server/bills';
+import { billCorrectionSchema } from '../../lib/schemas';
 import { listCatalog } from '../../server/manage';
 import { listProductSales } from '../../server/summary';
 import { pageHead } from '../../lang';
@@ -237,17 +240,26 @@ const METHOD: Record<'cash' | 'qris', string> = { cash: 'Tunai', qris: 'QRIS' };
 
 function BillTags({ bill: b }: { bill: Bill }) {
   const { t } = useI18n();
-  if (b.status !== 'voided' && b.refundedTotal <= 0 && b.editCount === 0) return null;
+  if (b.status !== 'voided' && b.refundedTotal <= 0 && b.editCount === 0 && !b.correctsNumber) return null;
   return (
     <span className="mt-1.5 flex flex-wrap gap-1.5">
-      {b.status === 'voided' && <Tag tone="mute">{t('dibatalkan')}</Tag>}
+      {b.status === 'voided' && (
+        <Tag tone="mute">{b.correctedByNumber ? t('dikoreksi, diganti {number}', { number: b.correctedByNumber }) : t('dibatalkan')}</Tag>
+      )}
+      {b.correctsNumber && <Tag>{t('pengganti {number}', { number: b.correctsNumber })}</Tag>}
       {b.status !== 'voided' && b.refundedTotal > 0 && <Tag tone="fire">{b.refundedTotal >= b.total ? t('refund') : t('refund sebagian')}</Tag>}
-      {b.editCount > 0 && <Tag>{t('diubah {n}x', { n: b.editCount })}</Tag>}
+      {b.editCount > 0 && !b.correctedByNumber && <Tag>{t('diubah {n}x', { n: b.editCount })}</Tag>}
     </span>
   );
 }
 
-const EDIT_KIND: Record<BillEdit['kind'], string> = { void: 'Dibatalkan', payment: 'Metode bayar', details: 'Nama, meja, catatan', items: 'Item' };
+const EDIT_KIND: Record<BillEdit['kind'], string> = {
+  void: 'Dibatalkan',
+  correction: 'Koreksi bill',
+  payment: 'Metode bayar',
+  details: 'Nama, meja, catatan',
+  items: 'Item',
+};
 const itemsText = (s: BillSnapshot) => s.items.map((i) => `${amount(i.quantity)}× ${i.productName}`).join(', ');
 const methodText = (m: string) => (m === 'cash' || m === 'qris' ? METHOD[m] : '-');
 
@@ -270,7 +282,10 @@ function EditHistory({ edits }: { edits: BillEdit[] }) {
             · <span className="font-semibold">{t(EDIT_KIND[e.kind])}</span>
             {e.reason && <> · {e.reason}</>}
             <span className="block text-mute">
-              {e.kind === 'items' && `${itemsText(e.before)} → ${itemsText(e.after)} · `}
+              {(e.kind === 'items' || e.kind === 'correction') && `${itemsText(e.before)} → ${itemsText(e.after)} · `}
+              {e.kind === 'correction' &&
+                e.before.paymentMethod !== e.after.paymentMethod &&
+                `${t(methodText(e.before.paymentMethod))} → ${t(methodText(e.after.paymentMethod))} · `}
               {e.kind === 'payment' && `${t(methodText(e.before.paymentMethod))} → ${t(methodText(e.after.paymentMethod))} · `}
               {e.kind === 'details' &&
                 `${[e.after.customerName, e.after.tableNumber && t('Meja {n}', { n: e.after.tableNumber })].filter(Boolean).join(' · ') || '-'} · `}
@@ -297,9 +312,9 @@ function PastNote({ bill: b }: { bill: Bill }) {
   );
 }
 
-type Mode = 'view' | 'void';
+type Mode = 'view' | 'void' | 'correct';
 
-/** One bill: items, refunds, and past edits. Money is corrected on the Balancing page (071); only a void happens here. */
+/** One bill: items, refunds, and its history. Mistakes are fixed with Koreksi bill (void + replacement, 073) or Batalkan bill. */
 function BillDialog({ bill: b, onClose }: { bill: Bill; onClose: () => void }) {
   const { t, lang } = useI18n();
   const app = useApp();
@@ -314,6 +329,7 @@ function BillDialog({ bill: b, onClose }: { bill: Bill; onClose: () => void }) {
   const tz = app.business.timezone;
 
   if (mode === 'void') return <VoidDialog bill={b} onClose={onClose} onBack={() => setMode('view')} />;
+  if (mode === 'correct' && detail) return <CorrectDialog bill={b} items={detail.items} onClose={onClose} onBack={() => setMode('view')} />;
   return (
     <Dialog
       open
@@ -393,7 +409,10 @@ function BillDialog({ bill: b, onClose }: { bill: Bill; onClose: () => void }) {
           )}
           <EditHistory edits={detail.edits} />
           {voidable && (
-            <div className="flex justify-end border-t-[1.5px] border-ink pt-4">
+            <div className="flex flex-wrap justify-end gap-2 border-t-[1.5px] border-ink pt-4">
+              <Button sm onClick={() => setMode('correct')}>
+                {t('Koreksi bill')}
+              </Button>
               <Button sm variant="ink" onClick={() => setMode('void')}>
                 {t('Batalkan bill')}
               </Button>
@@ -445,6 +464,119 @@ function VoidDialog({ bill: b, onClose, onBack }: EditProps) {
         <PastNote bill={b} />
         <Field label={t('Alasan')}>
           <Textarea autoFocus rows={3} maxLength={200} value={reason} onChange={(e) => setReason(e.target.value)} />
+        </Field>
+        <FormAlert>{act.error && t(act.error)}</FormAlert>
+      </form>
+    </Dialog>
+  );
+}
+
+/**
+ * Koreksi bill (073): the whole bill as it should have been. Lines keep their original price and discount; new products
+ * come at today's price. The database voids this bill and records the new one at the same day and shift.
+ */
+function CorrectDialog({ bill: b, items, onClose, onBack }: EditProps & { items: BillItem[] }) {
+  const { t } = useI18n();
+  const act = useAction();
+  const [rows, setRows] = useState(
+    items.map((i) => ({ key: i.itemId, itemId: i.itemId, productId: '', name: i.productName, price: i.unitPrice, qty: String(i.quantity) })),
+  );
+  const [catalog, setCatalog] = useState<Product[]>([]);
+  const [pick, setPick] = useState('');
+  const [method, setMethod] = useState<'cash' | 'qris'>(b.paymentMethod === 'qris' ? 'qris' : 'cash');
+  const [name, setName] = useState(b.customerName);
+  const [table, setTable] = useState(b.tableNumber);
+  const [reason, setReason] = useState('');
+  useEffect(() => {
+    listCatalog({ data: { outletId: b.outletId } }).then(
+      (c) => setCatalog(c.products.filter((p) => p.isActive)),
+      () => setCatalog([]),
+    );
+  }, [b.outletId]);
+  const setQty = (key: string, qty: string) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, qty: qty.replace(/\D/g, '').slice(0, 4) } : r)));
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    const check = billCorrectionSchema.safeParse({
+      id: b.id,
+      items: rows.map((r) => (r.itemId ? { itemId: r.itemId, quantity: Number(r.qty || 0) } : { productId: r.productId, quantity: Number(r.qty || 0) })),
+      paymentMethod: method,
+      customerName: name,
+      tableNumber: table,
+      reason,
+    });
+    if (!check.success) return act.setError(check.error.issues[0]?.message ?? 'Data tidak valid.');
+    const res = await act.run(() => correctBill({ data: check.data }));
+    if (res?.ok && res.data) {
+      onClose();
+      toast.success(t('Bill {old} diganti {number}, total {amount}.', { old: b.number, number: res.data.number, amount: money(res.data.total) }));
+    }
+  }
+  return (
+    <Dialog
+      open
+      wide
+      onOpenChange={(o) => !o && onClose()}
+      title={t('Koreksi bill {number}', { number: b.number })}
+      description={t('Isi bill seperti seharusnya. Bill ini dibatalkan dan diganti bill baru di hari dan shift yang sama; stok, kas, dan laporan ikut benar.')}
+      footer={<EditFooter busy={act.busy} onBack={onBack} label={t('Simpan koreksi')} />}
+    >
+      <form id="bill-edit" noValidate onSubmit={save} className="grid gap-4">
+        <PastNote bill={b} />
+        <fieldset className="grid gap-3">
+          <legend className="fld-l">{t('Item dan jumlah')}</legend>
+          {rows.map((r) => (
+            <div key={r.key} className="flex items-end gap-3">
+              <Field label={`${r.name} · ${money(r.price)}`} className="flex-1">
+                <Input inputMode="numeric" className="font-mono" value={r.qty} onChange={(e) => setQty(r.key, e.target.value)} />
+              </Field>
+              <Button sm className="mb-1" onClick={() => setQty(r.key, '0')} disabled={r.qty === '0'}>
+                {t('Hapus')}
+                <span className="sr-only"> {r.name}</span>
+              </Button>
+            </div>
+          ))}
+          {catalog.length > 0 && (
+            <div className="flex flex-wrap items-end gap-3">
+              <Field label={t('Tambah produk')} className="min-w-[200px] flex-1">
+                <Select value={pick} onChange={(e) => setPick(e.target.value)}>
+                  {catalog.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {`${p.name} · ${money(p.price)}`}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Button
+                className="mb-1"
+                disabled={!pick}
+                onClick={() => {
+                  const p = catalog.find((x) => x.id === pick);
+                  if (p) setRows((rs) => [...rs, { key: `new-${rs.length}`, itemId: '', productId: p.id, name: p.name, price: p.price, qty: '1' }]);
+                  setPick('');
+                }}
+              >
+                {t('Tambah')}
+              </Button>
+            </div>
+          )}
+        </fieldset>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label={t('Dibayar dengan')}>
+            <Select value={method} onChange={(e) => setMethod(e.target.value === 'qris' ? 'qris' : 'cash')}>
+              <option value="cash">{t('Tunai')}</option>
+              <option value="qris">QRIS</option>
+            </Select>
+          </Field>
+          <Field label={t('Nama pelanggan')} optional>
+            <Input maxLength={40} value={name} onChange={(e) => setName(e.target.value)} />
+          </Field>
+          <Field label={t('Meja')} optional>
+            <Input maxLength={6} value={table} onChange={(e) => setTable(e.target.value)} />
+          </Field>
+        </div>
+        <Field label={t('Alasan koreksi')}>
+          <Input maxLength={200} value={reason} onChange={(e) => setReason(e.target.value)} />
         </Field>
         <FormAlert>{act.error && t(act.error)}</FormAlert>
       </form>

@@ -141,13 +141,24 @@ export type Report = {
   productCount: number;
 };
 
-/** Expenses of one shift (POS migrations 040, 041). Count at once; the owner corrects them with balancing (071). */
-export type ExpenseItem = { name: string; category: 'operasional' | 'belanja'; quantity: number; unit: string; amount: number; paidFrom: 'drawer' | 'other' };
+/** Expenses of one shift (POS migrations 040, 041). Count at once; the owner cancels or adds items (073). */
+export type ExpenseItem = {
+  id: string;
+  name: string;
+  category: 'operasional' | 'belanja';
+  quantity: number;
+  unit: string;
+  amount: number;
+  paidFrom: 'drawer' | 'other';
+};
+/** A cancelled item: it no longer counts, but stays on record with the reason (073). */
+export type CancelledExpenseItem = ExpenseItem & { reason: string; cancelledAt: string };
 export type Expense = {
   id: string;
   createdAt: string;
   outletId: string;
   outletName: string;
+  shiftId: string;
   businessDate: string;
   shiftNumber: number;
   shiftOpen: boolean;
@@ -155,45 +166,56 @@ export type Expense = {
   total: number;
   drawerTotal: number;
   items: ExpenseItem[];
+  cancelled: CancelledExpenseItem[];
 };
 export type ExpenseList = {
   rows: Expense[];
   /** All shift records in the period; `rows` is one page of them. */
   total: number;
   dayTotals: Record<string, number>;
-  /** Totals include expense adjustments from balancing; djustments is their part (071). */
+  /** Totals include the old expense corrections (071); `adjustments` is their part. */
   totals: { total: number; operasional: number; belanja: number; adjustments: number };
 };
 
-/** A balancing line of one shift (migration 071). Signed: + adds, - takes away. */
-export type ShiftAdjustment = {
+/** Cash put into or taken out of a drawer (073). */
+export type CashMovement = { id: string; direction: 'in' | 'out'; amount: number; reason: string; createdAt: string };
+/** A sales or expense correction made with the old balancing (071); kept and shown, no longer made. */
+export type OldCorrection = {
   id: string;
-  kind: 'cash' | 'sales' | 'expense';
+  kind: 'sales' | 'expense';
   category: 'operasional' | 'belanja' | null;
   amount: number;
   reason: string;
   createdAt: string;
 };
-/** A shift on the Balancing page (owner_list_shift_balances). All money from the database. */
-export type ShiftBalance = {
+/** One shift's reconciliation on the Tutup hari page (owner_day_close). All money from the database. */
+export type DayShift = {
   id: string;
-  outletName: string;
-  cashierName: string;
-  businessDate: string;
   shiftNumber: number;
   open: boolean;
   openedAt: string;
   closedAt: string | null;
-  openingCash: number;
-  expectedCash: number;
-  closingCash: number | null;
+  cashierName: string;
+  bills: number;
+  opening: number;
+  cashSales: number;
+  cashRefunds: number;
+  drawerExpenses: number;
+  cashIn: number;
+  cashOut: number;
+  expected: number;
+  counted: number | null;
   variance: number | null;
-  sales: number;
-  expenses: number;
-  adjustments: ShiftAdjustment[];
+  qrisSales: number;
+  qrisRefunds: number;
+  qrisExpected: number;
+  netSales: number;
+  movements: CashMovement[];
+  oldCorrections: OldCorrection[];
 };
-export type ShiftBalanceList = { rows: ShiftBalance[]; total: number };
-
+/** A balance rule that failed (docs/ACCOUNTING.md section 1). */
+export type CheckFailure = { rule: 'P1' | 'P2' | 'P3' | 'P4' | 'P5'; ref: string | null; detail: Record<string, string | number | boolean | null> };
+export type DayClose = { date: string; shifts: DayShift[]; checks: CheckFailure[] };
 /** A bill from owner_list_bills (migrations 028, 034). Money comes from the database. */
 export type Bill = {
   id: string;
@@ -212,6 +234,9 @@ export type Bill = {
   refundedTotal: number;
   /** Owner edits logged since migration 067. */
   editCount: number;
+  /** The bill this one corrects, and the bill that corrected this one (073). */
+  correctsNumber: string | null;
+  correctedByNumber: string | null;
 };
 export type BillList = { rows: Bill[]; total: number };
 export type BillItem = {
@@ -236,7 +261,7 @@ export type BillSnapshot = {
 export type BillEdit = {
   id: string;
   createdAt: string;
-  kind: 'void' | 'payment' | 'details' | 'items';
+  kind: 'void' | 'correction' | 'payment' | 'details' | 'items';
   reason: string | null;
   before: BillSnapshot;
   after: BillSnapshot;

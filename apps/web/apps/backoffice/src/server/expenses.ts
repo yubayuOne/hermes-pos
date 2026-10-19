@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { addDays } from '@hermes-pos/ui';
-import { expenseListSchema, parser } from '../lib/schemas';
-import type { ExpenseList } from '../lib/types';
+import { expenseAddSchema, expenseCancelSchema, expenseListSchema, parser } from '../lib/schemas';
+import type { ActionResult, ExpenseList } from '../lib/types';
 import { toExpenseList } from './normalize';
 import { startOf } from './summary';
 
@@ -19,4 +19,22 @@ export const listExpenses = createServerFn({ method: 'GET' })
         p_limit: 50,
       }),
     );
+  });
+
+/** Cancels one item (073): it stops counting but stays on record with the reason; the shift's cash follows. */
+export const cancelExpenseItem = createServerFn({ method: 'POST' })
+  .validator(parser(expenseCancelSchema))
+  .handler(async ({ data }): Promise<ActionResult> => {
+    const { callRpc } = await import('./supabase.server');
+    const res = await callRpc('owner_cancel_expense_item', { p_item_id: data.itemId, p_reason: data.reason });
+    return res.ok ? { ok: true } : res;
+  });
+
+/** Adds items to a shift's expenses (073), from the drawer or not; the shift's cash follows. */
+export const addExpenseItems = createServerFn({ method: 'POST' })
+  .validator(parser(expenseAddSchema))
+  .handler(async ({ data }): Promise<ActionResult> => {
+    const { callRpc } = await import('./supabase.server');
+    const res = await callRpc('owner_add_expense_items', { p_shift_id: data.shiftId, p_paid_from: data.paidFrom, p_items: data.items });
+    return res.ok ? { ok: true } : res;
   });

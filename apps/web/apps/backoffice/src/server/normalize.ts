@@ -1,7 +1,9 @@
 import { DEFAULT_TZ, dayDiff, isoDay } from '@hermes-pos/ui';
 import type {
-  ShiftBalanceList,
+  ExpenseItem,
   Bill,
+  CheckFailure,
+  DayClose,
   BillEdit,
   BillItem,
   BillSnapshot,
@@ -119,14 +121,21 @@ export function toExpense(r: Row): Expense {
     cashierName: r.cashierName ? str(r.cashierName) : null,
     total: num(r.total),
     drawerTotal: num(r.drawerTotal),
-    items: ((r.items as Row[]) ?? []).map((i) => ({
-      name: str(i.name),
-      category: i.category === 'operasional' ? 'operasional' : 'belanja',
-      quantity: num(i.quantity),
-      unit: str(i.unit),
-      amount: num(i.amount),
-      paidFrom: i.paidFrom === 'other' ? 'other' : 'drawer',
-    })),
+    shiftId: str(r.shiftId),
+    items: rows(r.items).map(toExpenseItem),
+    cancelled: rows(r.cancelled).map((i) => ({ ...toExpenseItem(i), reason: str(i.reason), cancelledAt: str(i.cancelledAt) })),
+  };
+}
+
+function toExpenseItem(i: Row): ExpenseItem {
+  return {
+    id: str(i.id),
+    name: str(i.name),
+    category: i.category === 'operasional' ? 'operasional' : 'belanja',
+    quantity: num(i.quantity),
+    unit: str(i.unit),
+    amount: num(i.amount),
+    paidFrom: i.paidFrom === 'other' ? 'other' : 'drawer',
   };
 }
 
@@ -293,6 +302,8 @@ export function toBillList(raw: unknown): BillList {
       discount: num(b.discount),
       refundedTotal: num(b.refundedTotal),
       editCount: num(b.editCount),
+      correctsNumber: b.correctsNumber ? str(b.correctsNumber) : null,
+      correctedByNumber: b.correctedByNumber ? str(b.correctedByNumber) : null,
     })),
   };
 }
@@ -327,7 +338,7 @@ function toSnapshot(raw: unknown): BillSnapshot {
 }
 
 export function toBillEdit(r: Row): BillEdit {
-  const kind = r.kind === 'void' || r.kind === 'payment' || r.kind === 'details' ? r.kind : 'items';
+  const kind = r.kind === 'void' || r.kind === 'correction' || r.kind === 'payment' || r.kind === 'details' ? r.kind : 'items';
   return {
     id: str(r.id),
     createdAt: str(r.createdAt),
@@ -338,28 +349,46 @@ export function toBillEdit(r: Row): BillEdit {
   };
 }
 
-export function toShiftBalanceList(raw: unknown): ShiftBalanceList {
+export function toDayClose(raw: unknown): DayClose {
   const r = (raw ?? {}) as Row;
   return {
-    total: num(r.total),
-    rows: rows(r.rows).map((s) => ({
+    date: str(r.date),
+    checks: rows(r.checks).map((f) => ({
+      rule: str(f.rule) as CheckFailure['rule'],
+      ref: f.ref ? str(f.ref) : null,
+      detail: (f.detail ?? {}) as CheckFailure['detail'],
+    })),
+    shifts: rows(r.shifts).map((s) => ({
       id: str(s.id),
-      outletName: str(s.outletName),
-      cashierName: str(s.cashierName),
-      businessDate: str(s.businessDate),
       shiftNumber: num(s.shiftNumber),
       open: s.open === true,
       openedAt: str(s.openedAt),
       closedAt: s.closedAt ? str(s.closedAt) : null,
-      openingCash: num(s.openingCash),
-      expectedCash: num(s.expectedCash),
-      closingCash: nullable(s.closingCash),
+      cashierName: str(s.cashierName),
+      bills: num(s.bills),
+      opening: num(s.opening),
+      cashSales: num(s.cashSales),
+      cashRefunds: num(s.cashRefunds),
+      drawerExpenses: num(s.drawerExpenses),
+      cashIn: num(s.cashIn),
+      cashOut: num(s.cashOut),
+      expected: num(s.expected),
+      counted: nullable(s.counted),
       variance: nullable(s.variance),
-      sales: num(s.sales),
-      expenses: num(s.expenses),
-      adjustments: rows(s.adjustments).map((a) => ({
+      qrisSales: num(s.qrisSales),
+      qrisRefunds: num(s.qrisRefunds),
+      qrisExpected: num(s.qrisExpected),
+      netSales: num(s.netSales),
+      movements: rows(s.movements).map((m) => ({
+        id: str(m.id),
+        direction: m.direction === 'in' ? 'in' : 'out',
+        amount: num(m.amount),
+        reason: str(m.reason),
+        createdAt: str(m.createdAt),
+      })),
+      oldCorrections: rows(s.oldCorrections).map((a) => ({
         id: str(a.id),
-        kind: a.kind === 'sales' || a.kind === 'expense' ? a.kind : 'cash',
+        kind: a.kind === 'expense' ? 'expense' : 'sales',
         category: a.category === 'operasional' || a.category === 'belanja' ? a.category : null,
         amount: num(a.amount),
         reason: str(a.reason),

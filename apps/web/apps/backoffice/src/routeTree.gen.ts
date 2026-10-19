@@ -17,8 +17,8 @@ import { Route as RegisterRouteImport } from './routes/register';
 import { Route as ResetPasswordRouteImport } from './routes/reset-password';
 import { Route as SubscriptionRouteImport } from './routes/subscription';
 import { Route as AppIndexRouteImport } from './routes/_app/index';
-import { Route as AppBalancingRouteImport } from './routes/_app/balancing';
 import { Route as AppCashiersRouteImport } from './routes/_app/cashiers';
+import { Route as AppClosingRouteImport } from './routes/_app/closing';
 import { Route as AppExpensesRouteImport } from './routes/_app/expenses';
 import { Route as AppOutletsRouteImport } from './routes/_app/outlets';
 import { Route as AppProductsRouteImport } from './routes/_app/products';
@@ -67,14 +67,14 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any);
-const AppBalancingRoute = AppBalancingRouteImport.update({
-  id: '/balancing',
-  path: '/balancing',
-  getParentRoute: () => AppRoute,
-} as any);
 const AppCashiersRoute = AppCashiersRouteImport.update({
   id: '/cashiers',
   path: '/cashiers',
+  getParentRoute: () => AppRoute,
+} as any);
+const AppClosingRoute = AppClosingRouteImport.update({
+  id: '/closing',
+  path: '/closing',
   getParentRoute: () => AppRoute,
 } as any);
 const AppExpensesRoute = AppExpensesRouteImport.update({
@@ -126,8 +126,8 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute;
   '/reset-password': typeof ResetPasswordRoute;
   '/subscription': typeof SubscriptionRoute;
-  '/balancing': typeof AppBalancingRoute;
   '/cashiers': typeof AppCashiersRoute;
+  '/closing': typeof AppClosingRoute;
   '/expenses': typeof AppExpensesRoute;
   '/outlets': typeof AppOutletsRoute;
   '/products': typeof AppProductsRoute;
@@ -144,8 +144,8 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute;
   '/reset-password': typeof ResetPasswordRoute;
   '/subscription': typeof SubscriptionRoute;
-  '/balancing': typeof AppBalancingRoute;
   '/cashiers': typeof AppCashiersRoute;
+  '/closing': typeof AppClosingRoute;
   '/expenses': typeof AppExpensesRoute;
   '/outlets': typeof AppOutletsRoute;
   '/products': typeof AppProductsRoute;
@@ -165,8 +165,8 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute;
   '/reset-password': typeof ResetPasswordRoute;
   '/subscription': typeof SubscriptionRoute;
-  '/_app/balancing': typeof AppBalancingRoute;
   '/_app/cashiers': typeof AppCashiersRoute;
+  '/_app/closing': typeof AppClosingRoute;
   '/_app/expenses': typeof AppExpensesRoute;
   '/_app/outlets': typeof AppOutletsRoute;
   '/_app/products': typeof AppProductsRoute;
@@ -187,8 +187,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/subscription'
-    | '/balancing'
     | '/cashiers'
+    | '/closing'
     | '/expenses'
     | '/outlets'
     | '/products'
@@ -205,8 +205,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/subscription'
-    | '/balancing'
     | '/cashiers'
+    | '/closing'
     | '/expenses'
     | '/outlets'
     | '/products'
@@ -225,8 +225,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/subscription'
-    | '/_app/balancing'
     | '/_app/cashiers'
+    | '/_app/closing'
     | '/_app/expenses'
     | '/_app/outlets'
     | '/_app/products'
@@ -307,18 +307,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport;
       parentRoute: typeof AppRoute;
     };
-    '/_app/balancing': {
-      id: '/_app/balancing';
-      path: '/balancing';
-      fullPath: '/balancing';
-      preLoaderRoute: typeof AppBalancingRouteImport;
-      parentRoute: typeof AppRoute;
-    };
     '/_app/cashiers': {
       id: '/_app/cashiers';
       path: '/cashiers';
       fullPath: '/cashiers';
       preLoaderRoute: typeof AppCashiersRouteImport;
+      parentRoute: typeof AppRoute;
+    };
+    '/_app/closing': {
+      id: '/_app/closing';
+      path: '/closing';
+      fullPath: '/closing';
+      preLoaderRoute: typeof AppClosingRouteImport;
       parentRoute: typeof AppRoute;
     };
     '/_app/expenses': {
@@ -381,8 +381,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppBalancingRoute: typeof AppBalancingRoute;
   AppCashiersRoute: typeof AppCashiersRoute;
+  AppClosingRoute: typeof AppClosingRoute;
   AppExpensesRoute: typeof AppExpensesRoute;
   AppOutletsRoute: typeof AppOutletsRoute;
   AppProductsRoute: typeof AppProductsRoute;
@@ -394,8 +394,8 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppBalancingRoute: AppBalancingRoute,
   AppCashiersRoute: AppCashiersRoute,
+  AppClosingRoute: AppClosingRoute,
   AppExpensesRoute: AppExpensesRoute,
   AppOutletsRoute: AppOutletsRoute,
   AppProductsRoute: AppProductsRoute,

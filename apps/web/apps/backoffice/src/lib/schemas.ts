@@ -151,7 +151,33 @@ export const voucherSchema = z
   });
 export const voucherActiveSchema = z.object({ id: uuid, active: z.boolean() });
 
-// ---------- Expenses (POS migrations 040, 041, 043) ----------
+// ---------- Expenses (POS migrations 040, 041; owner cancel and add, 073) ----------
+/** Same list as the check in migrations 040, 041 and the POS. */
+export const EXPENSE_UNITS = ['kg', 'gr', 'L', 'ml', 'pcs', 'pack', 'dus', 'botol', 'sachet', 'ikat', 'karung', 'lusin'] as const;
+export const expenseItemSchema = z.object({
+  name: req('Tulis nama barang atau biaya.', 60, 'Nama barang maksimal 60 huruf.'),
+  category: z.enum(['operasional', 'belanja'], { error: 'Pilih kategori.' }),
+  quantity: z
+    .number({ error: 'Jumlah harus angka.' })
+    .gt(0, 'Jumlah harus lebih dari 0.')
+    .max(100000, 'Jumlah maksimal 100.000.')
+    .refine((v) => Math.abs(v * 1000 - Math.round(v * 1000)) < 1e-6, 'Jumlah maksimal 3 angka di belakang koma.'),
+  unit: z.enum(EXPENSE_UNITS, { error: 'Pilih satuan.' }),
+  amount: z
+    .number({ error: 'Harga total harus angka.' })
+    .int('Harga total tanpa koma.')
+    .gt(0, 'Harga total harus lebih dari Rp0.')
+    .max(100_000_000, 'Harga total maksimal Rp100.000.000.'),
+});
+export const expenseAddSchema = z.object({
+  shiftId: uuid,
+  paidFrom: z.enum(['drawer', 'other'], { error: 'Pilih sumber uang.' }),
+  items: z.array(expenseItemSchema).min(1, 'Isi minimal satu barang.').max(30, 'Maksimal 30 barang sekali simpan.'),
+});
+export const expenseCancelSchema = z.object({
+  itemId: uuid,
+  reason: z.string().trim().min(3, 'Tulis alasan, minimal 3 huruf.').max(200, 'Maksimal 200 karakter.'),
+});
 export const expenseListSchema = z
   .object({
     outletId: uuid.nullable(),
@@ -202,7 +228,7 @@ export const notifySchema = z.object({ subscription: z.boolean(), cash_variance:
 export const summarySchema = z.object({ from: day, to: day, outletId: uuid.nullable() });
 export const productSalesSchema = z.object({ outletId: uuid, from: day, to: day, tz: z.enum(timezones) }).refine(...rangeCheck);
 
-// ---------- Transactions (migrations 028, 034, 066, 067) and balancing (071) ----------
+// ---------- Transactions (migrations 028, 034, 066, 067, 073) ----------
 export const billListSchema = z
   .object({
     outletId: uuid.nullable(),
@@ -219,24 +245,36 @@ export const billVoidSchema = z.object({
   id: uuid,
   reason: z.string().trim().min(3, 'Tulis alasan pembatalan, minimal 3 huruf.').max(200, 'Maksimal 200 karakter.'),
 });
-export const balanceListSchema = z
-  .object({ outletId: uuid.nullable(), from: day, to: day, tz: z.enum(timezones), page: z.number().int().min(1).max(10_000) })
-  .refine(...rangeCheck);
-/** Same rules as owner_add_shift_adjustment: a signed whole rupiah amount, a category only for an expense. */
-export const adjustmentSchema = z
-  .object({
-    shiftId: uuid,
-    kind: z.enum(['cash', 'sales', 'expense']),
-    amount: z
-      .number({ error: 'Isi nominal.' })
-      .int('Nominal tanpa koma.')
-      .refine((v) => v !== 0, 'Nominal tidak boleh nol.')
-      .refine((v) => Math.abs(v) <= 1_000_000_000, 'Nominal maksimal Rp1.000.000.000.'),
-    category: z.enum(['operasional', 'belanja']).nullable(),
-    reason: z.string().trim().min(3, 'Tulis alasan, minimal 3 huruf.').max(200, 'Maksimal 200 karakter.'),
-  })
-  .refine((v) => (v.kind === 'expense') === (v.category !== null), { path: ['category'], message: 'Pilih kategori pengeluaran.' });
+/** Same rules as owner_correct_bill (073): the whole new list, lines of the bill by itemId, new products by productId. */
+const lineQty = z.number({ error: 'Jumlah harus angka.' }).int('Jumlah tanpa koma.').min(0, 'Jumlah tidak boleh minus.').max(9999, 'Jumlah maksimal 9.999.');
+const reason = z.string().trim().min(3, 'Tulis alasan, minimal 3 huruf.').max(200, 'Maksimal 200 karakter.');
+export const billCorrectionSchema = z.object({
+  id: uuid,
+  items: z
+    .array(
+      // A line already on the bill (itemId) or a new product (productId), never both.
+      z.object({ itemId: uuid.optional(), productId: uuid.optional(), quantity: lineQty }).refine((v) => !v.itemId !== !v.productId, 'Data tidak valid.'),
+    )
+    .max(200, 'Maksimal 200 item.')
+    .refine((v) => v.some((i) => i.quantity > 0), 'Bill harus berisi minimal satu item.'),
+  paymentMethod: z.enum(['cash', 'qris']),
+  customerName: z.string().trim().max(40, 'Nama pelanggan maksimal 40 karakter.'),
+  tableNumber: z.string().trim().max(6, 'Nomor meja maksimal 6 karakter.'),
+  reason,
+});
 
+// ---------- Tutup hari (073) ----------
+export const dayCloseSchema = z.object({ outletId: uuid, date: day });
+export const cashMovementSchema = z.object({
+  shiftId: uuid,
+  direction: z.enum(['in', 'out']),
+  amount: z
+    .number({ error: 'Isi nominal.' })
+    .int('Nominal tanpa koma.')
+    .gt(0, 'Nominal harus lebih dari Rp0.')
+    .max(1_000_000_000, 'Nominal maksimal Rp1.000.000.000.'),
+  reason,
+});
 // ---------- Billing ----------
 export const paymentSchema = z.object({
   plan: z.enum(['monthly', 'semiannual', 'annual']),

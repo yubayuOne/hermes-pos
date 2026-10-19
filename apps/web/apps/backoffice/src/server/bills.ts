@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { addDays } from '@hermes-pos/ui';
-import { billListSchema, billRefSchema, billVoidSchema, parser } from '../lib/schemas';
+import { billCorrectionSchema, billListSchema, billRefSchema, billVoidSchema, parser } from '../lib/schemas';
 import type { ActionResult, BillEdit, BillItem, BillList, BillRefund } from '../lib/types';
 import { toBillEdit, toBillItem, toBillList, toBillRefund } from './normalize';
 import { startOf } from './summary';
@@ -48,4 +48,23 @@ export const voidBill = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const { callRpc } = await import('./supabase.server');
     return done(await callRpc('owner_void_bill', { p_transaction_id: data.id, p_reason: data.reason }));
+  });
+
+/**
+ * Koreksi bill (073): the database voids the bill and records the right one in the same step, at the original's day,
+ * shift, and prices. Returns the new bill's number and total.
+ */
+export const correctBill = createServerFn({ method: 'POST' })
+  .validator(parser(billCorrectionSchema))
+  .handler(async ({ data }): Promise<ActionResult<{ number: string; total: number }>> => {
+    const { callRpc } = await import('./supabase.server');
+    const res = await callRpc<{ number?: unknown; total?: unknown }>('owner_correct_bill', {
+      p_transaction_id: data.id,
+      p_items: data.items,
+      p_payment_method: data.paymentMethod,
+      p_customer_name: data.customerName,
+      p_table_number: data.tableNumber,
+      p_reason: data.reason,
+    });
+    return res.ok ? { ok: true, data: { number: String(res.data?.number ?? ''), total: Number(res.data?.total ?? 0) } } : res;
   });

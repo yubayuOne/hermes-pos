@@ -13,16 +13,14 @@ create or replace function pg_temp.pay(payload jsonb, k text, method text defaul
     payload, method::public.payment_method, 1000000, null, k, null, null) ->> 'transactionId')::uuid
 $$;
 create or replace function pg_temp.checks() returns jsonb language sql as $$
-  select public.ledger_checks(current_setting('t.b')::uuid, now() - interval '1 day', now() + interval '1 day')
+  select public.ledger_checks(current_setting('t.b')::uuid, null, now() - interval '1 day', now() + interval '1 day')
 $$;
 create or replace function pg_temp.acct(a text) returns numeric language sql as $$
   select coalesce(sum(amount), 0) from public.ledger where business_id = current_setting('t.b')::uuid and account = a
 $$;
 
 select pg_temp.ok('S1 the ledger and the checks are internal', not has_table_privilege('authenticated', 'public.ledger', 'select')
-  and not has_function_privilege('authenticated', 'public.ledger_checks(uuid, timestamptz, timestamptz)', 'execute')
-  and has_function_privilege('authenticated', 'public.owner_ledger_checks(timestamptz, timestamptz)', 'execute')
-  and not has_function_privilege('anon', 'public.owner_ledger_checks(timestamptz, timestamptz)', 'execute'));
+  and not has_function_privilege('authenticated', 'public.ledger_checks(uuid, uuid, timestamptz, timestamptz)', 'execute'));
 
 insert into auth.users(id, email) values ('e7200000-0000-0000-0000-000000000001', 'joni@kopi.id');
 select set_config('request.jwt.claim.sub', 'e7200000-0000-0000-0000-000000000001', false);
@@ -119,8 +117,3 @@ values (current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_set
 select pg_temp.ok('X5 an unexplained cash book row on an open shift: P5 reports it',
   exists (select 1 from jsonb_array_elements(pg_temp.checks()) f where f ->> 'rule' = 'P5' and f ->> 'ref' = current_setting('t.sh')));
 delete from public.cash_ledger where source_type = 'manual' and shift_id = current_setting('t.sh')::uuid;
-
--- The owner's view needs the owner.
-set role authenticated;
-select pg_temp.ok('O1 owner sees the same clean result', public.owner_ledger_checks(now() - interval '1 day', now() + interval '1 day') = '[]'::jsonb);
-reset role;
