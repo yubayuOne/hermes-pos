@@ -450,8 +450,8 @@ export const EN: Dict = {
   'Urut dari penjualan terbesar. Margin adalah laba kotor dibagi penjualan.': 'Sorted by sales, highest first. Margin is gross profit divided by sales.',
   Terjual: 'Sold',
   Margin: 'Margin',
-  'Penjualan produk setelah diskon item, sebelum refund dan diskon bill. Margin di bawah {x}% (5 poin di bawah rata-rata) ditandai merah.':
-    'Product sales are after item discounts, before refunds and bill discounts. Margins under {x}% (5 points under the average) are marked red.',
+  'Penjualan produk setelah semua diskon (item dan bill), sebelum refund. Margin di bawah {x}% (5 poin di bawah rata-rata) ditandai merah.':
+    'Product sales are after all discounts (item and bill), before refunds. Margins under {x}% (5 points under the average) are marked red.',
   'Menampilkan {n} dari {m} menu dengan penjualan terbesar; total mencakup semuanya.':
     'Showing {n} of {m} menu items with the highest sales; the total covers all of them.',
   'Per kategori': 'By category',
@@ -909,7 +909,7 @@ export const EN: Dict = {
   'Cari nomor, nama, atau meja': 'Search number, name, or table',
   'Tidak ada bill yang cocok.': 'No bills match.',
   'Cari nama produk': 'Search product name',
-  'Dari bill selesai. Penjualan setelah diskon item, refund belum dikurangi.': 'From completed bills. Sales after item discounts, refunds not subtracted.',
+  'Dari bill selesai. Penjualan setelah semua diskon, refund belum dikurangi.': 'From completed bills. Sales after all discounts, refunds not subtracted.',
   'Terjual {period}': 'Sold {period}',
   '{n} produk aktif': '{n} active products',
   'Periode untuk kolom Terjual, dari bill selesai.': 'Period for the Sold column, from completed bills.',

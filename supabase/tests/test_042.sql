@@ -109,12 +109,13 @@ select pg_temp.ok('E1 expenses incl. the open shift: belanja 36.000, operasional
   and (current_setting('t.r')::jsonb -> 'expenses' ->> 'operasional')::numeric = 60000 and (current_setting('t.r')::jsonb -> 'expenses' ->> 'drawer')::numeric = 36000);
 select pg_temp.ok('E2 largest expense first, one day', current_setting('t.r')::jsonb -> 'expenses' -> 'top' -> 0 ->> 'name' = 'Listrik'
   and jsonb_array_length(current_setting('t.r')::jsonb -> 'expenses' -> 'daily') = 1);
-select pg_temp.ok('K1 by category before refunds, voided bill left out: Minuman 88.000 (4), Makanan 18.000',
-  current_setting('t.r')::jsonb -> 'byCategory' -> 0 ->> 'name' = 'Minuman' and (current_setting('t.r')::jsonb -> 'byCategory' -> 0 ->> 'sales')::numeric = 88000
+-- Since 072 a line's sales are net of its share of the bill discount: D's 2.200 comes off the kopi.
+select pg_temp.ok('K1 by category before refunds, voided bill left out: Minuman 85.800 (4), Makanan 18.000',
+  current_setting('t.r')::jsonb -> 'byCategory' -> 0 ->> 'name' = 'Minuman' and (current_setting('t.r')::jsonb -> 'byCategory' -> 0 ->> 'sales')::numeric = 85800
   and (current_setting('t.r')::jsonb -> 'byCategory' -> 0 ->> 'qty')::numeric = 4 and (current_setting('t.r')::jsonb -> 'byCategory' -> 1 ->> 'sales')::numeric = 18000);
-select pg_temp.ok('K2 products: kopi profit 56.000, 2 products, totals 106.000',
-  current_setting('t.r')::jsonb -> 'products' -> 0 ->> 'name' = 'Kopi susu' and (current_setting('t.r')::jsonb -> 'products' -> 0 ->> 'profit')::numeric = 56000
-  and (current_setting('t.r')::jsonb ->> 'productCount')::int = 2 and (current_setting('t.r')::jsonb -> 'productTotals' ->> 'sales')::numeric = 106000
+select pg_temp.ok('K2 products: kopi profit 53.800, 2 products, totals 103.800 (= gross 106.000 - discount 2.200)',
+  current_setting('t.r')::jsonb -> 'products' -> 0 ->> 'name' = 'Kopi susu' and (current_setting('t.r')::jsonb -> 'products' -> 0 ->> 'profit')::numeric = 53800
+  and (current_setting('t.r')::jsonb ->> 'productCount')::int = 2 and (current_setting('t.r')::jsonb -> 'productTotals' ->> 'sales')::numeric = 103800
   and current_setting('t.r')::jsonb -> 'outlets' ->> 0 = 'Pusat');
 select pg_temp.ok('K3 outlet filter gives the same numbers', (pg_temp.rep(current_setting('t.o')::uuid) -> 'pnl' ->> 'netSales')::numeric = 81800);
 select pg_temp.fails('V1 reversed range', 'select public.owner_report(null, now(), now() - interval ''1 day'', now() - interval ''2 days'', now() - interval ''1 day'')', 'tidak valid');

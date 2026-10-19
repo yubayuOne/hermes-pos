@@ -581,7 +581,7 @@ export function ReportDocument({
             </table>
           </Scroll>
           <p className="mt-2 text-[12px] text-mute">
-            {t('Penjualan produk setelah diskon item, sebelum refund dan diskon bill. Margin di bawah {x}% (5 poin di bawah rata-rata) ditandai merah.', {
+            {t('Penjualan produk setelah semua diskon (item dan bill), sebelum refund. Margin di bawah {x}% (5 poin di bawah rata-rata) ditandai merah.', {
               x: decimal(redBelow, lang),
             })}
             {r.productCount > r.products.length

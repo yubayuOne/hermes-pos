@@ -501,7 +501,7 @@ function ProductsTab({
             ))}
           </Select>
         </Field>
-        <p className="text-[14px] text-mute">{t('Dari bill selesai. Penjualan setelah diskon item, refund belum dikurangi.')}</p>
+        <p className="text-[14px] text-mute">{t('Dari bill selesai. Penjualan setelah semua diskon, refund belum dikurangi.')}</p>
       </FilterBar>
       {sold === null && (
         <p role="status" className="mt-3 text-[14px] font-semibold text-error">

@@ -239,7 +239,8 @@ begin
   perform t_ck('E2 laporan: diskon & kotor', (rep->>'discountTotal')::numeric=sum_d and (rep->>'grossSales')::numeric=sum_g and (rep->>'grossSales')::numeric-(rep->>'discountTotal')::numeric=(rep->>'totalRevenue')::numeric, rep::text);
   perform t_ck('E3 laporan: jumlah bill batal tercatat', (rep->>'voidedCount')::int=1 and (rep->>'voidedTotal')::numeric=27000);
   select sum((x->>'total')::numeric) into cats from jsonb_array_elements(rep->'categories') x;
-  perform t_ck('E4 total kategori + diskon bill = pendapatan + diskon bill (kategori memakai harga setelah diskon item)', cats = (rep->>'totalRevenue')::numeric + (rep->>'billDiscount')::numeric, cats::text);
+  -- Sejak 072 baris item memakai harga setelah semua diskon, termasuk bagian diskon bill.
+  perform t_ck('E4 total kategori = pendapatan (kategori memakai harga setelah semua diskon)', cats = (rep->>'totalRevenue')::numeric, cats::text);
 
   lst := list_shift_bills(sh,'voided','',30,0);
   perform t_ck('E5 daftar bill batal', (lst->>'voidedCount')::int=1 and jsonb_array_length(lst->'rows')=1 and lst->'rows'->0->>'voidReason'='Pelanggan batal pesan');
