@@ -1,17 +1,14 @@
 import { useEffect, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { isoDay } from '@hermes-pos/ui';
-import { Button, Card, Dialog, Empty, FormAlert, Input, Loading, Select, SkCard, Tag, dateLong, money, useI18n } from '@hermes-pos/ui';
+import { Card, Empty, FormAlert, Loading, SkCard, Tag, dateLong, money, useI18n } from '@hermes-pos/ui';
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { Pagination } from '../../components/Pagination';
 import { Stat } from '../../components/Stat';
-import { useLock } from '../../lib/app';
-import { EXPENSE_UNITS, expenseItemSchema } from '../../lib/schemas';
 import type { Expense, ExpenseItem } from '../../lib/types';
-import { useAction } from '../../lib/useAction';
 import { describeError } from '../../lib/errors';
-import { listExpenses, updateExpense } from '../../server/expenses';
+import { listExpenses } from '../../server/expenses';
 import { pageHead } from '../../lang';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
@@ -66,7 +63,6 @@ function Expenses() {
   const navigate = useNavigate({ from: '/expenses' });
   const set = (patch: Partial<Search>) => navigate({ search: (s: Search) => ({ ...s, ...patch }) });
   const periodLabel = usePeriodLabel(search, data.range);
-  const [editing, setEditing] = useState<Expense | null>(null);
   // Pages of 50 shift records (server cursor: createdAt of the last row). Pages already seen are kept, so Sebelumnya
   // needs no request; a new filter or a saved edit starts again at page 1.
   const [pages, setPages] = useState<Expense[][]>([data.rows]);
@@ -107,7 +103,7 @@ function Expenses() {
     <Page title={t('Pengeluaran')} tools={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}>
       <p className="max-w-[46em] text-mute">
         {t(
-          'Kasir mencatat belanja dan biaya operasional di aplikasi. Semua catatan satu shift jadi satu daftar dan langsung dihitung. Anda bisa mengubahnya kapan saja; kas shift itu ikut dihitung ulang.',
+          'Kasir mencatat belanja dan biaya operasional di aplikasi; semua catatan satu shift jadi satu daftar. Nominal yang salah dikoreksi di menu Balancing.',
         )}
       </p>
       <div className="mt-5">
@@ -121,6 +117,9 @@ function Expenses() {
           <Stat label={t('Operasional')} value={money(data.totals.operasional)} />
           <Stat label={t('Belanja')} value={money(data.totals.belanja)} />
         </dl>
+        {data.totals.adjustments !== 0 && (
+          <p className="mt-4 text-[14px] text-mute">{t('Termasuk penyesuaian dari Balancing: {amount}', { amount: money(data.totals.adjustments) })}</p>
+        )}
       </Card>
 
       {data.rows.length === 0 ? (
@@ -137,7 +136,7 @@ function Expenses() {
               </h2>
               <div className="mt-4 grid gap-5">
                 {list.map((e) => (
-                  <ExpenseCard key={e.id} expense={e} onEdit={() => setEditing(e)} />
+                  <ExpenseCard key={e.id} expense={e} />
                 ))}
               </div>
             </section>
@@ -149,15 +148,12 @@ function Expenses() {
           </div>
         </div>
       )}
-
-      {editing && <EditDialog expense={editing} onClose={() => setEditing(null)} />}
     </Page>
   );
 }
 
-function ExpenseCard({ expense: e, onEdit }: { expense: Expense; onEdit: () => void }) {
+function ExpenseCard({ expense: e }: { expense: Expense }) {
   const { t } = useI18n();
-  const lock = useLock();
   return (
     <Card as="article" aria-label={t('Pengeluaran shift {n}, {amount}', { n: e.shiftNumber, amount: money(e.total) })}>
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -169,12 +165,7 @@ function ExpenseCard({ expense: e, onEdit }: { expense: Expense; onEdit: () => v
           <p className="mt-1 font-display text-[28px] font-extrabold leading-none tracking-[-0.03em]">{money(e.total)}</p>
           {e.drawerTotal > 0 && <p className="mt-1.5 text-[15px] text-mute">{t('{amount} dari kas laci', { amount: money(e.drawerTotal) })}</p>}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {e.shiftOpen && <Tag tone="fire">{t('shift masih buka')}</Tag>}
-          <Button onClick={onEdit} {...lock.props}>
-            {lock.label(t('Ubah'))}
-          </Button>
-        </div>
+        <div className="flex flex-wrap items-center gap-2">{e.shiftOpen && <Tag tone="fire">{t('shift masih buka')}</Tag>}</div>
       </div>
       <div className="tbl-wrap mt-4">
         <table className="tbl tbl-card">
@@ -210,172 +201,5 @@ function ExpenseCard({ expense: e, onEdit }: { expense: Expense; onEdit: () => v
       </div>
       {e.shiftOpen && <p className="mt-4 text-[15px] text-mute">{t('Kasir masih bisa menambah barang selama shift buka.')}</p>}
     </Card>
-  );
-}
-
-type Row = { name: string; category: ExpenseItem['category']; quantity: string; unit: string; amount: string; paidFrom: ExpenseItem['paidFrom'] };
-const toRow = (i: ExpenseItem): Row => ({
-  name: i.name,
-  category: i.category,
-  quantity: qty(i.quantity),
-  unit: i.unit,
-  amount: String(i.amount),
-  paidFrom: i.paidFrom,
-});
-
-/** The owner can correct every field of the shift's items. The database recomputes the total, the cash book, and a closed shift's expected cash. */
-function EditDialog({ expense: e, onClose }: { expense: Expense; onClose: () => void }) {
-  const { t } = useI18n();
-  const act = useAction();
-  const [rows, setRows] = useState<Row[]>(e.items.map(toRow));
-  const [errors, setErrors] = useState<string[]>([]);
-  const parsed = rows.map((r) => ({
-    name: r.name,
-    category: r.category,
-    unit: r.unit,
-    paidFrom: r.paidFrom,
-    quantity: Number(r.quantity.trim().replace(',', '.')),
-    amount: Number(r.amount.replace(/\./g, '')),
-  }));
-  const total = parsed.reduce((n, r) => n + (Number.isFinite(r.amount) ? r.amount : 0), 0);
-  const set = (k: number, patch: Partial<Row>) => {
-    setRows((rs) => rs.map((r, j) => (j === k ? { ...r, ...patch } : r)));
-    setErrors((es) => es.map((x, j) => (j === k ? '' : x)));
-  };
-
-  async function save() {
-    const checks = parsed.map((r) => expenseItemSchema.safeParse({ ...r, quantity: r.quantity, amount: r.amount }));
-    const errs = checks.map((c) => (c.success ? '' : (c.error.issues[0]?.message ?? 'Data tidak valid.')));
-    setErrors(errs);
-    if (errs.some(Boolean) || !rows.length) return;
-    const items = checks.map((c) => (c.success ? c.data : null)).filter((x) => x !== null);
-    const res = await act.run(() => updateExpense({ data: { id: e.id, items } }), {
-      success: t('Pengeluaran shift {n} disimpan: {amount}.', { n: e.shiftNumber, amount: money(total) }),
-    });
-    if (res) onClose();
-  }
-
-  return (
-    <Dialog
-      open
-      wide
-      onOpenChange={(o) => !o && onClose()}
-      title={t('Ubah pengeluaran shift {n}', { n: e.shiftNumber })}
-      description={
-        e.shiftOpen
-          ? t('Shift masih buka. Kas seharusnya di aplikasi kasir ikut berubah.')
-          : t('Shift sudah ditutup. Kas seharusnya dan selisih shift itu dihitung ulang; hitungan uang kasir tetap.')
-      }
-      footer={
-        <>
-          <Button onClick={onClose} disabled={act.busy}>
-            {t('Batal')}
-          </Button>
-          <Button variant="fire" busy={act.busy} onClick={save}>
-            {t('Simpan {amount}', { amount: money(total) })}
-          </Button>
-        </>
-      }
-    >
-      <div className="grid gap-4">
-        {rows.map((r, k) => (
-          // One card per item: name across the top, then two and three fields per row. Phones get two columns.
-          <fieldset key={k} className="grid grid-cols-2 gap-3 rounded border-[1.5px] border-ink bg-slip p-4 sm:grid-cols-6">
-            <legend className="sr-only">{t('Barang {n}', { n: k + 1 })}</legend>
-            <div className="col-span-full flex items-center justify-between gap-3">
-              <span aria-hidden className="font-mono text-[14px] text-mute">
-                {t('Barang {n}', { n: k + 1 })}
-              </span>
-              <Button
-                sm
-                disabled={rows.length === 1}
-                onClick={() => {
-                  setRows((rs) => rs.filter((_, j) => j !== k));
-                  setErrors((es) => es.filter((_, j) => j !== k));
-                }}
-              >
-                {t('Hapus')}
-                <span className="sr-only"> {t('barang {n}', { n: k + 1 })}</span>
-              </Button>
-            </div>
-            <label className="col-span-full grid min-w-0 gap-1.5">
-              <span className="text-[14px] font-semibold">{t('Barang atau biaya')}</span>
-              <Input value={r.name} maxLength={60} onChange={(ev) => set(k, { name: ev.target.value })} />
-            </label>
-            <label className="grid min-w-0 gap-1.5 sm:col-span-3">
-              <span className="text-[14px] font-semibold">{t('Kategori')}</span>
-              <Select value={r.category} onChange={(ev) => set(k, { category: ev.target.value as Row['category'] })}>
-                <option value="belanja">{t('Belanja')}</option>
-                <option value="operasional">{t('Operasional')}</option>
-              </Select>
-            </label>
-            <label className="grid min-w-0 gap-1.5 sm:col-span-3">
-              <span className="text-[14px] font-semibold">{t('Uang dari')}</span>
-              <Select value={r.paidFrom} onChange={(ev) => set(k, { paidFrom: ev.target.value as Row['paidFrom'] })}>
-                <option value="drawer">{t('Kas laci')}</option>
-                <option value="other">{t('Bukan dari laci')}</option>
-              </Select>
-            </label>
-            <label className="grid min-w-0 gap-1.5 sm:col-span-2">
-              <span className="text-[14px] font-semibold">{t('Jumlah|barang')}</span>
-              <Input
-                value={r.quantity}
-                inputMode="decimal"
-                className="font-mono"
-                onChange={(ev) => set(k, { quantity: ev.target.value.replace(/[^\d.,]/g, '') })}
-              />
-            </label>
-            <label className="grid min-w-0 gap-1.5 sm:col-span-2">
-              <span className="text-[14px] font-semibold">{t('Satuan')}</span>
-              <Select value={r.unit} onChange={(ev) => set(k, { unit: ev.target.value })}>
-                {EXPENSE_UNITS.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-              </Select>
-            </label>
-            <label className="col-span-full grid min-w-0 gap-1.5 sm:col-span-2">
-              <span className="text-[14px] font-semibold">{t('Harga total')}</span>
-              <Input
-                value={r.amount && Number(r.amount).toLocaleString('id-ID')}
-                inputMode="numeric"
-                maxLength={13}
-                className="font-mono"
-                onChange={(ev) => {
-                  // The dots move as digits are typed: put the caret back after the same digit, not at the end.
-                  const el = ev.target;
-                  const before = el.value.slice(0, el.selectionStart ?? el.value.length).replace(/\D/g, '').length;
-                  set(k, { amount: el.value.replace(/\D/g, '') });
-                  requestAnimationFrame(() => {
-                    let pos = 0;
-                    for (let seen = 0; pos < el.value.length && seen < before; pos++) if (/\d/.test(el.value[pos])) seen++;
-                    el.setSelectionRange(pos, pos);
-                  });
-                }}
-              />
-            </label>
-            {errors[k] && (
-              <p role="alert" className="col-span-full text-[14px] font-semibold text-error">
-                {t(errors[k])}
-              </p>
-            )}
-          </fieldset>
-        ))}
-        {rows.length < 200 && (
-          <Button
-            className="justify-self-start"
-            onClick={() => setRows((rs) => [...rs, { name: '', category: 'belanja', quantity: '1', unit: 'pcs', amount: '', paidFrom: 'other' }])}
-          >
-            {t('Tambah barang')}
-          </Button>
-        )}
-        <p className="flex justify-between border-t-[1.5px] border-ink pt-3 font-semibold">
-          <span>{t('Total')}</span>
-          <span className="font-mono">{money(total)}</span>
-        </p>
-        <FormAlert>{act.error && t(act.error)}</FormAlert>
-      </div>
-    </Dialog>
   );
 }

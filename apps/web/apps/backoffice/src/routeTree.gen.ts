@@ -8,168 +8,177 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as AppRouteImport } from './routes/_app'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as SubscriptionRouteImport } from './routes/subscription'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppCashiersRouteImport } from './routes/_app/cashiers'
-import { Route as AppExpensesRouteImport } from './routes/_app/expenses'
-import { Route as AppOutletsRouteImport } from './routes/_app/outlets'
-import { Route as AppProductsRouteImport } from './routes/_app/products'
-import { Route as AppReportsRouteImport } from './routes/_app/reports'
-import { Route as AppSettingsRouteImport } from './routes/_app/settings'
-import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
-import { Route as AppVouchersRouteImport } from './routes/_app/vouchers'
-import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as rootRouteImport } from './routes/__root';
+import { Route as AppRouteImport } from './routes/_app';
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password';
+import { Route as LoginRouteImport } from './routes/login';
+import { Route as OnboardingRouteImport } from './routes/onboarding';
+import { Route as RegisterRouteImport } from './routes/register';
+import { Route as ResetPasswordRouteImport } from './routes/reset-password';
+import { Route as SubscriptionRouteImport } from './routes/subscription';
+import { Route as AppIndexRouteImport } from './routes/_app/index';
+import { Route as AppBalancingRouteImport } from './routes/_app/balancing';
+import { Route as AppCashiersRouteImport } from './routes/_app/cashiers';
+import { Route as AppExpensesRouteImport } from './routes/_app/expenses';
+import { Route as AppOutletsRouteImport } from './routes/_app/outlets';
+import { Route as AppProductsRouteImport } from './routes/_app/products';
+import { Route as AppReportsRouteImport } from './routes/_app/reports';
+import { Route as AppSettingsRouteImport } from './routes/_app/settings';
+import { Route as AppTransactionsRouteImport } from './routes/_app/transactions';
+import { Route as AppVouchersRouteImport } from './routes/_app/vouchers';
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback';
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const SubscriptionRoute = SubscriptionRouteImport.update({
   id: '/subscription',
   path: '/subscription',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
+const AppBalancingRoute = AppBalancingRouteImport.update({
+  id: '/balancing',
+  path: '/balancing',
+  getParentRoute: () => AppRoute,
+} as any);
 const AppCashiersRoute = AppCashiersRouteImport.update({
   id: '/cashiers',
   path: '/cashiers',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AppExpensesRoute = AppExpensesRouteImport.update({
   id: '/expenses',
   path: '/expenses',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AppOutletsRoute = AppOutletsRouteImport.update({
   id: '/outlets',
   path: '/outlets',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AppProductsRoute = AppProductsRouteImport.update({
   id: '/products',
   path: '/products',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AppReportsRoute = AppReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AppTransactionsRoute = AppTransactionsRouteImport.update({
   id: '/transactions',
   path: '/transactions',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AppVouchersRoute = AppVouchersRouteImport.update({
   id: '/vouchers',
   path: '/vouchers',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/login': typeof LoginRoute
-  '/onboarding': typeof OnboardingRoute
-  '/register': typeof RegisterRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/subscription': typeof SubscriptionRoute
-  '/cashiers': typeof AppCashiersRoute
-  '/expenses': typeof AppExpensesRoute
-  '/outlets': typeof AppOutletsRoute
-  '/products': typeof AppProductsRoute
-  '/reports': typeof AppReportsRoute
-  '/settings': typeof AppSettingsRoute
-  '/transactions': typeof AppTransactionsRoute
-  '/vouchers': typeof AppVouchersRoute
-  '/auth/callback': typeof AuthCallbackRoute
+  '/': typeof AppIndexRoute;
+  '/forgot-password': typeof ForgotPasswordRoute;
+  '/login': typeof LoginRoute;
+  '/onboarding': typeof OnboardingRoute;
+  '/register': typeof RegisterRoute;
+  '/reset-password': typeof ResetPasswordRoute;
+  '/subscription': typeof SubscriptionRoute;
+  '/balancing': typeof AppBalancingRoute;
+  '/cashiers': typeof AppCashiersRoute;
+  '/expenses': typeof AppExpensesRoute;
+  '/outlets': typeof AppOutletsRoute;
+  '/products': typeof AppProductsRoute;
+  '/reports': typeof AppReportsRoute;
+  '/settings': typeof AppSettingsRoute;
+  '/transactions': typeof AppTransactionsRoute;
+  '/vouchers': typeof AppVouchersRoute;
+  '/auth/callback': typeof AuthCallbackRoute;
 }
 export interface FileRoutesByTo {
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/login': typeof LoginRoute
-  '/onboarding': typeof OnboardingRoute
-  '/register': typeof RegisterRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/subscription': typeof SubscriptionRoute
-  '/cashiers': typeof AppCashiersRoute
-  '/expenses': typeof AppExpensesRoute
-  '/outlets': typeof AppOutletsRoute
-  '/products': typeof AppProductsRoute
-  '/reports': typeof AppReportsRoute
-  '/settings': typeof AppSettingsRoute
-  '/transactions': typeof AppTransactionsRoute
-  '/vouchers': typeof AppVouchersRoute
-  '/auth/callback': typeof AuthCallbackRoute
-  '/': typeof AppIndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute;
+  '/login': typeof LoginRoute;
+  '/onboarding': typeof OnboardingRoute;
+  '/register': typeof RegisterRoute;
+  '/reset-password': typeof ResetPasswordRoute;
+  '/subscription': typeof SubscriptionRoute;
+  '/balancing': typeof AppBalancingRoute;
+  '/cashiers': typeof AppCashiersRoute;
+  '/expenses': typeof AppExpensesRoute;
+  '/outlets': typeof AppOutletsRoute;
+  '/products': typeof AppProductsRoute;
+  '/reports': typeof AppReportsRoute;
+  '/settings': typeof AppSettingsRoute;
+  '/transactions': typeof AppTransactionsRoute;
+  '/vouchers': typeof AppVouchersRoute;
+  '/auth/callback': typeof AuthCallbackRoute;
+  '/': typeof AppIndexRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/_app': typeof AppRouteWithChildren
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/login': typeof LoginRoute
-  '/onboarding': typeof OnboardingRoute
-  '/register': typeof RegisterRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/subscription': typeof SubscriptionRoute
-  '/_app/cashiers': typeof AppCashiersRoute
-  '/_app/expenses': typeof AppExpensesRoute
-  '/_app/outlets': typeof AppOutletsRoute
-  '/_app/products': typeof AppProductsRoute
-  '/_app/reports': typeof AppReportsRoute
-  '/_app/settings': typeof AppSettingsRoute
-  '/_app/transactions': typeof AppTransactionsRoute
-  '/_app/vouchers': typeof AppVouchersRoute
-  '/auth/callback': typeof AuthCallbackRoute
-  '/_app/': typeof AppIndexRoute
+  __root__: typeof rootRouteImport;
+  '/_app': typeof AppRouteWithChildren;
+  '/forgot-password': typeof ForgotPasswordRoute;
+  '/login': typeof LoginRoute;
+  '/onboarding': typeof OnboardingRoute;
+  '/register': typeof RegisterRoute;
+  '/reset-password': typeof ResetPasswordRoute;
+  '/subscription': typeof SubscriptionRoute;
+  '/_app/balancing': typeof AppBalancingRoute;
+  '/_app/cashiers': typeof AppCashiersRoute;
+  '/_app/expenses': typeof AppExpensesRoute;
+  '/_app/outlets': typeof AppOutletsRoute;
+  '/_app/products': typeof AppProductsRoute;
+  '/_app/reports': typeof AppReportsRoute;
+  '/_app/settings': typeof AppSettingsRoute;
+  '/_app/transactions': typeof AppTransactionsRoute;
+  '/_app/vouchers': typeof AppVouchersRoute;
+  '/auth/callback': typeof AuthCallbackRoute;
+  '/_app/': typeof AppIndexRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | '/'
     | '/forgot-password'
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/subscription'
+    | '/balancing'
     | '/cashiers'
     | '/expenses'
     | '/outlets'
@@ -186,8 +196,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/transactions'
     | '/vouchers'
-    | '/auth/callback'
-  fileRoutesByTo: FileRoutesByTo
+    | '/auth/callback';
+  fileRoutesByTo: FileRoutesByTo;
   to:
     | '/forgot-password'
     | '/login'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/subscription'
+    | '/balancing'
     | '/cashiers'
     | '/expenses'
     | '/outlets'
@@ -204,7 +215,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/vouchers'
     | '/auth/callback'
-    | '/'
+    | '/';
   id:
     | '__root__'
     | '/_app'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/subscription'
+    | '/_app/balancing'
     | '/_app/cashiers'
     | '/_app/expenses'
     | '/_app/outlets'
@@ -223,157 +235,166 @@ export interface FileRouteTypes {
     | '/_app/transactions'
     | '/_app/vouchers'
     | '/auth/callback'
-    | '/_app/'
-  fileRoutesById: FileRoutesById
+    | '/_app/';
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  AppRoute: typeof AppRouteWithChildren
-  ForgotPasswordRoute: typeof ForgotPasswordRoute
-  LoginRoute: typeof LoginRoute
-  OnboardingRoute: typeof OnboardingRoute
-  RegisterRoute: typeof RegisterRoute
-  ResetPasswordRoute: typeof ResetPasswordRoute
-  SubscriptionRoute: typeof SubscriptionRoute
-  AuthCallbackRoute: typeof AuthCallbackRoute
+  AppRoute: typeof AppRouteWithChildren;
+  ForgotPasswordRoute: typeof ForgotPasswordRoute;
+  LoginRoute: typeof LoginRoute;
+  OnboardingRoute: typeof OnboardingRoute;
+  RegisterRoute: typeof RegisterRoute;
+  ResetPasswordRoute: typeof ResetPasswordRoute;
+  SubscriptionRoute: typeof SubscriptionRoute;
+  AuthCallbackRoute: typeof AuthCallbackRoute;
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/_app';
+      path: '';
+      fullPath: '/';
+      preLoaderRoute: typeof AppRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/forgot-password': {
-      id: '/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/forgot-password';
+      path: '/forgot-password';
+      fullPath: '/forgot-password';
+      preLoaderRoute: typeof ForgotPasswordRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/login';
+      path: '/login';
+      fullPath: '/login';
+      preLoaderRoute: typeof LoginRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/onboarding';
+      path: '/onboarding';
+      fullPath: '/onboarding';
+      preLoaderRoute: typeof OnboardingRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/register';
+      path: '/register';
+      fullPath: '/register';
+      preLoaderRoute: typeof RegisterRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/reset-password';
+      path: '/reset-password';
+      fullPath: '/reset-password';
+      preLoaderRoute: typeof ResetPasswordRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/subscription': {
-      id: '/subscription'
-      path: '/subscription'
-      fullPath: '/subscription'
-      preLoaderRoute: typeof SubscriptionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/subscription';
+      path: '/subscription';
+      fullPath: '/subscription';
+      preLoaderRoute: typeof SubscriptionRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/_app/': {
-      id: '/_app/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/';
+      path: '/';
+      fullPath: '/';
+      preLoaderRoute: typeof AppIndexRouteImport;
+      parentRoute: typeof AppRoute;
+    };
+    '/_app/balancing': {
+      id: '/_app/balancing';
+      path: '/balancing';
+      fullPath: '/balancing';
+      preLoaderRoute: typeof AppBalancingRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/cashiers': {
-      id: '/_app/cashiers'
-      path: '/cashiers'
-      fullPath: '/cashiers'
-      preLoaderRoute: typeof AppCashiersRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/cashiers';
+      path: '/cashiers';
+      fullPath: '/cashiers';
+      preLoaderRoute: typeof AppCashiersRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/expenses': {
-      id: '/_app/expenses'
-      path: '/expenses'
-      fullPath: '/expenses'
-      preLoaderRoute: typeof AppExpensesRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/expenses';
+      path: '/expenses';
+      fullPath: '/expenses';
+      preLoaderRoute: typeof AppExpensesRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/outlets': {
-      id: '/_app/outlets'
-      path: '/outlets'
-      fullPath: '/outlets'
-      preLoaderRoute: typeof AppOutletsRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/outlets';
+      path: '/outlets';
+      fullPath: '/outlets';
+      preLoaderRoute: typeof AppOutletsRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/products': {
-      id: '/_app/products'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof AppProductsRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/products';
+      path: '/products';
+      fullPath: '/products';
+      preLoaderRoute: typeof AppProductsRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/reports': {
-      id: '/_app/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof AppReportsRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/reports';
+      path: '/reports';
+      fullPath: '/reports';
+      preLoaderRoute: typeof AppReportsRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/settings';
+      path: '/settings';
+      fullPath: '/settings';
+      preLoaderRoute: typeof AppSettingsRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/transactions': {
-      id: '/_app/transactions'
-      path: '/transactions'
-      fullPath: '/transactions'
-      preLoaderRoute: typeof AppTransactionsRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/transactions';
+      path: '/transactions';
+      fullPath: '/transactions';
+      preLoaderRoute: typeof AppTransactionsRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/vouchers': {
-      id: '/_app/vouchers'
-      path: '/vouchers'
-      fullPath: '/vouchers'
-      preLoaderRoute: typeof AppVouchersRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/vouchers';
+      path: '/vouchers';
+      fullPath: '/vouchers';
+      preLoaderRoute: typeof AppVouchersRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/auth/callback': {
-      id: '/auth/callback'
-      path: '/auth/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/auth/callback';
+      path: '/auth/callback';
+      fullPath: '/auth/callback';
+      preLoaderRoute: typeof AuthCallbackRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
 interface AppRouteChildren {
-  AppCashiersRoute: typeof AppCashiersRoute
-  AppExpensesRoute: typeof AppExpensesRoute
-  AppOutletsRoute: typeof AppOutletsRoute
-  AppProductsRoute: typeof AppProductsRoute
-  AppReportsRoute: typeof AppReportsRoute
-  AppSettingsRoute: typeof AppSettingsRoute
-  AppTransactionsRoute: typeof AppTransactionsRoute
-  AppVouchersRoute: typeof AppVouchersRoute
-  AppIndexRoute: typeof AppIndexRoute
+  AppBalancingRoute: typeof AppBalancingRoute;
+  AppCashiersRoute: typeof AppCashiersRoute;
+  AppExpensesRoute: typeof AppExpensesRoute;
+  AppOutletsRoute: typeof AppOutletsRoute;
+  AppProductsRoute: typeof AppProductsRoute;
+  AppReportsRoute: typeof AppReportsRoute;
+  AppSettingsRoute: typeof AppSettingsRoute;
+  AppTransactionsRoute: typeof AppTransactionsRoute;
+  AppVouchersRoute: typeof AppVouchersRoute;
+  AppIndexRoute: typeof AppIndexRoute;
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppBalancingRoute: AppBalancingRoute,
   AppCashiersRoute: AppCashiersRoute,
   AppExpensesRoute: AppExpensesRoute,
   AppOutletsRoute: AppOutletsRoute,
@@ -383,9 +404,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppTransactionsRoute: AppTransactionsRoute,
   AppVouchersRoute: AppVouchersRoute,
   AppIndexRoute: AppIndexRoute,
-}
+};
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
@@ -396,16 +417,14 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SubscriptionRoute: SubscriptionRoute,
   AuthCallbackRoute: AuthCallbackRoute,
-}
-export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+};
+export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { getRouter } from './router.tsx';
+import type { createStart } from '@tanstack/react-start';
 declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
   }
 }

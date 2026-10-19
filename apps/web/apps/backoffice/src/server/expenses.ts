@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { addDays } from '@hermes-pos/ui';
-import { expenseListSchema, expenseUpdateSchema, parser } from '../lib/schemas';
-import type { ActionResult, ExpenseList } from '../lib/types';
+import { expenseListSchema, parser } from '../lib/schemas';
+import type { ExpenseList } from '../lib/types';
 import { toExpenseList } from './normalize';
 import { startOf } from './summary';
 
@@ -19,13 +19,4 @@ export const listExpenses = createServerFn({ method: 'GET' })
         p_limit: 50,
       }),
     );
-  });
-
-/** Replaces the shift's items. Totals, the cash book, and a closed shift's expected cash are recomputed in the database. */
-export const updateExpense = createServerFn({ method: 'POST' })
-  .validator(parser(expenseUpdateSchema))
-  .handler(async ({ data }): Promise<ActionResult> => {
-    const { callRpc } = await import('./supabase.server');
-    const res = await callRpc('owner_update_expense', { p_expense_id: data.id, p_items: data.items });
-    return res.ok ? { ok: true } : res;
   });

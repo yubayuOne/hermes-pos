@@ -20,9 +20,6 @@ create or replace function pg_temp.kopi(q int, voucher text default null) return
   select jsonb_build_object('items', jsonb_build_array(jsonb_build_object('product_id', current_setting('t.kopi'), 'quantity', q)))
     || case when voucher is null then '{}'::jsonb else jsonb_build_object('voucher_code', voucher) end
 $$;
-create or replace function pg_temp.line(tx text, q int) returns jsonb language sql as $$
-  select jsonb_build_array(jsonb_build_object('itemId', (select id from public.transaction_items where transaction_id = current_setting(tx)::uuid), 'quantity', q))
-$$;
 create or replace function pg_temp.edits(tx text) returns jsonb language sql as $$
   select public.owner_list_bill_edits(current_setting(tx)::uuid)
 $$;
@@ -32,12 +29,12 @@ $$;
 
 select pg_temp.ok('S1 the log table is closed to clients', not has_table_privilege('authenticated', 'public.transaction_edits', 'select')
   and not has_table_privilege('authenticated', 'public.transaction_edits', 'insert'));
-select pg_temp.ok('S2 the 066 workers are internal now', not has_function_privilege('authenticated', 'public._066_update_bill_items(uuid, jsonb)', 'execute')
-  and not has_function_privilege('authenticated', 'public._066_void_bill(uuid, text)', 'execute')
+select pg_temp.ok('S2 the 066 void worker is internal', not has_function_privilege('authenticated', 'public._066_void_bill(uuid, text)', 'execute')
   and not has_function_privilege('authenticated', 'public._067_begin(uuid)', 'execute'));
-select pg_temp.ok('S3 owners call the logged versions', has_function_privilege('authenticated', 'public.owner_update_bill_items(uuid, jsonb, text)', 'execute')
-  and has_function_privilege('authenticated', 'public.owner_list_bill_edits(uuid)', 'execute')
-  and not has_function_privilege('anon', 'public.owner_list_bill_edits(uuid)', 'execute'));
+select pg_temp.ok('S3 owners read the log; item, payment, and detail edits are gone (071)', has_function_privilege('authenticated', 'public.owner_list_bill_edits(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.owner_list_bill_edits(uuid)', 'execute')
+  and to_regprocedure('public.owner_update_bill_items(uuid, jsonb, text)') is null and to_regprocedure('public.owner_set_bill_payment(uuid, public.payment_method, text)') is null
+  and to_regprocedure('public.owner_update_bill_details(uuid, text, text, jsonb)') is null);
 
 insert into auth.users(id, email) values ('e6700000-0000-0000-0000-000000000001', 'dewi@kopi.id'), ('e6700000-0000-0000-0000-000000000002', 'andi@lain.id');
 select set_config('request.jwt.claim.sub', 'e6700000-0000-0000-0000-000000000001', false);
@@ -55,31 +52,21 @@ select public.owner_set_void_code('271828');
 select set_config('t.sh', public.open_shift(current_setting('t.c')::uuid, current_setting('t.o')::uuid, 100000)::text, false);
 select set_config('t.a', pg_temp.pay(pg_temp.kopi(2), 'p-a')::text, false);
 
--- ===== the log
-select pg_temp.fails('L1 item change needs a reason', format('select public.owner_update_bill_items(%L, %L, %L)', current_setting('t.a'), pg_temp.line('t.a', 1), 'x'), 'Alasan perubahan');
-select pg_temp.fails('L2 payment change needs a reason', format('select public.owner_set_bill_payment(%L, %L, null)', current_setting('t.a'), 'qris'), 'Alasan perubahan');
-select pg_temp.ok('L3 refused edits leave no row', pg_temp.edits('t.a') = '[]'::jsonb);
-select public.owner_update_bill_items(current_setting('t.a')::uuid, pg_temp.line('t.a', 1), '  Tamu batal satu ');
-select pg_temp.ok('L4 item change logged with reason and the bill before and after',
-  jsonb_array_length(pg_temp.edits('t.a')) = 1 and pg_temp.edits('t.a') -> 0 ->> 'kind' = 'items'
-  and pg_temp.edits('t.a') -> 0 ->> 'reason' = 'Tamu batal satu'
-  and (pg_temp.edits('t.a') -> 0 -> 'before' ->> 'total')::numeric = 44000 and (pg_temp.edits('t.a') -> 0 -> 'after' ->> 'total')::numeric = 22000
+
+-- ===== the log (since 071 only the void writes it)
+select pg_temp.ok('L1 nothing logged yet', pg_temp.edits('t.a') = '[]'::jsonb);
+select public.owner_void_bill(current_setting('t.a')::uuid, '  Tamu batal ');
+select pg_temp.ok('L2 void logged with reason and the bill before and after',
+  jsonb_array_length(pg_temp.edits('t.a')) = 1 and pg_temp.edits('t.a') -> 0 ->> 'kind' = 'void'
+  and pg_temp.edits('t.a') -> 0 ->> 'reason' = 'Tamu batal'
+  and pg_temp.edits('t.a') -> 0 -> 'before' ->> 'status' = 'completed' and pg_temp.edits('t.a') -> 0 -> 'after' ->> 'status' = 'voided'
   and (pg_temp.edits('t.a') -> 0 -> 'before' -> 'items' -> 0 ->> 'quantity')::numeric = 2
   and pg_temp.edits('t.a') -> 0 -> 'before' -> 'items' -> 0 ->> 'productName' = 'Kopi susu');
 reset role;
-select pg_temp.ok('L5 the row names who edited', (select edited_by from public.transaction_edits where transaction_id = current_setting('t.a')::uuid) = 'e6700000-0000-0000-0000-000000000001');
+select pg_temp.ok('L3 the row names who voided', (select edited_by from public.transaction_edits where transaction_id = current_setting('t.a')::uuid) = 'e6700000-0000-0000-0000-000000000001');
 set role authenticated;
-select public.owner_set_bill_payment(current_setting('t.a')::uuid, 'cash', 'tidak berubah');
-select pg_temp.ok('L6 same method: nothing changed, nothing logged', jsonb_array_length(pg_temp.edits('t.a')) = 1);
-select public.owner_set_bill_payment(current_setting('t.a')::uuid, 'qris', 'Salah tekan tunai');
-select public.owner_update_bill_details(current_setting('t.a')::uuid, 'Bu Rina', '5', null);
-select public.owner_update_bill_details(current_setting('t.a')::uuid, 'Bu Rina', '5', null);
-select pg_temp.ok('L7 payment and details logged, a save without changes is not',
-  jsonb_array_length(pg_temp.edits('t.a')) = 3 and pg_temp.edits('t.a') -> 1 -> 'after' ->> 'paymentMethod' = 'qris'
-  and pg_temp.edits('t.a') -> 2 ->> 'kind' = 'details' and pg_temp.edits('t.a') -> 2 -> 'after' ->> 'customerName' = 'Bu Rina'
-  and pg_temp.edits('t.a') -> 2 ->> 'reason' is null);
-select pg_temp.ok('L8 the bill list counts the edits',
-  (public.owner_list_bills(current_setting('t.o')::uuid, now() - interval '1 day', now() + interval '1 day') -> 'rows' -> 0 ->> 'editCount')::int = 3);
+select pg_temp.ok('L4 the bill list counts it',
+  (public.owner_list_bills(current_setting('t.o')::uuid, now() - interval '1 day', now() + interval '1 day', 'all') -> 'rows' -> 0 ->> 'editCount')::int = 1);
 
 -- ===== voucher use given back on void
 select public.owner_save_voucher(null, 'SEKALI', 'bill', 'amount', 2000, 0, 1, (now() at time zone 'Asia/Jakarta')::date + 10, null);
@@ -102,5 +89,4 @@ select pg_temp.ok('V6 backoffice void gives it back too, and is logged', pg_temp
 select set_config('request.jwt.claim.sub', 'e6700000-0000-0000-0000-000000000002', false);
 select public.register_business('Toko Andi', 'Satu', null);
 select pg_temp.fails('X1 other owner cannot read the log', 'select pg_temp.edits(''t.a'')', 'tidak ditemukan');
-select pg_temp.fails('X2 other owner cannot edit', format('select public.owner_update_bill_details(%L, %L, %L, null)', current_setting('t.a'), 'x', ''), 'tidak ditemukan');
 reset role;

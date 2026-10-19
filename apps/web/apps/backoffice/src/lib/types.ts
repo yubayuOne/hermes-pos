@@ -90,6 +90,8 @@ export type Pnl = {
   grossSales: number;
   discounts: number;
   refunds: number;
+  /** Sales corrections from balancing (071), signed; already in netSales. */
+  adjustments: number;
   netSales: number;
   count: number;
   hpp: number;
@@ -139,7 +141,7 @@ export type Report = {
   productCount: number;
 };
 
-/** Expenses of one shift (POS migrations 040, 041). Count at once; the owner can edit them any time (043). */
+/** Expenses of one shift (POS migrations 040, 041). Count at once; the owner corrects them with balancing (071). */
 export type ExpenseItem = { name: string; category: 'operasional' | 'belanja'; quantity: number; unit: string; amount: number; paidFrom: 'drawer' | 'other' };
 export type Expense = {
   id: string;
@@ -159,8 +161,38 @@ export type ExpenseList = {
   /** All shift records in the period; `rows` is one page of them. */
   total: number;
   dayTotals: Record<string, number>;
-  totals: { total: number; operasional: number; belanja: number };
+  /** Totals include expense adjustments from balancing; djustments is their part (071). */
+  totals: { total: number; operasional: number; belanja: number; adjustments: number };
 };
+
+/** A balancing line of one shift (migration 071). Signed: + adds, - takes away. */
+export type ShiftAdjustment = {
+  id: string;
+  kind: 'cash' | 'sales' | 'expense';
+  category: 'operasional' | 'belanja' | null;
+  amount: number;
+  reason: string;
+  createdAt: string;
+};
+/** A shift on the Balancing page (owner_list_shift_balances). All money from the database. */
+export type ShiftBalance = {
+  id: string;
+  outletName: string;
+  cashierName: string;
+  businessDate: string;
+  shiftNumber: number;
+  open: boolean;
+  openedAt: string;
+  closedAt: string | null;
+  openingCash: number;
+  expectedCash: number;
+  closingCash: number | null;
+  variance: number | null;
+  sales: number;
+  expenses: number;
+  adjustments: ShiftAdjustment[];
+};
+export type ShiftBalanceList = { rows: ShiftBalance[]; total: number };
 
 /** A bill from owner_list_bills (migrations 028, 034). Money comes from the database. */
 export type Bill = {

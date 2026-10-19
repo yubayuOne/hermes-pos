@@ -25,9 +25,6 @@ create or replace function pg_temp.rec(k text) returns jsonb language sql as $$
   select public.record_expense(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid, 'drawer',
     jsonb_build_array(pg_temp.it('Gula pasir', 30000)), k)
 $$;
-create or replace function pg_temp.edit(items jsonb) returns jsonb language sql as $$
-  select public.owner_update_expense(current_setting('t.ex')::uuid, items)
-$$;
 create or replace function pg_temp.cash() returns numeric language sql as $$
   select (public.get_shift_cash_summary(current_setting('t.sh')::uuid) ->> 'expected_cash')::numeric
 $$;
@@ -79,30 +76,17 @@ select pg_temp.ok('O1 owner sees the expense at once, no status, totals 30.000',
   jsonb_array_length(current_setting('t.list')::jsonb -> 'rows') = 1 and current_setting('t.list')::jsonb -> 'rows' -> 0 -> 'status' is null
   and (current_setting('t.list')::jsonb -> 'totals' ->> 'total')::numeric = 30000 and (current_setting('t.list')::jsonb -> 'totals' ->> 'belanja')::numeric = 30000);
 
--- Owner edits while the shift is open: gula 25.000 from the drawer, es 5.000 not from the drawer.
-select pg_temp.fails('U1 edit needs a source per item', $$select pg_temp.edit(jsonb_build_array(pg_temp.it('Gula pasir', 25000)))$$, 'sumber uang');
-select pg_temp.fails('U2 edit needs at least one item', $$select pg_temp.edit('[]'::jsonb)$$, 'minimal satu');
-select set_config('t.u', pg_temp.edit(jsonb_build_array(pg_temp.it('Gula pasir', 25000, 'drawer'), pg_temp.it('Es batu', 5000, 'other')))::text, false);
-select pg_temp.ok('U3 edit on an open shift: total 30.000, drawer 25.000, expected cash 119.000',
-  (current_setting('t.u')::jsonb ->> 'total')::numeric = 30000 and (current_setting('t.u')::jsonb ->> 'drawerTotal')::numeric = 25000
-  and pg_temp.cash() = 119000);
-select pg_temp.ok('K1 replay of an entry after the owner edit: not recorded twice',
-  (pg_temp.rec('k-1') ->> 'replayed')::boolean and (pg_temp.rec('k-1') ->> 'total')::numeric = 30000 and pg_temp.cash() = 119000);
-select pg_temp.ok('K2 a new entry still adds to the edited record: drawer 55.000, expected cash 89.000',
-  (pg_temp.rec('k-2') ->> 'drawerTotal')::numeric = 55000 and pg_temp.cash() = 89000);
+-- The owner's expense edit (043) was replaced by balancing in 071; see test_071.
+select pg_temp.ok('K1 replay of an entry: not recorded twice',
+  (pg_temp.rec('k-1') ->> 'replayed')::boolean and (pg_temp.rec('k-1') ->> 'total')::numeric = 30000 and pg_temp.cash() = 114000);
+select pg_temp.ok('K2 a new entry adds to the shift''s record: drawer 60.000, expected cash 84.000',
+  (pg_temp.rec('k-2') ->> 'drawerTotal')::numeric = 60000 and pg_temp.cash() = 84000);
 
-select pg_temp.ok('C1 close: counted 89.000, variance 0', (public.close_shift(current_setting('t.sh')::uuid, 89000) ->> 'variance')::numeric = 0);
--- Owner edits after closing: gula 25.000 -> 35.000. Expected cash 79.000; the counted 89.000 is now 10.000 over.
-select pg_temp.edit(jsonb_build_array(pg_temp.it('Gula pasir', 35000, 'drawer'), pg_temp.it('Es batu', 5000, 'other'), pg_temp.it('Gula pasir', 30000, 'drawer')));
-select set_config('t.l', pg_temp.shifts()::text, false);
-select pg_temp.ok('C2 edit on a closed shift recomputes expected cash 79.000 and variance +10.000, counted stays',
-  (current_setting('t.l')::jsonb -> 0 ->> 'expectedCash')::numeric = 79000 and (current_setting('t.l')::jsonb -> 0 ->> 'variance')::numeric = 10000
-  and (current_setting('t.l')::jsonb -> 0 ->> 'closingCash')::numeric = 89000 and current_setting('t.l')::jsonb -> 0 ->> 'status' = 'closed'
-  and (current_setting('t.l')::jsonb -> 0 ->> 'expenses')::numeric = 70000);
+select pg_temp.ok('C1 close: counted 84.000, variance 0', (public.close_shift(current_setting('t.sh')::uuid, 84000) ->> 'variance')::numeric = 0);
 reset role;
-select pg_temp.ok('C3 one cash book row for the expense, 65.000',
+select pg_temp.ok('C3 one cash book row for the expense, 60.000',
   (select count(*) from public.cash_ledger where source_type = 'expense' and shift_id = current_setting('t.sh')::uuid) = 1
-  and (select amount from public.cash_ledger where source_type = 'expense' and shift_id = current_setting('t.sh')::uuid) = 65000);
+  and (select amount from public.cash_ledger where source_type = 'expense' and shift_id = current_setting('t.sh')::uuid) = 60000);
 update public.shifts set opened_at = opened_at - interval '1 hour' where id = current_setting('t.sh')::uuid;
 set role authenticated;
 
@@ -118,7 +102,6 @@ select pg_temp.ok('L5 empty shift: no refunds', public.list_shift_refunds(curren
 select set_config('request.jwt.claim.sub', 'f0000000-0000-0000-0000-000000000002', false);
 select public.register_business('Toko Budi', 'Satu', null);
 select pg_temp.ok('X1 other owner sees no expenses', jsonb_array_length(public.owner_list_expenses() -> 'rows') = 0);
-select pg_temp.fails('X2 other owner cannot edit', $$select pg_temp.edit(jsonb_build_array(pg_temp.it('Es', 1000, 'other')))$$, 'tidak ditemukan');
 select pg_temp.fails('X3 other account cannot list the shifts', 'select pg_temp.shifts()', 'Sesi kasir tidak valid');
 select pg_temp.fails('X4 other account cannot read the refunds', format('select public.list_bill_refunds(%L)', current_setting('t.bb')), 'Sesi kasir tidak valid');
 reset role;

@@ -6,7 +6,11 @@ import { useApp } from '../lib/app';
 import { rememberAppContext } from '../lib/appContextCache';
 import { Bell } from './Bell';
 
-type NavItem = { to: '/' | '/transactions' | '/outlets' | '/cashiers' | '/products' | '/expenses' | '/vouchers'; label: string; meta?: string | number };
+type NavItem = {
+  to: '/' | '/transactions' | '/balancing' | '/outlets' | '/cashiers' | '/products' | '/expenses' | '/vouchers';
+  label: string;
+  meta?: string | number;
+};
 
 /**
  * D1. Desktop: sidebar 264px (232px at ≤980px) and content scroll separately. ≤760px: a 60px top bar with
@@ -81,6 +85,7 @@ function SidebarBody({ close }: { close?: ReactNode }) {
   const items: NavItem[] = [
     { to: '/', label: 'Ringkasan' },
     { to: '/transactions', label: 'Transaksi' },
+    { to: '/balancing', label: 'Balancing' },
     { to: '/outlets', label: 'Outlet', meta: c.outlets },
     { to: '/cashiers', label: 'Kasir', meta: c.cashiers },
     { to: '/products', label: 'Produk', meta: c.products },

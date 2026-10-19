@@ -4,24 +4,101 @@
 @source '../../../packages/ui/src';
 
 /* Backoffice body text is 16px (DESIGN.md A3). */
-.page-t { font-size: clamp(38px, 4.4vw, 60px); }
-/* Laporan (DESIGN.md F): A4 sheets on screen; on paper one sheet per page, typed text, page footer from @page. */
-.rp-sheet { background: var(--color-slip); border: 1.5px solid var(--color-ink); box-shadow: 6px 6px 0 var(--color-ink); max-width: 794px; margin: 0 auto; padding: 28px 18px; font-size: 13px; line-height: 1.5; }
-@media (min-width: 761px) { .rp-sheet { padding: 52px 56px; min-height: 1123px; } }
-.rp-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-.rp-tbl th { text-align: left; font-weight: 600; font-size: 12px; color: var(--color-mute); padding: 6px 8px; border-bottom: 1.5px solid var(--color-ink); white-space: nowrap; }
-.rp-tbl td { padding: 6px 8px; border-bottom: 1px solid var(--color-rule); vertical-align: top; }
-.rp-tbl .n { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.rp-tbl th.n { font-weight: 500; }
-.rp-tbl td.in { padding-left: 22px; }
-.rp-tbl tr.sub td { background: var(--color-report-sub); font-weight: 600; border-bottom: 1.5px solid var(--color-ink); }
-.rp-tbl tr.tot td { font-weight: 700; border-bottom: 3px double var(--color-ink); }
-.rp-tbl tr.note td { color: var(--color-mute); }
-@media print {
-  @page { size: A4; margin: 14mm 14mm 16mm; }
-  body { background: var(--color-slip); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .rp-sheet { border: 0; box-shadow: none; padding: 0; max-width: none; min-height: 0; background: var(--color-slip); break-after: page; }
-  .rp-sheet:last-of-type { break-after: auto; }
-  .rp-tbl tr, .rp-keep { break-inside: avoid; }
+.page-t {
+  font-size: clamp(38px, 4.4vw, 60px);
 }
-.big-num { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.035em; line-height: 0.98; font-size: clamp(46px, 6.2vw, 92px); font-variant-numeric: tabular-nums; }
+/* Laporan (DESIGN.md F): A4 sheets on screen; on paper one sheet per page, typed text, page footer from @page. */
+.rp-sheet {
+  background: var(--color-slip);
+  border: 1.5px solid var(--color-ink);
+  box-shadow: 6px 6px 0 var(--color-ink);
+  max-width: 794px;
+  margin: 0 auto;
+  padding: 28px 18px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+@media (min-width: 761px) {
+  .rp-sheet {
+    padding: 52px 56px;
+    min-height: 1123px;
+  }
+}
+.rp-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.rp-tbl th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--color-mute);
+  padding: 6px 8px;
+  border-bottom: 1.5px solid var(--color-ink);
+  white-space: nowrap;
+}
+.rp-tbl td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: top;
+}
+.rp-tbl .n {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.rp-tbl th.n {
+  font-weight: 500;
+}
+.rp-tbl td.in {
+  padding-left: 22px;
+}
+.rp-tbl tr.sub td {
+  background: var(--color-report-sub);
+  font-weight: 600;
+  border-bottom: 1.5px solid var(--color-ink);
+}
+.rp-tbl tr.tot td {
+  font-weight: 700;
+  border-bottom: 3px double var(--color-ink);
+}
+.rp-tbl tr.note td {
+  color: var(--color-mute);
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 14mm 16mm;
+  }
+  body {
+    background: var(--color-slip);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .rp-sheet {
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    max-width: none;
+    min-height: 0;
+    background: var(--color-slip);
+    break-after: page;
+  }
+  .rp-sheet:last-of-type {
+    break-after: auto;
+  }
+  .rp-tbl tr,
+  .rp-keep {
+    break-inside: avoid;
+  }
+}
+.big-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+  font-size: clamp(46px, 6.2vw, 92px);
+  font-variant-numeric: tabular-nums;
+}

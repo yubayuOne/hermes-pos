@@ -156,6 +156,9 @@ export function ReportDocument({
                 <PnlRow label={t('Penjualan kotor')} k="grossSales" sign={1} cur={cur} prev={prev} lang={lang} />
                 <PnlRow label={t('Diskon dan voucher')} k="discounts" sign={-1} cur={cur} prev={prev} lang={lang} indent />
                 <PnlRow label={t('Refund')} k="refunds" sign={-1} cur={cur} prev={prev} lang={lang} indent />
+                {(cur.adjustments !== 0 || prev.adjustments !== 0) && (
+                  <PnlRow label={t('Penyesuaian (balancing)')} k="adjustments" sign={1} cur={cur} prev={prev} lang={lang} indent />
+                )}
                 <PnlRow label={t('Penjualan bersih')} k="netSales" sign={1} cur={cur} prev={prev} lang={lang} kind="sub" />
                 <PnlRow label={t('Harga pokok penjualan (HPP)')} k="hpp" sign={-1} cur={cur} prev={prev} lang={lang} indent />
                 <PnlRow label={t('Laba kotor')} k="grossProfit" sign={1} cur={cur} prev={prev} lang={lang} kind="sub" />

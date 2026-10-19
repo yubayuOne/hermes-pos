@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { addDays } from '@hermes-pos/ui';
-import { billDetailsSchema, billItemsSchema, billListSchema, billPaymentSchema, billRefSchema, billVoidSchema, parser } from '../lib/schemas';
+import { billListSchema, billRefSchema, billVoidSchema, parser } from '../lib/schemas';
 import type { ActionResult, BillEdit, BillItem, BillList, BillRefund } from '../lib/types';
 import { toBillEdit, toBillItem, toBillList, toBillRefund } from './normalize';
 import { startOf } from './summary';
@@ -39,7 +39,7 @@ export const getBill = createServerFn({ method: 'GET' })
     return { items: (items ?? []).map(toBillItem), refunds: (refunds ?? []).map(toBillRefund), edits: (edits ?? []).map(toBillEdit) };
   });
 
-// Edits (migrations 066, 067; each one is logged). Stock, totals, the cash book, and a closed shift's expected cash are recomputed in the database.
+// Void (migrations 066, 067; logged). Stock, the cash book, and a closed shift's expected cash are recomputed in the database.
 const done = (res: { ok: true; data: unknown } | { ok: false; error: string }): ActionResult<number> =>
   res.ok ? { ok: true, data: Number((res.data as { total?: unknown } | null)?.total ?? 0) } : res;
 
@@ -48,32 +48,4 @@ export const voidBill = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const { callRpc } = await import('./supabase.server');
     return done(await callRpc('owner_void_bill', { p_transaction_id: data.id, p_reason: data.reason }));
-  });
-
-export const setBillPayment = createServerFn({ method: 'POST' })
-  .validator(parser(billPaymentSchema))
-  .handler(async ({ data }) => {
-    const { callRpc } = await import('./supabase.server');
-    return done(await callRpc('owner_set_bill_payment', { p_transaction_id: data.id, p_method: data.method, p_reason: data.reason }));
-  });
-
-export const updateBillDetails = createServerFn({ method: 'POST' })
-  .validator(parser(billDetailsSchema))
-  .handler(async ({ data }) => {
-    const { callRpc } = await import('./supabase.server');
-    return done(
-      await callRpc('owner_update_bill_details', {
-        p_transaction_id: data.id,
-        p_customer_name: data.customerName,
-        p_table_number: data.tableNumber,
-        p_notes: data.notes,
-      }),
-    );
-  });
-
-export const updateBillItems = createServerFn({ method: 'POST' })
-  .validator(parser(billItemsSchema))
-  .handler(async ({ data }) => {
-    const { callRpc } = await import('./supabase.server');
-    return done(await callRpc('owner_update_bill_items', { p_transaction_id: data.id, p_items: data.items, p_reason: data.reason }));
   });

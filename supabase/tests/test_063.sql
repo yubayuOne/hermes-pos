@@ -32,7 +32,9 @@ set role authenticated;
 select owner_report_page(null, now() - interval '1 day', now(), now() - interval '2 days', now() - interval '1 day') as rp \gset
 select owner_report(null, now() - interval '1 day', now(), now() - interval '2 days', now() - interval '1 day') as r \gset
 select owner_sales_summary(null, now() - interval '1 day', now(), now() - interval '2 days', now() - interval '1 day') as s \gset
-select pg_temp.ok('R1 the page carries the whole owner_report', (:'rp'::jsonb - 'sales') = :'r'::jsonb);
+-- 071 adds the expense adjustments to the page's expense totals and an 'adjustments' key; none here, so the rest is equal.
+select pg_temp.ok('R1 the page carries the whole owner_report', (:'rp'::jsonb - 'sales' - 'expenses') = (:'r'::jsonb - 'expenses')
+  and ((:'rp'::jsonb -> 'expenses') - 'adjustments') = (:'r'::jsonb -> 'expenses'));
 select pg_temp.ok('R2 its sales figures match owner_sales_summary', (
   select bool_and(:'rp'::jsonb -> 'sales' -> k = :'s'::jsonb -> k)
   from unnest(array['count', 'sales', 'cash', 'qris', 'refundCount', 'refundTotal', 'voidedCount', 'voidedTotal', 'daily', 'byOutlet', 'byCashier']) k));

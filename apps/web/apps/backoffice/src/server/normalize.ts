@@ -1,5 +1,6 @@
 import { DEFAULT_TZ, dayDiff, isoDay } from '@hermes-pos/ui';
 import type {
+  ShiftBalanceList,
   Bill,
   BillEdit,
   BillItem,
@@ -137,6 +138,7 @@ function toPnl(raw: unknown): Pnl {
     grossSales: num(r.grossSales),
     discounts: num(r.discounts),
     refunds: num(r.refunds),
+    adjustments: num(r.adjustments),
     netSales: num(r.netSales),
     count: num(r.count),
     hpp: num(r.hpp),
@@ -231,7 +233,7 @@ export function toExpenseList(raw: unknown): ExpenseList {
     rows: ((r.rows as Row[]) ?? []).map(toExpense),
     total: num(r.total),
     dayTotals: Object.fromEntries(Object.entries((r.dayTotals ?? {}) as Row).map(([d, v]) => [d, num(v)])),
-    totals: { total: num(a.total), operasional: num(a.operasional), belanja: num(a.belanja) },
+    totals: { total: num(a.total), operasional: num(a.operasional), belanja: num(a.belanja), adjustments: num(a.adjustments) },
   };
 }
 
@@ -333,5 +335,36 @@ export function toBillEdit(r: Row): BillEdit {
     reason: r.reason ? str(r.reason) : null,
     before: toSnapshot(r.before),
     after: toSnapshot(r.after),
+  };
+}
+
+export function toShiftBalanceList(raw: unknown): ShiftBalanceList {
+  const r = (raw ?? {}) as Row;
+  return {
+    total: num(r.total),
+    rows: rows(r.rows).map((s) => ({
+      id: str(s.id),
+      outletName: str(s.outletName),
+      cashierName: str(s.cashierName),
+      businessDate: str(s.businessDate),
+      shiftNumber: num(s.shiftNumber),
+      open: s.open === true,
+      openedAt: str(s.openedAt),
+      closedAt: s.closedAt ? str(s.closedAt) : null,
+      openingCash: num(s.openingCash),
+      expectedCash: num(s.expectedCash),
+      closingCash: nullable(s.closingCash),
+      variance: nullable(s.variance),
+      sales: num(s.sales),
+      expenses: num(s.expenses),
+      adjustments: rows(s.adjustments).map((a) => ({
+        id: str(a.id),
+        kind: a.kind === 'sales' || a.kind === 'expense' ? a.kind : 'cash',
+        category: a.category === 'operasional' || a.category === 'belanja' ? a.category : null,
+        amount: num(a.amount),
+        reason: str(a.reason),
+        createdAt: str(a.createdAt),
+      })),
+    })),
   };
 }

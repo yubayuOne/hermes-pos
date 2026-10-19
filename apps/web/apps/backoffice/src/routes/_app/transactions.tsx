@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { DropdownMenu as Menu } from 'radix-ui';
 import {
   Button,
-  btn,
   Chip,
   Dialog,
   Empty,
   Field,
   FormAlert,
-  Input,
   Select,
   Tag,
   Textarea,
@@ -18,7 +15,6 @@ import {
   isoDay,
   money,
   time,
-  toast,
   useI18n,
   PencilIcon,
 } from '@hermes-pos/ui';
@@ -32,7 +28,7 @@ import { describeError } from '../../lib/errors';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
 import type { Bill, BillEdit, BillItem, BillRefund, BillSnapshot, Product } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
-import { BILL_PAGE, getBill, listBills, setBillPayment, updateBillDetails, updateBillItems, voidBill } from '../../server/bills';
+import { BILL_PAGE, getBill, listBills, voidBill } from '../../server/bills';
 import { listCatalog } from '../../server/manage';
 import { listProductSales } from '../../server/summary';
 import { pageHead } from '../../lang';
@@ -91,7 +87,7 @@ export const Route = createFileRoute('/_app/transactions')({
   component: Transactions,
 });
 
-/** Bills of the period with owner edits (migration 066), and every product of an outlet with what it sold. */
+/** Bills of the period (view and void), and every product of an outlet with what it sold. */
 function Transactions() {
   const { t } = useI18n();
   const data = Route.useLoaderData();
@@ -301,19 +297,9 @@ function PastNote({ bill: b }: { bill: Bill }) {
   );
 }
 
-/** Item and payment changes need a reason (migration 067), like a void. */
-function ReasonField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const { t } = useI18n();
-  return (
-    <Field label={t('Alasan perubahan')} help={t('Tercatat di riwayat bill.')}>
-      <Input maxLength={200} value={value} onChange={(e) => onChange(e.target.value)} />
-    </Field>
-  );
-}
+type Mode = 'view' | 'void';
 
-type Mode = 'view' | 'items' | 'details' | 'payment' | 'void';
-
-/** One bill: items and refunds, then one edit at a time. The database recomputes totals, stock, and the cash book. */
+/** One bill: items, refunds, and past edits. Money is corrected on the Balancing page (071); only a void happens here. */
 function BillDialog({ bill: b, onClose }: { bill: Bill; onClose: () => void }) {
   const { t, lang } = useI18n();
   const app = useApp();
@@ -324,13 +310,9 @@ function BillDialog({ bill: b, onClose }: { bill: Bill; onClose: () => void }) {
   useEffect(() => {
     getBill({ data: { id: b.id } }).then(setDetail, (err) => setLoadError(describeError(err)));
   }, [b.id]);
-  const editable = b.status === 'completed' && !lock.locked;
-  const moneyEdits = editable && b.refundedTotal === 0;
+  const voidable = b.status === 'completed' && b.refundedTotal === 0 && !lock.locked;
   const tz = app.business.timezone;
 
-  if (detail && mode === 'items') return <ItemsDialog bill={b} items={detail.items} onClose={onClose} onBack={() => setMode('view')} />;
-  if (detail && mode === 'details') return <DetailsDialog bill={b} items={detail.items} onClose={onClose} onBack={() => setMode('view')} />;
-  if (mode === 'payment') return <PaymentDialog bill={b} onClose={onClose} onBack={() => setMode('view')} />;
   if (mode === 'void') return <VoidDialog bill={b} onClose={onClose} onBack={() => setMode('view')} />;
   return (
     <Dialog
@@ -410,50 +392,11 @@ function BillDialog({ bill: b, onClose }: { bill: Bill; onClose: () => void }) {
             </section>
           )}
           <EditHistory edits={detail.edits} />
-          {editable && (
-            <div className="grid gap-3 border-t-[1.5px] border-ink pt-4">
-              {/* One menu for the edits and one button for the void, instead of four buttons in a row (owner's request, 18 Oct 2026). */}
-              <div className="flex flex-wrap justify-between gap-2">
-                {moneyEdits ? (
-                  <Menu.Root>
-                    <Menu.Trigger className={btn('plain', { sm: true })}>{t('Ubah bill')} ▾</Menu.Trigger>
-                    <Menu.Portal>
-                      <Menu.Content
-                        align="start"
-                        sideOffset={4}
-                        collisionPadding={12}
-                        className="z-[70] min-w-[220px] rounded border-[1.5px] border-ink bg-slip p-1 shadow-[var(--shadow-hard-3)]"
-                      >
-                        {(
-                          [
-                            ['details', t('Nama, meja, catatan')],
-                            ['items', t('Item dan jumlah')],
-                            ['payment', b.paymentMethod === 'qris' ? t('Ganti ke tunai') : t('Ganti ke QRIS')],
-                          ] as const
-                        ).map(([m, label]) => (
-                          <Menu.Item
-                            key={m}
-                            onSelect={() => setMode(m)}
-                            className="flex min-h-11 cursor-pointer items-center rounded px-3 text-[16px] outline-none data-[highlighted]:bg-tint-2"
-                          >
-                            {label}
-                          </Menu.Item>
-                        ))}
-                      </Menu.Content>
-                    </Menu.Portal>
-                  </Menu.Root>
-                ) : (
-                  <Button sm onClick={() => setMode('details')}>
-                    {t('Ubah nama, meja, catatan')}
-                  </Button>
-                )}
-                {moneyEdits && (
-                  <Button sm variant="ink" onClick={() => setMode('void')}>
-                    {t('Batalkan bill')}
-                  </Button>
-                )}
-              </div>
-              {!moneyEdits && <p className="text-[14px] text-mute">{t('Bill yang sudah direfund hanya bisa diubah nama, meja, dan catatannya.')}</p>}
+          {voidable && (
+            <div className="flex justify-end border-t-[1.5px] border-ink pt-4">
+              <Button sm variant="ink" onClick={() => setMode('void')}>
+                {t('Batalkan bill')}
+              </Button>
             </div>
           )}
         </>
@@ -475,162 +418,6 @@ function EditFooter({ busy, onBack, label, danger }: { busy: boolean; onBack: ()
         {label}
       </Button>
     </>
-  );
-}
-
-/** Quantities of the bill's lines (0 removes one) and new lines at today's price. */
-function ItemsDialog({ bill: b, items, onClose, onBack }: EditProps & { items: BillItem[] }) {
-  const { t } = useI18n();
-  const act = useAction();
-  const [rows, setRows] = useState(items.map((i) => ({ key: i.itemId, itemId: i.itemId, productId: '', name: i.productName, qty: String(i.quantity) })));
-  const [catalog, setCatalog] = useState<Product[]>([]);
-  const [pick, setPick] = useState('');
-  const [reason, setReason] = useState('');
-  useEffect(() => {
-    listCatalog({ data: { outletId: b.outletId } }).then(
-      (c) => setCatalog(c.products.filter((p) => p.isActive)),
-      () => setCatalog([]),
-    );
-  }, [b.outletId]);
-  const setQty = (key: string, qty: string) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, qty: qty.replace(/\D/g, '').slice(0, 4) } : r)));
-
-  async function save(e: React.FormEvent) {
-    e.preventDefault();
-    const list = rows.map((r) => (r.itemId ? { itemId: r.itemId, quantity: Number(r.qty || 0) } : { productId: r.productId, quantity: Number(r.qty || 0) }));
-    if (!list.some((r) => r.quantity > 0)) return act.setError('Bill harus berisi minimal satu item.');
-    if (reason.trim().length < 3) return act.setError('Tulis alasan perubahan, minimal 3 huruf.');
-    const res = await act.run(() => updateBillItems({ data: { id: b.id, items: list, reason } }));
-    if (res?.ok) {
-      onClose();
-      toast.success(t('Bill {number} disimpan. Total baru {amount}.', { number: b.number, amount: money(res.data ?? 0) }));
-    }
-  }
-  return (
-    <Dialog
-      open
-      wide
-      onOpenChange={(o) => !o && onClose()}
-      title={t('Ubah item {number}', { number: b.number })}
-      description={t('Total, diskon, stok, dan kas shift dihitung ulang oleh server. Isi 0 untuk menghapus item.')}
-      footer={<EditFooter busy={act.busy} onBack={onBack} label={t('Simpan item')} />}
-    >
-      <form id="bill-edit" noValidate onSubmit={save} className="grid gap-3">
-        <PastNote bill={b} />
-        {rows.map((r) => (
-          <div key={r.key} className="flex items-end gap-3">
-            <Field label={r.name} className="flex-1">
-              <Input inputMode="numeric" className="font-mono" value={r.qty} onChange={(e) => setQty(r.key, e.target.value)} />
-            </Field>
-            <Button sm className="mb-1" onClick={() => setQty(r.key, '0')} disabled={r.qty === '0'}>
-              {t('Hapus')}
-              <span className="sr-only"> {r.name}</span>
-            </Button>
-          </div>
-        ))}
-        {catalog.length > 0 && (
-          <div className="flex flex-wrap items-end gap-3 border-t-[1.5px] border-ink pt-3">
-            <Field label={t('Tambah produk')} className="min-w-[200px] flex-1">
-              <Select value={pick} onChange={(e) => setPick(e.target.value)}>
-                {catalog.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {`${p.name} · ${money(p.price)}`}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Button
-              className="mb-1"
-              disabled={!pick}
-              onClick={() => {
-                const p = catalog.find((x) => x.id === pick);
-                if (p) setRows((rs) => [...rs, { key: `new-${rs.length}`, itemId: '', productId: p.id, name: p.name, qty: '1' }]);
-                setPick('');
-              }}
-            >
-              {t('Tambah')}
-            </Button>
-          </div>
-        )}
-        <ReasonField value={reason} onChange={setReason} />
-        <FormAlert>{act.error && t(act.error)}</FormAlert>
-      </form>
-    </Dialog>
-  );
-}
-
-function DetailsDialog({ bill: b, items, onClose, onBack }: EditProps & { items: BillItem[] }) {
-  const { t } = useI18n();
-  const act = useAction();
-  const [name, setName] = useState(b.customerName);
-  const [table, setTable] = useState(b.tableNumber);
-  const [notes, setNotes] = useState<Record<string, string>>(Object.fromEntries(items.map((i) => [i.itemId, i.note])));
-  async function save(e: React.FormEvent) {
-    e.preventDefault();
-    const res = await act.run(() => updateBillDetails({ data: { id: b.id, customerName: name, tableNumber: table, notes } }), {
-      success: t('Bill {number} disimpan.', { number: b.number }),
-    });
-    if (res) onClose();
-  }
-  return (
-    <Dialog
-      open
-      wide
-      onOpenChange={(o) => !o && onClose()}
-      title={t('Ubah detail {number}', { number: b.number })}
-      footer={<EditFooter busy={act.busy} onBack={onBack} label={t('Simpan')} />}
-    >
-      <form id="bill-edit" noValidate onSubmit={save} className="grid gap-4">
-        <PastNote bill={b} />
-        <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
-          <Field label={t('Nama pelanggan')} optional>
-            <Input maxLength={40} value={name} onChange={(e) => setName(e.target.value)} />
-          </Field>
-          <Field label={t('Meja')} optional>
-            <Input maxLength={6} value={table} onChange={(e) => setTable(e.target.value)} />
-          </Field>
-        </div>
-        {items.map((i) => (
-          <Field key={i.itemId} label={t('Catatan {name}', { name: i.productName })} optional>
-            <Input maxLength={200} value={notes[i.itemId] ?? ''} onChange={(e) => setNotes((n) => ({ ...n, [i.itemId]: e.target.value }))} />
-          </Field>
-        ))}
-        <FormAlert>{act.error && t(act.error)}</FormAlert>
-      </form>
-    </Dialog>
-  );
-}
-
-function PaymentDialog({ bill: b, onClose, onBack }: EditProps) {
-  const { t } = useI18n();
-  const act = useAction();
-  const to = b.paymentMethod === 'qris' ? 'cash' : 'qris';
-  const [reason, setReason] = useState('');
-  async function save(e: React.FormEvent) {
-    e.preventDefault();
-    if (reason.trim().length < 3) return act.setError('Tulis alasan perubahan, minimal 3 huruf.');
-    const res = await act.run(() => setBillPayment({ data: { id: b.id, method: to, reason } }), {
-      success: t('Bill {number} sekarang dibayar {method}.', { number: b.number, method: t(METHOD[to]) }),
-    });
-    if (res) onClose();
-  }
-  return (
-    <Dialog
-      open
-      onOpenChange={(o) => !o && onClose()}
-      title={to === 'qris' ? t('Ganti ke QRIS?') : t('Ganti ke tunai?')}
-      description={
-        to === 'qris'
-          ? t('{amount} keluar dari kas laci shift bill ini. Kalau shift sudah ditutup, selisihnya dihitung ulang.', { amount: money(b.total) })
-          : t('{amount} masuk ke kas laci shift bill ini. Kalau shift sudah ditutup, selisihnya dihitung ulang.', { amount: money(b.total) })
-      }
-      footer={<EditFooter busy={act.busy} onBack={onBack} label={to === 'qris' ? t('Ganti ke QRIS') : t('Ganti ke tunai')} />}
-    >
-      <form id="bill-edit" noValidate onSubmit={save} className="grid gap-4">
-        <PastNote bill={b} />
-        <ReasonField value={reason} onChange={setReason} />
-        <FormAlert>{act.error && t(act.error)}</FormAlert>
-      </form>
-    </Dialog>
   );
 }
 
