@@ -636,7 +636,7 @@ Semua isi Ringkasan datang dari satu panggilan `owner_dashboard` (migrasi 062).
 - Filter periode (sama dengan Ringkasan).
 - Kartu **Total pengeluaran · {periode}**: angka utama, lalu Operasional dan Belanja (`Stat`).
 - Daftar per tanggal bisnis (judul display 22px dan total hari itu dari database), lalu satu kartu per shift: nomor shift, outlet, kasir, total, jumlah dari kas laci, dan barang dengan kategori dan sumbernya. Tombol **Ubah** per kartu. Di bawah daftar: "{total} catatan shift di periode ini" dan paginasi (50 per halaman).
-- Tidak ada tombol Ubah sejak 071: catatan kasir hanya dibaca. Kalimat pembuka mengarahkan ke Balancing untuk nominal yang salah. Kartu total menyebut "Termasuk penyesuaian dari Balancing: Rp…" kalau ada koreksi pengeluaran di periode itu.
+- Tidak ada tombol Ubah (sejak 071). Sejak 073 setiap barang punya tombol **Batalkan** (dialog dengan alasan wajib); barang yang dibatalkan tetap tampil dicoret dengan alasannya, dan kas shift dihitung ulang. Tombol **Tambah barang** per kartu mencatat barang yang terlewat (sumber dana dipilih). Nominal yang salah = batalkan lalu catat ulang. Kartu total menyebut "Termasuk koreksi pengeluaran lama: Rp…" kalau ada koreksi 071 di periode itu.
 
 **Rancangan awal (belum dibangun):** kategori pengeluaran buatan pemilik dan pencatatan dari backoffice:
 
@@ -722,17 +722,31 @@ Tiga tab chip di bawah header: **Profil**, **Bisnis dan struk**, **Langganan**.
 **Yang sudah dibangun** (`/transactions`, migrasi 066 dan 067). Menu di sidebar tepat di bawah Ringkasan. Dua chip tab: **Bill** dan **Produk terjual** (`?tab=products`), lalu toolbar satu baris (`FilterBar`, sama dengan Produk): kotak cari dan tombol **Filter**, dengan ringkasan filter aktif di bawahnya.
 
 - **Bill:** cari nomor, nama, atau meja (dikirim saat Enter atau saat kotak ditinggalkan). Dialog Filter: Outlet (boleh semua), Periode, Status bill (Selesai bawaan, Dibatalkan, Semua). Ringkasan: outlet · periode · status · {n} bill. Tabel Bill (nomor sebagai tombol, nama, meja, outlet bila semua outlet, tag `dibatalkan`, `refund`, atau `refund sebagian`, dan `diubah nx`), Waktu, Kasir, Bayar, Total. 50 per halaman dari server.
-- **Dialog Bill {nomor}** (560px): item dengan harga satuan, catatan, diskon, dan "Direfund n"; Diskon, Total, Bayar, Refund dan Bersih; daftar refund; **Riwayat perubahan** (pembatalan, dan ubahan lama dari sebelum 071). Satu tombol saja: **Batalkan bill** (`btn-ink`) di kanan, untuk bill selesai yang belum direfund; langganan berakhir menguncinya.
-- **Batalkan bill** membuka dialog dengan alasan wajib; mengembalikan stok dan tidak bisa diurungkan. Bill dari hari sebelumnya menampilkan catatan bergaris fire: laporan hari itu dan selisih kas shift-nya ikut berubah. Untuk shift yang sudah ditutup, kas seharusnya dan selisih dihitung ulang; hitungan uang kasir tetap. Koreksi nominal lainnya lewat Balancing (D14).
+- **Dialog Bill {nomor}** (560px): item dengan harga satuan, catatan, diskon, dan "Direfund n"; Diskon, Total, Bayar, Refund dan Bersih; daftar refund; **Riwayat perubahan** (pembatalan, koreksi, dan ubahan lama dari sebelum 071). Dua tombol untuk bill selesai yang belum direfund dan tanpa voucher: **Koreksi bill** dan **Batalkan bill**; langganan berakhir menguncinya. Tag di daftar: `dikoreksi, diganti {nomor}` dan `pengganti {nomor}`.
+- **Batalkan bill** membuka dialog dengan alasan wajib; mengembalikan stok dan tidak bisa diurungkan. Bill dari hari sebelumnya menampilkan catatan bergaris fire: laporan hari itu dan selisih kas shift-nya ikut berubah. Untuk shift yang sudah ditutup, kas seharusnya dan selisih dihitung ulang; hitungan uang kasir tetap.
+- **Koreksi bill** (073): jumlah per item, hapus item, tambah produk, Dibayar dengan, nama, meja, dan alasan wajib. Bill lama dibatalkan dan bill pengganti dibuat di hari dan shift yang sama, saling tertaut; harga lama tetap, produk baru memakai harga katalog. Toast: "Bill {lama} diganti {baru}, total {nominal}."
+- Hari yang sudah dikunci (D14) menolak pembatalan dan koreksi; koreksinya lewat refund di hari yang masih buka.
 - **Produk terjual:** satu outlet (produk milik outlet). Semua produk, termasuk yang 0 terjual dan yang nonaktif, dengan Terjual dan Penjualan (setelah diskon item, refund belum dikurangi). Cari nama produk langsung saat mengetik. Dialog Filter: Outlet, Periode, Urutkan (Terlaris bawaan, Penjualan terbesar, Nama A-Z). Ringkasan: outlet · periode · urutan · {n} produk. 20 per halaman.
 
-## D14. Balancing
+## D14. Tutup hari
 
-**Yang sudah dibangun** (`/balancing`, migrasi 071). Menu di sidebar di bawah Transaksi.
+**Yang sudah dibangun** (`/closing?outlet=&date=`, migrasi 073 dan 075; menggantikan Balancing 071). Menu di sidebar di bawah Transaksi. Rincian pembukuan: [`ACCOUNTING.md`](ACCOUNTING.md).
 
-- Filter outlet di header (boleh semua) dan dropdown Periode. Satu kalimat pembuka: catatan kasir tidak diubah; koreksi ditambahkan per shift dengan alasan, dan dibatalkan dengan koreksi kebalikannya.
-- Satu kartu per shift, terbaru dulu, 50 per halaman: tanggal bisnis · Shift n (tebal), outlet · kasir (abu), tag `shift masih buka` kalau masih buka. Lima angka (`Stat`, dua kolom di ponsel, tiga di tablet, lima di desktop): Omzet, Pengeluaran, Kas seharusnya, Kas dihitung, Selisih (bertanda + atau -). Di bawahnya daftar koreksi: jenis (dan kategori), nominal bertanda, alasan, jam. Tombol kecil **Tambah koreksi** di kanan bawah.
-- **Dialog Tambah koreksi:** Jenis (enam pilihan dalam satu dropdown: Kas masuk ke laci, Kas keluar dari laci, Omzet ditambah, Omzet dikurangi, Pengeluaran ditambah, Pengeluaran dikurangi; bantuan di bawahnya menjelaskan akibatnya), Kategori (hanya untuk pengeluaran), Nominal (positif, dengan titik ribuan; tanda diambil dari Jenis), Alasan. Tombol **Simpan koreksi** (`btn-fire`).
+- Isian Outlet (satu outlet) dan Tanggal (maksimal hari ini).
+- **Pemeriksaan:** satu kotak pine-soft "Semua angka hari ini cocok…" atau kotak fire-soft berisi setiap aturan yang gagal dalam kalimat biasa (P1 sampai P5, P7).
+- **Status hari:** "Hari belum ditutup." dengan satu kalimat langkah berikutnya dan tombol **Tutup dan kunci hari** (`btn-fire`, nonaktif selama ada shift buka atau pemeriksaan gagal); atau "Hari sudah ditutup dan dikunci." dengan tag `terkunci`, QRIS tercatat, QRIS masuk rekening, selisihnya, dan tombol **Buka kunci**. Di bawahnya riwayat tutup dan buka kunci.
+- **Satu kartu per shift:** Shift n · kasir, jam buka sampai tutup, jumlah bill, omzet. Dua kolom: **Kas laci** (Kas awal, Penjualan tunai, Refund tunai, Pengeluaran dari laci, Uang masuk, Uang keluar, Kas seharusnya, Kas dihitung kasir, lalu Cocok / Kurang / Lebih) dan **QRIS** (Penjualan QRIS, Refund QRIS, QRIS seharusnya masuk, QRIS di aplikasi merchant, lalu Cocok / Kurang / Lebih). Catatan uang laci di bawahnya. Tombol kecil **Uang masuk** dan **Uang keluar** (hilang saat hari terkunci).
+- **Koreksi dan pembatalan:** void, koreksi bill, refund, pengeluaran dibatalkan, penyesuaian dan hitung stok hari itu, dengan nominal, alasan, dan jam.
+- **Dialog Tutup dan kunci hari:** QRIS tercatat (pratinjau), QRIS masuk rekening (opsional, dari mutasi bank), catatan. **Dialog Buka kunci hari:** alasan wajib.
+- Hari terkunci ditolak database di semua jalur (POS dan backoffice): "Hari itu sudah ditutup dan dikunci. Buka kuncinya dulu di Tutup hari, atau catat koreksinya di hari yang masih buka."
+
+## D15. Stok
+
+**Yang sudah dibangun** (`/stock`, migrasi 074). Menu di sidebar di bawah Produk.
+
+- Dua tab: **Stok sekarang** dan **Riwayat**, isian Outlet. Tombol **Stok masuk**, **Penyesuaian**, **Hitung stok**.
+- Dialog dokumen: beberapa produk sekaligus; stok masuk lebih dari 0; penyesuaian bertanda dengan alasan wajib; hitung stok mengisi jumlah fisik dan menampilkan selisihnya. Stok tidak boleh minus.
+- Form produk hanya menampilkan "Stok sekarang {n}." dengan tautan ke Stok; angka stok hanya diisi sebagai "Stok awal" saat pelacakan dimulai.
 
 ---
 

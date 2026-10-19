@@ -275,6 +275,17 @@ export const cashMovementSchema = z.object({
     .max(1_000_000_000, 'Nominal maksimal Rp1.000.000.000.'),
   reason,
 });
+// Closing and reopening a day (075). The bank QRIS is optional: null leaves the day's QRIS pending.
+export const dayLockSchema = dayCloseSchema.extend({
+  qrisSettled: z
+    .number({ error: 'Isi nominal.' })
+    .int('Nominal tanpa koma.')
+    .min(0, 'Nominal tidak boleh minus.')
+    .max(1_000_000_000, 'Nominal maksimal Rp1.000.000.000.')
+    .nullable(),
+  note: z.string().trim().max(200, 'Maksimal 200 karakter.'),
+});
+export const dayReopenSchema = dayCloseSchema.extend({ reason });
 // ---------- Stock (074) ----------
 const stockQty = z
   .number({ error: 'Jumlah harus angka.' })

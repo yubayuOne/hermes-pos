@@ -122,6 +122,24 @@ function NotificationText({ n }: { n: Notification }) {
       </>
     );
   }
+  // Bookkeeping watch (076).
+  const outlet = String(p.outlet ?? '');
+  if (n.kind === 'void') {
+    const r: Vars = { amount: money(Number(p.amount ?? 0)), number: String(p.number ?? ''), cashier: String(p.cashier ?? ''), reason: String(p.reason ?? '') };
+    return <>{t('Void {amount} pada {number} oleh {cashier}. Alasan: {reason}', r)}</>;
+  }
+  if (n.kind === 'shift_difference') {
+    const d: Vars = { n: String(p.shift ?? ''), outlet, cashier: String(p.cashier ?? ''), cash: money(Number(p.cash ?? 0)), qris: money(Number(p.qris ?? 0)) };
+    return <>{t('Shift {n} di {outlet} ({cashier}) ditutup dengan selisih: kas {cash}, QRIS {qris}. Periksa di Tutup hari.', d)}</>;
+  }
+  if (n.kind === 'checks_failed') return <>{t('Ada angka yang tidak cocok di {outlet}. Periksa di Tutup hari.', { outlet })}</>;
+  if (n.kind === 'day_not_closed') {
+    const d: Vars = { outlet, n: Number(p.days ?? 0), date: p.date ? dateShort(`${String(p.date)}T12:00:00Z`, lang, 'UTC') : '' };
+    return <>{t('{n} hari di {outlet} belum ditutup, mulai {date}. Tutup di menu Tutup hari.', d)}</>;
+  }
+  if (n.kind === 'shift_open_long') {
+    return <>{t('Shift {n} di {outlet} ({cashier}) sudah buka lebih dari 16 jam.', { n: String(p.shift ?? ''), outlet, cashier: String(p.cashier ?? '') })}</>;
+  }
   if (/expired/.test(n.kind)) return <>{t('Langganan berakhir. Perpanjang paket untuk membuka kunci.')}</>;
   if (/expiring/.test(n.kind) && days === 0) return <>{t('Langganan berakhir hari ini, {date}.', vars)}</>;
   if (/trial/.test(n.kind)) return <>{t('Trial berakhir {date}, {n} hari lagi.', vars)}</>;

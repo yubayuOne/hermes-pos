@@ -4,6 +4,7 @@ import { Display, Mono, Text } from '../../components/Text';
 import { Button, ButtonRow } from '../../components/Button';
 import { Banner, Card, Chip, Dashed, Label, Tag } from '../../components/bits';
 import { AmountBox, TextField } from '../../components/Field';
+import { Tap } from '../../components/Tap';
 import { Keypad } from '../../components/Keypad';
 import { ActionFooter, Sheet, SheetBody, SheetHeader } from '../../components/Sheet';
 import { Slip, SlipBand, SlipRow, SlipRule } from '../../components/Slip';
@@ -46,6 +47,8 @@ type Closed = {
   expected: number;
   counted: number;
   variance: number;
+  qrisReported: number | null;
+  qrisVariance: number | null;
   sales: number;
   bills: number;
   closedAt: string;
@@ -84,11 +87,27 @@ function HourBars({ hourly }: { hourly: DashboardSummary['hourly'] }) {
   );
 }
 
-function MoneyPad({ label, value, onChange, presets }: { label: string; value: string; onChange: (v: string) => void; presets?: number[] }) {
+type PadField = { label: string; value: string; onChange: (v: string) => void };
+
+/** One keypad for one amount, or for two (tap a box to choose which one the keypad fills). */
+function MoneyPad({ label, value, onChange, presets, second }: PadField & { presets?: number[]; second?: PadField }) {
   const { phoneLandscape } = useLayout();
+  const [onSecond, setOnSecond] = useState(false);
+  const pick = (f: PadField, active: boolean, select: () => void) => (
+    <Tap accessibilityRole="button" accessibilityLabel={`${f.label} ${money(Number(f.value || 0))}`} accessibilityState={{ selected: active }} onPress={select}>
+      <AmountBox label={f.label} value={money(Number(f.value || 0))} active={active} compact={phoneLandscape} />
+    </Tap>
+  );
   const box = (
     <View className="gap-2.5">
-      <AmountBox label={label} value={money(Number(value || 0))} compact={phoneLandscape} />
+      {second ? (
+        <>
+          {pick({ label, value, onChange }, !onSecond, () => setOnSecond(false))}
+          {pick(second, onSecond, () => setOnSecond(true))}
+        </>
+      ) : (
+        <AmountBox label={label} value={money(Number(value || 0))} compact={phoneLandscape} />
+      )}
       {presets ? (
         <View className="flex-row gap-2">
           {presets.map((p) => (
@@ -104,7 +123,7 @@ function MoneyPad({ label, value, onChange, presets }: { label: string; value: s
       ) : null}
     </View>
   );
-  const pad = <Keypad value={value} onChange={onChange} compact={phoneLandscape} />;
+  const pad = second && onSecond ? <Keypad value={second.value} onChange={second.onChange} compact={phoneLandscape} /> : <Keypad value={value} onChange={onChange} compact={phoneLandscape} />;
   return phoneLandscape ? (
     <View className="flex-row gap-4">
       <View className="flex-1">{box}</View>
@@ -168,6 +187,9 @@ export function ShiftScreen({
   const [closeSheet, setCloseSheet] = useState(false);
   const [opening, setOpening] = useState('');
   const [counted, setCounted] = useState('');
+  const [qris, setQris] = useState('');
+  // The QRIS total from the merchant app is asked only when the shift may have QRIS money (unknown counts as maybe).
+  const askQris = !report || report.qrisRevenue !== 0 || pendingQris !== 0;
   const [busy, setBusy] = useState(false);
   const [printing, setPrinting] = useState(false);
   const [closed, setClosed] = useState<Closed | null>(null);
@@ -292,7 +314,7 @@ export function ShiftScreen({
       if (left.length) return needsInternet(t('Shift belum ditutup'));
       const amount = Number(counted || 0);
       const closedAt = new Date().toISOString();
-      const r = await closeShift({ shiftId: shift.id, physicalCash: amount, closedAt });
+      const r = await closeShift({ shiftId: shift.id, physicalCash: amount, closedAt, qrisReported: askQris ? Number(qris || 0) : 0 });
       // A restart without internet must not bring the closed shift back from the device copy; the next shift starts
       // with a PIN checked by the server.
       await forgetOpenShift(session.cashierId);
@@ -302,6 +324,8 @@ export function ShiftScreen({
         expected: r.expected_cash,
         counted: amount,
         variance: r.variance,
+        qrisReported: r.qris_reported,
+        qrisVariance: r.qris_variance,
         sales: report?.totalRevenue ?? 0,
         bills: report?.totalTransactions ?? 0,
         closedAt,
@@ -311,6 +335,7 @@ export function ShiftScreen({
       };
       setCloseSheet(false);
       setCounted('');
+      setQris('');
       setShift(null);
       clearCart();
       clearSplitBill();
@@ -713,13 +738,27 @@ export function ShiftScreen({
         <SheetBody contentClassName="gap-2.5">
           {/* The same drawer figures as on the Shift tab, so the cashier counts against them without leaving the sheet. */}
           <Slip torn={false}>{drawerRows}</Slip>
-          <MoneyPad label={t('Uang di laci')} value={counted} onChange={setCounted} />
+          <MoneyPad
+            label={t('Uang di laci')}
+            value={counted}
+            onChange={setCounted}
+            second={askQris ? { label: t('QRIS di aplikasi merchant'), value: qris, onChange: setQris } : undefined}
+          />
+          {askQris ? (
+            <Text className="text-[13px] text-mute">{t('Buka aplikasi merchant QRIS, lihat total uang masuk selama shift ini, lalu ketik di kotak QRIS.')}</Text>
+          ) : null}
           <Text className="text-[13px] text-mute">{t('Server menghitung selisih setelah shift ditutup. Perlu internet.')}</Text>
         </SheetBody>
         <ActionFooter>
           <ButtonRow>
             <Button label={t('Batal')} disabled={busy} onPress={() => setCloseSheet(false)} />
-            <Button variant="fire" label={busy ? t('Menutup...') : t('Tutup shift')} loading={busy} disabled={counted === ''} onPress={() => void doClose()} />
+            <Button
+              variant="fire"
+              label={busy ? t('Menutup...') : t('Tutup shift')}
+              loading={busy}
+              disabled={counted === '' || (askQris && qris === '')}
+              onPress={() => void doClose()}
+            />
           </ButtonRow>
         </ActionFooter>
       </Sheet>
@@ -757,10 +796,22 @@ export function ShiftScreen({
                 <SlipRow left={t('Cash')} right={money(closed.report?.cashRevenue ?? 0)} />
                 <SlipRow left={t('QRIS')} right={money(closed.report?.qrisRevenue ?? 0)} />
                 <SlipRow left={t('Bill')} right={String(closed.bills)} />
+                {closed.qrisVariance !== null && closed.qrisReported !== null ? (
+                  <>
+                    <SlipRule />
+                    <SlipRow left={t('QRIS di aplikasi merchant')} right={money(closed.qrisReported)} />
+                    <SlipBand tone={closed.qrisVariance === 0 ? 'pineSoft' : 'error'} left={t('Selisih QRIS')} right={money(closed.qrisVariance)} />
+                  </>
+                ) : null}
               </Slip>
               {closed.variance ? (
                 <Text className="mt-3 text-[14px] text-mute">
                   {t('Hitung ulang laci dan periksa bill tunai shift ini. Selisih tercatat di laporan shift dan terlihat oleh pemilik di backoffice.')}
+                </Text>
+              ) : null}
+              {closed.qrisVariance ? (
+                <Text className="mt-3 text-[14px] text-mute">
+                  {t('Cocokkan riwayat di aplikasi merchant dengan bill QRIS shift ini. Selisih QRIS terlihat oleh pemilik di backoffice.')}
                 </Text>
               ) : null}
             </SheetBody>

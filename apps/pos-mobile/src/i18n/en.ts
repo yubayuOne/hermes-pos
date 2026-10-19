@@ -185,6 +185,11 @@ export const EN: Record<string, string | [string, string]> = {
   'Hitung ulang laci dan periksa bill tunai shift ini. Selisih tercatat di laporan shift dan terlihat oleh pemilik di backoffice.':
     "Recount the drawer and check this shift's cash bills. The variance is recorded in the shift report and visible to the owner in the backoffice.",
   'Hitungan kasir': 'Cashier count',
+  'QRIS di aplikasi merchant': 'QRIS in the merchant app',
+  'Buka aplikasi merchant QRIS, lihat total uang masuk selama shift ini, lalu ketik di kotak QRIS.':
+    'Open the QRIS merchant app, check the total received during this shift, then type it in the QRIS box.',
+  'Cocokkan riwayat di aplikasi merchant dengan bill QRIS shift ini. Selisih QRIS terlihat oleh pemilik di backoffice.':
+    "Match the merchant app history with this shift's QRIS bills. The QRIS variance is visible to the owner in the backoffice.",
   'Indonesia atau English, disimpan di perangkat ini': 'Indonesian or English, saved on this device',
   'Isi email atau username, dan kata sandi.': 'Fill in email or username, and password.',
   'Email atau username': 'Email or username',
@@ -496,6 +501,7 @@ export const EN: Record<string, string | [string, string]> = {
   Selesai: 'Completed',
   'Selesai|tombol': 'Done',
   Selisih: 'Variance',
+  'Selisih QRIS': 'QRIS variance',
   'Seluruh bill dibatalkan. Stok kembali dan kas laci dikoreksi otomatis. Tidak bisa dibatalkan dan perlu internet.':
     'The whole bill is cancelled. Stock is restored and the cash drawer is corrected automatically. It cannot be undone and needs internet.',
   Sembunyikan: 'Hide',

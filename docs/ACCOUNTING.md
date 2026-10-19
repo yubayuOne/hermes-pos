@@ -1,7 +1,24 @@
-# Sistem Pembukuan HERMES POS (rancangan)
+# Sistem Pembukuan HERMES POS
 
-Status: **rancangan untuk disetujui pemilik**, 19 Okt 2026. Belum dibangun. Dokumen ini menggantikan pendekatan "balancing
-± angka" (migrasi 071) dengan sistem yang setiap angkanya bisa dibuktikan dan selalu seimbang.
+Status, 19 Okt 2026: **dibangun dengan keputusan default di bagian 13** (migrasi 072 sampai 076). Dokumen ini menggantikan
+pendekatan "balancing ± angka" (migrasi 071) dengan sistem yang setiap angkanya bisa dibuktikan dan selalu seimbang.
+
+**Sudah dibangun:**
+- Jurnal (`ledger`, view di atas dokumen yang tidak pernah diubah), diskon bill dibagi ke baris, P1 sampai P5 dan P7
+  (`ledger_checks`), laporan produk dan laba rugi memakai angka yang sama (072, 074, 075).
+- Koreksi bill (void + pengganti, termasuk pindah cara bayar), uang masuk dan keluar laci dengan alasan, pembatalan dan
+  penambahan barang pengeluaran (073).
+- Dokumen stok: stok awal, stok masuk, penyesuaian, hitung stok; form produk tidak menimpa stok (074).
+- QRIS dicocokkan saat tutup shift (POS) dan saat tutup hari (mutasi bank); tutup dan kunci hari, buka kunci dengan
+  alasan; laba rugi memuat penyesuaian stok, selisih kas, dan selisih QRIS; jejak koreksi per hari di Tutup hari (075).
+- Notifikasi: void, selisih shift (≥ Rp10.000 atau > 1% omzet), pemeriksaan malam (P gagal 8 hari terakhir, hari belum
+  ditutup ≥ 2 hari, shift buka > 16 jam) (076).
+
+**Belum dibangun** (bagian di bawah tetap rancangan): jenis uang laci terpisah (modal, prive, setor bank, brankas) dan
+akun bank selain QRIS; P6 dan P8 sebagai aturan sendiri; dokumen stok dari aplikasi kasir; catatan wajib kasir untuk
+selisih besar (5.1 no. 4); ambang notifikasi yang bisa diubah; notifikasi harga di bawah HPP, diskon besar, bill ditahan
+lama, stok minus, dan selisih HPP bulanan; laporan jejak koreksi lintas periode dan klik sampai dokumen; rujukan
+"mengoreksi tanggal X" (6.1): sekarang hari terkunci menolak perubahan, koreksinya lewat refund di hari yang masih buka.
 
 Tujuan: **laporan selalu sama dengan apa yang terjadi.** Setiap rupiah, setiap item, dan setiap gelas stok punya asal yang
 jelas, tercatat sekali, tidak pernah diubah diam-diam, dan dicocokkan dengan kenyataan (uang di laci, uang di rekening, barang

@@ -98,6 +98,10 @@ export type Pnl = {
   grossProfit: number;
   operatingExpenses: number;
   inventoryPurchases: number;
+  /** From the ledger (075): stock losses and count differences (a cost), and drawer and QRIS differences (signed, a surplus is a gain). */
+  stockAdjustments: number;
+  cashDifference: number;
+  qrisDifference: number;
   operatingProfit: number;
 };
 export type ReportShift = {
@@ -209,13 +213,27 @@ export type DayShift = {
   qrisSales: number;
   qrisRefunds: number;
   qrisExpected: number;
+  /** The QRIS total the cashier read from the merchant app at closing (075); null: not asked (older app). */
+  qrisReported: number | null;
+  qrisVariance: number | null;
   netSales: number;
   movements: CashMovement[];
   oldCorrections: OldCorrection[];
 };
 /** A balance rule that failed (docs/ACCOUNTING.md section 1). */
-export type CheckFailure = { rule: 'P1' | 'P2' | 'P3' | 'P4' | 'P5'; ref: string | null; detail: Record<string, string | number | boolean | null> };
-export type DayClose = { date: string; shifts: DayShift[]; checks: CheckFailure[] };
+export type CheckFailure = { rule: 'P1' | 'P2' | 'P3' | 'P4' | 'P5' | 'P7'; ref: string | null; detail: Record<string, string | number | boolean | null> };
+/** A closed (locked) day (075). qrisSettled null: the bank amount was not entered. */
+export type DayLock = { closedAt: string; qrisBook: number; qrisSettled: number | null; qrisDifference: number | null; note: string };
+export type DayLogEntry = { action: 'close' | 'reopen'; reason: string; qrisSettled: number | null; at: string };
+/** What undid or changed something on the day (075): voids, bill corrections, refunds, cancelled expenses, stock losses and counts. */
+export type TrailEntry = {
+  kind: 'void' | 'correction' | 'refund' | 'expense_cancel' | 'stock_adjustment' | 'stock_opname';
+  at: string;
+  ref: string | null;
+  amount: number;
+  reason: string;
+};
+export type DayClose = { date: string; closed: DayLock | null; log: DayLogEntry[]; trail: TrailEntry[]; shifts: DayShift[]; checks: CheckFailure[] };
 /** A bill from owner_list_bills (migrations 028, 034). Money comes from the database. */
 export type Bill = {
   id: string;

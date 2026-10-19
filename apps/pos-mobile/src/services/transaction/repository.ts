@@ -177,22 +177,31 @@ export interface CloseShiftResult {
   variance: number;
   cash_in: number;
   cash_out: number;
+  qris_reported: number | null;
+  qris_variance: number | null;
 }
 
-/** Closes a shift (migration 050). Resending the same close returns the stored result, so the queue can retry it. */
-export async function closeShift(args: { shiftId: string; physicalCash: number; closedAt: string }): Promise<CloseShiftResult> {
+/**
+ * Closes a shift (migration 050; the QRIS total from the merchant app since 075). Resending the same close returns the
+ * stored result, so the queue can retry it. A close queued by an older version has no QRIS total.
+ */
+export async function closeShift(args: { shiftId: string; physicalCash: number; closedAt: string; qrisReported?: number }): Promise<CloseShiftResult> {
   const { data, error } = await supabase.rpc('close_shift_at', {
     p_shift_id: args.shiftId,
     p_physical_cash: args.physicalCash,
     p_closed_at: args.closedAt,
+    p_qris_reported: args.qrisReported ?? null,
   });
   if (error) throw error;
 
+  const d = data as any;
   return {
-    expected_cash: Number((data as any)?.expected_cash ?? 0),
-    variance: Number((data as any)?.variance ?? 0),
-    cash_in: Number((data as any)?.cash_in ?? 0),
-    cash_out: Number((data as any)?.cash_out ?? 0),
+    expected_cash: Number(d?.expected_cash ?? 0),
+    variance: Number(d?.variance ?? 0),
+    cash_in: Number(d?.cash_in ?? 0),
+    cash_out: Number(d?.cash_out ?? 0),
+    qris_reported: d?.qris_reported == null ? null : Number(d.qris_reported),
+    qris_variance: d?.qris_variance == null ? null : Number(d.qris_variance),
   };
 }
 

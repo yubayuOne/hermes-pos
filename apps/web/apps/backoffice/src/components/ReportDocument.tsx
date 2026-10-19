@@ -170,6 +170,15 @@ export function ReportDocument({
                   <td />
                 </tr>
                 <PnlRow label={t('Pengeluaran operasional')} k="operatingExpenses" sign={-1} cur={cur} prev={prev} lang={lang} indent />
+                {(cur.stockAdjustments !== 0 || prev.stockAdjustments !== 0) && (
+                  <PnlRow label={t('Stok hilang, rusak, dan selisih hitung')} k="stockAdjustments" sign={-1} cur={cur} prev={prev} lang={lang} indent />
+                )}
+                {(cur.cashDifference !== 0 || prev.cashDifference !== 0) && (
+                  <PnlRow label={t('Selisih kas laci')} k="cashDifference" sign={1} cur={cur} prev={prev} lang={lang} indent />
+                )}
+                {(cur.qrisDifference !== 0 || prev.qrisDifference !== 0) && (
+                  <PnlRow label={t('Selisih QRIS')} k="qrisDifference" sign={1} cur={cur} prev={prev} lang={lang} indent />
+                )}
                 <PnlRow label={t('Laba operasional')} k="operatingProfit" sign={1} cur={cur} prev={prev} lang={lang} kind="tot" />
                 <tr className="note">
                   <td>{t('Margin operasional')}</td>

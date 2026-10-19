@@ -80,9 +80,10 @@ select pg_temp.ok('P2 gross 106.000 - discount 2.200 - refund 22.000 = net 81.80
   and (current_setting('t.r')::jsonb -> 'pnl' ->> 'refunds')::numeric = 22000 and (current_setting('t.r')::jsonb -> 'pnl' ->> 'netSales')::numeric = 81800
   and (current_setting('t.r')::jsonb -> 'pnl' ->> 'hpp')::numeric = 30000 and (current_setting('t.r')::jsonb -> 'pnl' ->> 'grossProfit')::numeric = 51800
   and (current_setting('t.r')::jsonb -> 'pnl' ->> 'count')::int = 3);
-select pg_temp.ok('P3 only operasional is an operating expense: 50.000 + 10.000; belanja 36.000 apart; operating profit -8.200',
+select pg_temp.ok('P3 only operasional is an operating expense: 50.000 + 10.000; belanja 36.000 apart; the drawer 6.000 short (075): operating profit -14.200',
   (current_setting('t.r')::jsonb -> 'pnl' ->> 'operatingExpenses')::numeric = 60000 and (current_setting('t.r')::jsonb -> 'pnl' ->> 'inventoryPurchases')::numeric = 36000
-  and (current_setting('t.r')::jsonb -> 'pnl' ->> 'operatingProfit')::numeric = -8200);
+  and (current_setting('t.r')::jsonb -> 'pnl' ->> 'cashDifference')::numeric = -6000
+  and (current_setting('t.r')::jsonb -> 'pnl' ->> 'operatingProfit')::numeric = -14200);
 select pg_temp.ok('D1 drawer of closed shifts: 100.000 + 103.800 - 22.000 - 36.000 = 145.800, counted 139.800',
   (current_setting('t.r')::jsonb -> 'drawer' ->> 'opening')::numeric = 100000 and (current_setting('t.r')::jsonb -> 'drawer' ->> 'cashSales')::numeric = 103800
   and (current_setting('t.r')::jsonb -> 'drawer' ->> 'refunds')::numeric = 22000 and (current_setting('t.r')::jsonb -> 'drawer' ->> 'expenses')::numeric = 36000

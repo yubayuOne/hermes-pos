@@ -52,8 +52,8 @@ HERMES POS gives each one a rule and a trace.
   then picks their name and enters a 6-digit PIN; five wrong PINs lock that cashier for 5 minutes. The server checks
   the PIN, so picking a cashier needs internet; the signed-in cashier can reopen the app offline during their shift. A
   phone is pinned to one outlet and only lists that outlet's cashiers.
-- **Shifts:** open with opening cash, close with a cash count, also offline (queued like a sale). The expected cash and
-  the variance come from the server's cash book. A shift belongs to the phone that opened it; another phone takes it
+- **Shifts:** open with opening cash, close with a cash count and, when the shift had QRIS, the QRIS total read from the
+  merchant app. The expected cash and QRIS and both differences come from the server's books. A shift belongs to the phone that opened it; another phone takes it
   over with the owner's code. A shift cannot close while bills are held or the offline queue is not empty. The
   business date follows the business's time zone (WIB, WITA, or WIT).
 - **Selling:** product grid with search and a category picker, item and bill discounts, item notes, hold, recall, and
@@ -76,7 +76,17 @@ HERMES POS gives each one a rule and a trace.
 - **Outlets:** name, address, phone, logo, and receipt text for each outlet.
 - **Cashiers and products:** create cashiers and set PINs, manage the menu per outlet with a *Terjual* (sold) column
   for the chosen period, set the void approval code.
-- **Expenses:** every shift's expenses by period; the owner can correct the items and the shift's cash is recomputed.
+- **Transactions:** every bill with its edit history; the owner voids a bill or corrects it (the bill is voided and a
+  replacement is made, both linked).
+- **Stock:** stock now and its history; stock in, adjustments with a reason, and stock counts. Stock never changes from
+  the product form.
+- **Expenses:** every shift's expenses by period; a wrong item is cancelled with a reason and recorded again.
+- **Day close (Tutup hari):** per outlet and business date, each shift's cash and QRIS reconciled line by line, cash
+  put into or taken out of a drawer, the day's corrections, and the automatic balance checks. The owner closes and locks
+  the day (with the QRIS that reached the bank); a locked day cannot change anywhere until it is reopened with a reason.
+- **Bookkeeping:** every document (sale, void, refund, expense, shift, cash movement, stock document, day close) is
+  posted to a double-entry ledger view; see [`docs/ACCOUNTING.md`](docs/ACCOUNTING.md). A nightly job and triggers
+  notify the owner of voids, shift differences, failed checks, unclosed days, and shifts left open.
 - **Vouchers:** percentage or amount, for the whole bill or chosen products, with minimum spend and quota.
 - **Settings:** profile, business, receipt switches, notifications, and subscription.
 - **Billing:** plans by bank transfer, with a billing history. Extra outlets are billed per month.
@@ -196,10 +206,12 @@ one signed with the release key; send its offline queue first.
 
 All schema changes live in [`supabase/migrations`](supabase/migrations), numbered and applied in order.
 
-- **Never edit an applied migration.** Add the next number (`072_…sql`).
+- **Never edit an applied migration.** Add the next number (`077_…sql`).
 - Apply migrations with the Supabase CLI from `apps/pos-mobile` (`npm run db:push`), or run each file in the SQL editor.
   Apply a migration before deploying the app build that calls it: the backoffice needs 061 (Produk), 062 (Ringkasan,
-  sidebar), 063 (Laporan), 066 to 068 (Transaksi; the Produk page reads the `owner_product_sales` shape from 066), and 071 (Balancing; it also removes the old bill and expense edit functions); the POS build that reads the business time zone needs 064. Apply 059 only after every
+  sidebar), 063 (Laporan), 066 to 068 (Transaksi; the Produk page reads the `owner_product_sales` shape from 066), and 071, then 072 to 076 in order (ledger, bill correction, cash movements, stock, day close and lock, notifications;
+  073 replaces 071's Balancing page); the POS build that reads the business time zone needs 064, and the POS build
+  that sends the QRIS total at shift close needs 075. Apply 059 only after every
   phone runs a build that no longer reads PIN hashes.
 - SQL tests apply every migration to a fresh Postgres database and print `PASS` or `FAIL` per check:
 

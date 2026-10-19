@@ -7,6 +7,7 @@ import type {
   Bill,
   CheckFailure,
   DayClose,
+  TrailEntry,
   BillEdit,
   BillItem,
   BillSnapshot,
@@ -157,6 +158,9 @@ function toPnl(raw: unknown): Pnl {
     grossProfit: num(r.grossProfit),
     operatingExpenses: num(r.operatingExpenses),
     inventoryPurchases: num(r.inventoryPurchases),
+    stockAdjustments: num(r.stockAdjustments),
+    cashDifference: num(r.cashDifference),
+    qrisDifference: num(r.qrisDifference),
     operatingProfit: num(r.operatingProfit),
   };
 }
@@ -352,10 +356,35 @@ export function toBillEdit(r: Row): BillEdit {
   };
 }
 
+const TRAIL_KINDS: TrailEntry['kind'][] = ['void', 'correction', 'refund', 'expense_cancel', 'stock_adjustment', 'stock_opname'];
+
 export function toDayClose(raw: unknown): DayClose {
   const r = (raw ?? {}) as Row;
+  const c = r.closed as Row | null | undefined;
   return {
     date: str(r.date),
+    closed: c
+      ? {
+          closedAt: str(c.closedAt),
+          qrisBook: num(c.qrisBook),
+          qrisSettled: nullable(c.qrisSettled),
+          qrisDifference: nullable(c.qrisDifference),
+          note: str(c.note),
+        }
+      : null,
+    log: rows(r.log).map((g) => ({
+      action: g.action === 'reopen' ? 'reopen' : 'close',
+      reason: str(g.reason),
+      qrisSettled: nullable(g.qrisSettled),
+      at: str(g.at),
+    })),
+    trail: rows(r.trail).map((e) => ({
+      kind: TRAIL_KINDS.includes(e.kind as TrailEntry['kind']) ? (e.kind as TrailEntry['kind']) : 'void',
+      at: str(e.at),
+      ref: e.ref ? str(e.ref) : null,
+      amount: num(e.amount),
+      reason: str(e.reason),
+    })),
     checks: rows(r.checks).map((f) => ({
       rule: str(f.rule) as CheckFailure['rule'],
       ref: f.ref ? str(f.ref) : null,
@@ -381,6 +410,8 @@ export function toDayClose(raw: unknown): DayClose {
       qrisSales: num(s.qrisSales),
       qrisRefunds: num(s.qrisRefunds),
       qrisExpected: num(s.qrisExpected),
+      qrisReported: nullable(s.qrisReported),
+      qrisVariance: nullable(s.qrisVariance),
       netSales: num(s.netSales),
       movements: rows(s.movements).map((m) => ({
         id: str(m.id),
