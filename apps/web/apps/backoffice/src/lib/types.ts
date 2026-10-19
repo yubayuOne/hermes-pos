@@ -327,3 +327,25 @@ export type Payment = {
   newExpiresAt: string | null;
   createdAt: string;
 };
+
+/** A tracked product on the Stok page (owner_list_stock, 074). Value = stock x HPP, from the database. */
+export type StockItem = {
+  productId: string;
+  name: string;
+  category: string;
+  stock: number;
+  hpp: number;
+  value: number;
+  isActive: boolean;
+  lastCount: string | null;
+};
+export type StockDocumentKind = 'opening' | 'initial' | 'tracking_off' | 'stock_in' | 'adjustment' | 'opname';
+/** A stock document: every change of stock that is not a sale, void, or refund (074). */
+export type StockDocument = {
+  id: string;
+  kind: StockDocumentKind;
+  reason: string;
+  createdAt: string;
+  lines: { productId: string; productName: string; qty: number; counted: number | null; bookQty: number | null; value: number }[];
+};
+export type StockDocumentList = { rows: StockDocument[]; total: number };

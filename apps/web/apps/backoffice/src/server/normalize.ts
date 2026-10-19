@@ -1,5 +1,8 @@
 import { DEFAULT_TZ, dayDiff, isoDay } from '@hermes-pos/ui';
 import type {
+  StockDocument,
+  StockDocumentList,
+  StockItem,
   ExpenseItem,
   Bill,
   CheckFailure,
@@ -396,4 +399,39 @@ export function toDayClose(raw: unknown): DayClose {
       })),
     })),
   };
+}
+
+export function toStockItem(r: Row): StockItem {
+  return {
+    productId: str(r.productId),
+    name: str(r.name),
+    category: str(r.category),
+    stock: num(r.stock),
+    hpp: num(r.hpp),
+    value: num(r.value),
+    isActive: r.isActive !== false,
+    lastCount: r.lastCount ? str(r.lastCount) : null,
+  };
+}
+
+export function toStockDocument(r: Row): StockDocument {
+  return {
+    id: str(r.id),
+    kind: str(r.kind, 'stock_in') as StockDocument['kind'],
+    reason: str(r.reason),
+    createdAt: str(r.createdAt),
+    lines: rows(r.lines).map((l) => ({
+      productId: str(l.productId),
+      productName: str(l.productName),
+      qty: num(l.qty),
+      counted: nullable(l.counted),
+      bookQty: nullable(l.bookQty),
+      value: num(l.value),
+    })),
+  };
+}
+
+export function toStockDocumentList(raw: unknown): StockDocumentList {
+  const r = (raw ?? {}) as Row;
+  return { total: num(r.total), rows: rows(r.rows).map(toStockDocument) };
 }

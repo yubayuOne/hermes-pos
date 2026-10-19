@@ -120,7 +120,8 @@ begin
   from public.transaction_items where transaction_id = v_new;
   v_total := public.set_bill_totals(v_new, v_gross, v_idisc, t.bill_discount_type, t.bill_discount_value);
   update public.transactions
-  set total_hpp = v_hpp, payment_method = p_payment_method, status = 'completed', completed_at = coalesce(t.completed_at, now())
+  -- completed_at is when its stock left (now); created_at keeps the sale on the original's day.
+  set total_hpp = v_hpp, payment_method = p_payment_method, status = 'completed', completed_at = now()
   where id = v_new;
   insert into public.payments(transaction_id, method, amount_received, change_amount, status)
   values (v_new, p_payment_method, v_total, 0, 'paid');

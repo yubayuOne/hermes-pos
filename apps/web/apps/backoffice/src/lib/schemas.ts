@@ -275,6 +275,35 @@ export const cashMovementSchema = z.object({
     .max(1_000_000_000, 'Nominal maksimal Rp1.000.000.000.'),
   reason,
 });
+// ---------- Stock (074) ----------
+const stockQty = z
+  .number({ error: 'Jumlah harus angka.' })
+  .refine((v) => Number.isFinite(v) && Math.abs(v * 1000 - Math.round(v * 1000)) < 1e-6, 'Jumlah maksimal 3 angka di belakang koma.')
+  .refine((v) => Math.abs(v) < 1_000_000, 'Jumlah terlalu besar.');
+/** Same rules as owner_stock_document: stock in > 0, an adjustment signed and not 0 with a reason, a count >= 0. */
+export const stockDocumentSchema = z
+  .object({
+    outletId: uuid,
+    kind: z.enum(['stock_in', 'adjustment', 'opname']),
+    reason: z.string().trim().max(200, 'Maksimal 200 karakter.'),
+    lines: z
+      .array(z.object({ productId: uuid, qty: stockQty }))
+      .min(1, 'Isi jumlah minimal satu produk.')
+      .max(500, 'Maksimal 500 produk.')
+      .refine((ls) => new Set(ls.map((l) => l.productId)).size === ls.length, 'Satu produk hanya boleh sekali.'),
+  })
+  .superRefine((v, ctx) => {
+    if (v.kind === 'adjustment' && v.reason.length < 3) ctx.addIssue({ code: 'custom', path: ['reason'], message: 'Tulis alasan, minimal 3 huruf.' });
+    for (const l of v.lines) {
+      if (v.kind === 'stock_in' && l.qty <= 0) ctx.addIssue({ code: 'custom', path: ['lines'], message: 'Jumlah stok masuk harus lebih dari 0.' });
+      if (v.kind === 'adjustment' && l.qty === 0) ctx.addIssue({ code: 'custom', path: ['lines'], message: 'Jumlah penyesuaian tidak boleh 0.' });
+      if (v.kind === 'opname' && l.qty < 0) ctx.addIssue({ code: 'custom', path: ['lines'], message: 'Hasil hitung tidak boleh minus.' });
+    }
+  });
+export const stockDocumentListSchema = z
+  .object({ outletId: uuid, from: day, to: day, tz: z.enum(timezones), page: z.number().int().min(1).max(10_000) })
+  .refine(...rangeCheck);
+
 // ---------- Billing ----------
 export const paymentSchema = z.object({
   plan: z.enum(['monthly', 'semiannual', 'annual']),

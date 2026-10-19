@@ -79,7 +79,8 @@ select pg_temp.ok('L2 cash in the drawer: 100.000 + 48.999 + 18.000 - 18.000 ref
 select pg_temp.ok('L3 QRIS 39.600, net sales 106.599 - 18.000 = 88.599',
   pg_temp.acct('qris') = 39600 and -(pg_temp.acct('sales') + pg_temp.acct('discount') + pg_temp.acct('sales_return')) = 88599);
 select pg_temp.ok('L4 stock: restocked roti back in inventory, cost of goods 8.000 + 6.000 + 3.000 + 16.000 + 6.000 - 6.000',
-  pg_temp.acct('cogs') = 33000 and pg_temp.acct('cost_absorbed') = -3000 and pg_temp.acct('inventory') = -30000);
+  pg_temp.acct('cogs') = 33000 and pg_temp.acct('cost_absorbed') = -3000
+  and (select sum(amount) from public.ledger where business_id = current_setting('t.b')::uuid and account = 'inventory' and doc_type in ('sale', 'refund')) = -30000);
 select pg_temp.ok('L5 expenses: belanja 15.000 as purchase, operasional 50.000, 50.000 paid outside the drawer',
   pg_temp.acct('purchase') = 15000 and pg_temp.acct('expense') = 50000);
 select pg_temp.ok('C1 clean data passes every check', pg_temp.checks() = '[]'::jsonb);

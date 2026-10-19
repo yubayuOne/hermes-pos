@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, amount, isoDay, money, useI18n, PencilIcon } from '@hermes-pos/ui';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
@@ -325,11 +325,20 @@ function ProductDialog({
               {f.values.trackStock ? t('Stok berkurang saat terjual dan produk tidak bisa dijual saat habis.') : t('Selalu bisa dijual, stok tidak dihitung.')}
             </p>
           </div>
-          {f.values.trackStock && (
-            <Field label={product ? t('Stok') : t('Stok awal')} error={f.errors.stock && t(f.errors.stock)}>
-              <Input inputMode="numeric" className="font-mono" value={f.values.stock} onChange={(e) => f.set('stock', e.target.value.replace(/\D/g, ''))} />
-            </Field>
-          )}
+          {/* A tracked product's stock changes only through stock documents (074); the form sets it when tracking starts. */}
+          {f.values.trackStock &&
+            (product?.trackStock ? (
+              <p className="text-[15px]">
+                {t('Stok sekarang {n}.', { n: amount(product.stock) })}{' '}
+                <Link to="/stock" search={{ outlet: outletId }} className="lnk lnk-inline">
+                  {t('Ubah lewat menu Stok')}
+                </Link>
+              </p>
+            ) : (
+              <Field label={t('Stok awal')} error={f.errors.stock && t(f.errors.stock)}>
+                <Input inputMode="numeric" className="font-mono" value={f.values.stock} onChange={(e) => f.set('stock', e.target.value.replace(/\D/g, ''))} />
+              </Field>
+            ))}
           <div className="fld">
             <span className="fld-l">{t('Tiket dicetak ke')}</span>
             <ChipGroup
