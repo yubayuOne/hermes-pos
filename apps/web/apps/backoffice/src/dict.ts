@@ -357,8 +357,8 @@ export const EN: Dict = {
   'Di jendela cetak, pilih "Simpan sebagai PDF". Teks dan angka di PDF tetap bisa dipilih dan dicari.':
     'In the print window, choose "Save as PDF". Text and numbers in the PDF stay selectable and searchable.',
   'Belum ada data di periode ini.': 'No data in this period yet.',
-  'Laporan berisi penjualan, shift, dan pengeluaran yang dicatat kasir di aplikasi. Pilih periode lain atau outlet lain.':
-    'The report holds the sales, shifts, and expenses cashiers record in the app. Choose another period or outlet.',
+  'Laporan berisi penjualan, shift, dan pengeluaran. Pilih periode lain atau outlet lain.':
+    'The report holds sales, shifts, and expenses. Pick another period or outlet.',
   'Laporan Kinerja Mingguan': 'Weekly Performance Report',
   'Laporan Kinerja Bulanan': 'Monthly Performance Report',
   'Laporan Kinerja': 'Performance Report',
@@ -854,10 +854,7 @@ export const EN: Dict = {
   // Expenses (POS migrations 040, 041, 043)
   'Total pengeluaran · {period}': 'Total expenses · {period}',
   'Belum ada pengeluaran di periode ini.': 'No expenses in this period.',
-  'Pengeluaran yang dicatat kasir di aplikasi (menu Shift, Catat pengeluaran) muncul di sini per shift.':
-    'Expenses recorded by cashiers in the app (Shift, Record expense) appear here per shift.',
-  'Kasir masih bisa menambah barang selama shift buka.': 'The cashier can still add items while the shift is open.',
-  'Pengeluaran dihitung menurut tanggal shift, langsung saat dicatat kasir.': 'Expenses count by shift date, as soon as the cashier records them.',
+  'Pengeluaran dihitung menurut tanggal shift, langsung saat dicatat.': 'Expenses count by shift date, as soon as they are recorded.',
   'Pengeluaran shift {n}, {amount}': 'Expenses of shift {n}, {amount}',
   'Shift {n}': 'Shift {n}',
   '{amount} dari kas laci': '{amount} from the cash drawer',
@@ -1036,8 +1033,6 @@ export const EN: Dict = {
   'Hari itu sudah ditutup': 'That day is already closed',
   'Hari itu belum ditutup': 'That day is not closed',
   'QRIS masuk rekening tidak valid': 'Invalid bank QRIS amount',
-  'Kasir mencatat belanja dan biaya operasional di aplikasi; semua catatan satu shift jadi satu daftar. Barang yang salah dibatalkan dengan alasan, lalu dicatat ulang dengan Tambah barang.':
-    "Cashiers record supplies and operating costs in the app; a shift's records form one list. A wrong item is cancelled with a reason, then recorded again with Add item.",
   'Termasuk koreksi pengeluaran lama: {amount}': 'Includes old expense corrections: {amount}',
   'Tambah barang': 'Add item',
   Aksi: 'Actions',
@@ -1053,6 +1048,15 @@ export const EN: Dict = {
     'For example: recorded twice, wrong amount (record the right one again with Add item).',
   'Pengeluaran shift {n} ditambah.': 'Expenses of shift {n} added.',
   'Tambah barang ke shift {n}': 'Add items to shift {n}',
+  'Catat pengeluaran': 'Record expense',
+  'Catat belanja dan biaya operasional di sini; semua catatan satu shift jadi satu daftar. Barang yang salah dibatalkan dengan alasan, lalu dicatat ulang.':
+    "Record supplies and operating costs here; a shift's records form one list. A wrong item is cancelled with a reason, then recorded again.",
+  'Tekan Catat pengeluaran untuk mencatat belanja atau biaya. Catatannya muncul di sini per shift.':
+    'Press Record expense to record supplies or a cost. Records appear here per shift.',
+  'Pengeluaran dicatat di laporan shift dan tidak mengubah kas laci.': "Expenses go into the shift's report and do not change the cash drawer.",
+  'Memuat...': 'Loading...',
+  'Tidak ada shift': 'No shift',
+  'Tidak ada shift pada {date}. Pilih tanggal shift terdekat.': 'No shift on {date}. Pick the nearest date with a shift.',
   'Shift masih buka. Kas seharusnya di aplikasi kasir ikut berubah kalau dibayar dari laci.':
     'The shift is still open. If paid from the drawer, the expected cash in the cashier app changes too.',
   'Shift sudah ditutup. Kalau dibayar dari laci, kas seharusnya dan selisih shift dihitung ulang.':

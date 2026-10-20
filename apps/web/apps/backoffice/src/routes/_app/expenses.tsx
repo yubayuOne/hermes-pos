@@ -6,9 +6,11 @@ import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { Pagination } from '../../components/Pagination';
 import { Stat } from '../../components/Stat';
-import type { Expense, ExpenseItem } from '../../lib/types';
+import type { DayShift, Expense, ExpenseItem } from '../../lib/types';
 import { describeError } from '../../lib/errors';
 import { addExpenseItems, cancelExpenseItem, listExpenses } from '../../server/expenses';
+import { getDay } from '../../server/closing';
+import { OutletField } from '../../components/Filters';
 import { EXPENSE_UNITS, expenseCancelSchema, expenseItemSchema } from '../../lib/schemas';
 import { useApp, useLock } from '../../lib/app';
 import { useAction } from '../../lib/useAction';
@@ -56,8 +58,8 @@ function ExpensesLoading() {
 }
 
 /**
- * D9: cashiers record expenses in the POS (migrations 040, 041). They count at once (043); the owner cancels an item with a
- * reason or adds items to any shift (073), and the shift's cash is recomputed in the database.
+ * D9: the owner records expenses here, on a shift of the day they were paid (077: the POS no longer records them, and they
+ * never come out of the drawer). They count at once; the owner cancels an item with a reason or adds items to any shift.
  */
 function Expenses() {
   const { t, lang } = useI18n();
@@ -66,6 +68,8 @@ function Expenses() {
   const navigate = useNavigate({ from: '/expenses' });
   const set = (patch: Partial<Search>) => navigate({ search: (s: Search) => ({ ...s, ...patch }) });
   const periodLabel = usePeriodLabel(search, data.range);
+  const lock = useLock();
+  const [recording, setRecording] = useState(false);
   // Pages of 50 shift records (server cursor: createdAt of the last row). Pages already seen are kept, so Sebelumnya
   // needs no request; a new filter or a saved edit starts again at page 1.
   const [pages, setPages] = useState<Expense[][]>([data.rows]);
@@ -104,11 +108,15 @@ function Expenses() {
 
   return (
     <Page title={t('Pengeluaran')} tools={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}>
-      <p className="max-w-[46em] text-mute">
-        {t(
-          'Kasir mencatat belanja dan biaya operasional di aplikasi; semua catatan satu shift jadi satu daftar. Barang yang salah dibatalkan dengan alasan, lalu dicatat ulang dengan Tambah barang.',
-        )}
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <p className="max-w-[46em] text-mute">
+          {t('Catat belanja dan biaya operasional di sini; semua catatan satu shift jadi satu daftar. Barang yang salah dibatalkan dengan alasan, lalu dicatat ulang.')}
+        </p>
+        <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
+          {lock.label(t('Catat pengeluaran'))}
+        </Button>
+      </div>
+      {recording && <AddDialog outletId={search.outlet ?? null} today={data.today} onClose={() => setRecording(false)} />}
       <div className="mt-5">
         <PeriodFilter value={search} range={data.range} today={data.today} onChange={set} />
       </div>
@@ -127,7 +135,7 @@ function Expenses() {
 
       {data.rows.length === 0 ? (
         <Empty className="mt-5" title={t('Belum ada pengeluaran di periode ini.')}>
-          {t('Pengeluaran yang dicatat kasir di aplikasi (menu Shift, Catat pengeluaran) muncul di sini per shift.')}
+          {t('Tekan Catat pengeluaran untuk mencatat belanja atau biaya. Catatannya muncul di sini per shift.')}
         </Empty>
       ) : (
         <div className="mt-6 grid gap-8">
@@ -234,9 +242,8 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
           ))}
         </ul>
       )}
-      {e.shiftOpen && <p className="mt-4 text-[15px] text-mute">{t('Kasir masih bisa menambah barang selama shift buka.')}</p>}
       {cancelling && <CancelDialog expense={e} item={cancelling} onClose={() => setCancelling(null)} />}
-      {adding && <AddDialog expense={e} onClose={() => setAdding(false)} />}
+      {adding && <AddDialog shift={{ id: e.shiftId, number: e.shiftNumber }} onClose={() => setAdding(false)} />}
     </Card>
   );
 }
@@ -287,10 +294,35 @@ function CancelDialog({ expense: e, item: i, onClose }: { expense: Expense; item
 type Draft = { name: string; category: ExpenseItem['category']; quantity: string; unit: string; amount: string };
 const blank = (): Draft => ({ name: '', category: 'belanja', quantity: '1', unit: 'pcs', amount: '' });
 
-/** New items for this shift. Expenses never come out of the drawer (077); the database recomputes the total. */
-function AddDialog({ expense: e, onClose }: { expense: Expense; onClose: () => void }) {
-  const { t } = useI18n();
+/**
+ * New items for a shift. With `shift` (Tambah barang on a shift's card) that shift; without it (Catat pengeluaran) the owner
+ * picks an outlet, a date, and one of that day's shifts, the latest by default: every expense belongs to a shift.
+ * Expenses never come out of the drawer (077); the database recomputes the total.
+ */
+function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; number: number }; outletId?: string | null; today?: string; onClose: () => void }) {
+  const { t, lang } = useI18n();
+  const app = useApp();
   const act = useAction();
+  const [outlet, setOutlet] = useState<string | null>(outletId ?? app.outlets[0]?.id ?? null);
+  const [date, setDate] = useState(today ?? '');
+  const [shifts, setShifts] = useState<DayShift[] | null>(null);
+  const [shiftId, setShiftId] = useState('');
+  useEffect(() => {
+    if (shift || !outlet || !date) return;
+    let live = true;
+    setShifts(null);
+    getDay({ data: { outletId: outlet, date } })
+      .then((d) => {
+        if (!live) return;
+        setShifts(d.shifts);
+        setShiftId(d.shifts[d.shifts.length - 1]?.id ?? '');
+      })
+      .catch(() => live && setShifts([]));
+    return () => {
+      live = false;
+    };
+  }, [shift, outlet, date]);
+  const target = shift ?? (shifts ?? []).filter((s) => s.id === shiftId).map((s) => ({ id: s.id, number: s.shiftNumber }))[0] ?? null;
   const [rows, setRows] = useState<Draft[]>([blank()]);
   const [errors, setErrors] = useState<string[]>([]);
   const set = (k: number, patch: Partial<Draft>) => {
@@ -303,10 +335,10 @@ function AddDialog({ expense: e, onClose }: { expense: Expense; onClose: () => v
     );
     const errs = checks.map((c) => (c.success ? '' : (c.error.issues[0]?.message ?? 'Data tidak valid.')));
     setErrors(errs);
-    if (errs.some(Boolean)) return;
+    if (errs.some(Boolean) || !target) return;
     const items = checks.map((c) => (c.success ? c.data : null)).filter((x) => x !== null);
-    const res = await act.run(() => addExpenseItems({ data: { shiftId: e.shiftId, items } }), {
-      success: t('Pengeluaran shift {n} ditambah.', { n: e.shiftNumber }),
+    const res = await act.run(() => addExpenseItems({ data: { shiftId: target.id, items } }), {
+      success: t('Pengeluaran shift {n} ditambah.', { n: target.number }),
     });
     if (res) onClose();
   }
@@ -315,20 +347,44 @@ function AddDialog({ expense: e, onClose }: { expense: Expense; onClose: () => v
       open
       wide
       onOpenChange={(o) => !o && onClose()}
-      title={t('Tambah barang ke shift {n}', { n: e.shiftNumber })}
-      description={t('Pengeluaran dicatat di laporan shift ini dan tidak mengubah kas laci.')}
+      title={shift ? t('Tambah barang ke shift {n}', { n: shift.number }) : t('Catat pengeluaran')}
+      description={t('Pengeluaran dicatat di laporan shift dan tidak mengubah kas laci.')}
       footer={
         <>
           <Button onClick={onClose} disabled={act.busy}>
             {t('Batal')}
           </Button>
-          <Button variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')} onClick={save}>
+          <Button variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')} disabled={!target} onClick={save}>
             {t('Simpan barang')}
           </Button>
         </>
       }
     >
       <div className="grid gap-4">
+        {!shift && (
+          <div className="grid gap-3 sm:grid-cols-3">
+            <OutletField all={false} value={outlet} onChange={setOutlet} />
+            <Field label={t('Tanggal')}>
+              <Input type="date" max={today} value={date} onChange={(ev) => ev.target.value && setDate(ev.target.value)} />
+            </Field>
+            <Field label={t('Shift')}>
+              <Select value={shiftId} disabled={!shifts?.length} onChange={(ev) => setShiftId(ev.target.value)}>
+                {shifts === null && <option value="">{t('Memuat...')}</option>}
+                {shifts?.length === 0 && <option value="">{t('Tidak ada shift')}</option>}
+                {shifts?.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {t('Shift {n}', { n: s.shiftNumber })} · {s.cashierName}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            {shifts?.length === 0 && (
+              <p role="status" className="col-span-full text-[14px] text-mute">
+                {t('Tidak ada shift pada {date}. Pilih tanggal shift terdekat.', { date: dateLong(`${date}T12:00:00Z`, lang, 'UTC') })}
+              </p>
+            )}
+          </div>
+        )}
         {rows.map((r, k) => (
           <fieldset key={k} className="grid grid-cols-2 gap-3 rounded border-[1.5px] border-ink bg-slip p-4 sm:grid-cols-6">
             <legend className="sr-only">{t('Barang {n}', { n: k + 1 })}</legend>

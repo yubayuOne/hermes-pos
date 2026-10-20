@@ -720,7 +720,7 @@ export function ReportDocument({
             <li>{t('HPP memakai harga pokok per produk saat bill dibuat. Harga pokok kosong dihitung Rp0, jadi isi di menu Produk supaya margin akurat.')}</li>
             <li>{t('Refund dihitung pada tanggal refund. Barang refund yang kembali ke stok dikeluarkan dari HPP.')}</li>
             <li>{t('Bill offline masuk setelah tersinkron. Bill yang masih antre di perangkat belum masuk.')}</li>
-            <li>{t('Pengeluaran dihitung menurut tanggal shift, langsung saat dicatat kasir.')}</li>
+            <li>{t('Pengeluaran dihitung menurut tanggal shift, langsung saat dicatat.')}</li>
             <li>{t('Sumber data: aplikasi kasir {brand} dan menu Pengeluaran di backoffice.', { brand: BRAND_UPPER })}</li>
           </ul>
         </Section>

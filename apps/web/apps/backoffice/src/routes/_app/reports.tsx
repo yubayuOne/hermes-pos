@@ -80,7 +80,7 @@ function Reports() {
 
       {empty ? (
         <Empty className="mt-5" title={t('Belum ada data di periode ini.')}>
-          {t('Laporan berisi penjualan, shift, dan pengeluaran yang dicatat kasir di aplikasi. Pilih periode lain atau outlet lain.')}
+          {t('Laporan berisi penjualan, shift, dan pengeluaran. Pilih periode lain atau outlet lain.')}
         </Empty>
       ) : (
         <div className="-mx-4 mt-6 overflow-x-hidden bg-tint-2 px-3 py-6 sm:mx-0 sm:rounded sm:px-6 sm:py-8 print:m-0 print:bg-transparent print:p-0">
