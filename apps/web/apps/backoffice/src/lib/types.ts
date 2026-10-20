@@ -311,6 +311,7 @@ export type Product = {
   trackStock: boolean;
   station: 'kitchen' | 'bar';
   isActive: boolean;
+  imageUrl: string | null;
 };
 
 export type VoucherStatus = 'active' | 'expired' | 'used_up' | 'inactive';

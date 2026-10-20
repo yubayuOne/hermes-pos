@@ -690,6 +690,13 @@ const RPC = {
           o.id === a.p_outlet_id ? { ...o, logo_url: a.p_logo_url || null, logo_print_url: (a.p_logo_url && a.p_print_url) || null } : o,
         )),
         null),
+  owner_set_product_image: (a) => {
+    const p = products.find((x) => x.id === a.p_product_id);
+    if (!p) return fail('Produk tidak ditemukan');
+    if (expired()) return fail('Langganan berakhir. Perpanjang paket untuk mengubah foto produk.');
+    p.image_url = a.p_image_url || null;
+    return null;
+  },
 };
 
 const TABLES = {
@@ -742,7 +749,7 @@ createServer(async (req, res) => {
   if (p === '/auth/v1/signup') return send(200, { ...user, id: crypto.randomUUID(), email: json.email });
   if (p === '/auth/v1/recover') return send(200, {});
   if (p.startsWith('/auth/v1/.well-known')) return send(200, { keys: [] });
-  // Storage (bucket outlet-logos): upload, list a folder, remove.
+  // Storage (buckets outlet-logos and product-images): upload, list a folder, remove.
   if (p.startsWith('/storage/v1/object/list/')) {
     const prefix = json.prefix ? json.prefix + '/' : '';
     return send(

@@ -14,6 +14,7 @@ import type { Category, Product, ProductSale } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
 import { useForm } from '../../lib/useForm';
 import { createCategory, listCatalog, saveProduct, setProductActive } from '../../server/manage';
+import { ProductPhoto } from '../../components/ProductPhoto';
 import { pageHead } from '../../lang';
 
 type Search = PeriodSearch & { outlet?: string; cat?: string; q?: string; page?: number };
@@ -339,6 +340,11 @@ function ProductDialog({
                 <Input inputMode="numeric" className="font-mono" value={f.values.stock} onChange={(e) => f.set('stock', e.target.value.replace(/\D/g, ''))} />
               </Field>
             ))}
+          {product ? (
+            <ProductPhoto outletId={outletId} product={product} />
+          ) : (
+            <p className="text-[14px] text-mute">{t('Foto bisa ditambahkan setelah produk disimpan.')}</p>
+          )}
           <div className="fld">
             <span className="fld-l">{t('Tiket dicetak ke')}</span>
             <ChipGroup

@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { setCatalogHasImages } from '../services/prefs/catalogView';
 import { applyQueuedStock } from '../services/transaction/offlineQueue';
 import { isSoldOut, isTracked, maxQty } from '../utils/stock';
 import { AppSession, CartItem, Category, CustomerInfo, Discount, Product, Shift, Voucher } from '../types/domain';
@@ -220,6 +221,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     // the global store context every minute when no menu, price, or stock has changed.
     const nextProducts = applyQueuedStock(p);
     setProducts((current) => (sameProducts(current, nextProducts) ? current : nextProducts));
+    setCatalogHasImages(nextProducts.some((p) => !!p.imageUrl));
     setCategories((current) => (sameCategories(current, c) ? current : c));
   }, []);
 
@@ -246,6 +248,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const resetAll = useCallback(() => {
     setSession(null);
     setProducts([]);
+    setCatalogHasImages(false);
     setCategories([]);
     setShift(null);
     setCart([]);

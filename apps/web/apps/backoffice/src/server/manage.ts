@@ -1,12 +1,14 @@
 import { createServerFn } from '@tanstack/react-start';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { LOGO_MAX_UPLOAD, LOGO_TYPES, matchesImageType } from '../lib/logo';
+import { productImageError } from '../lib/productImage';
 import {
   cashierActiveSchema,
   cashierCreateSchema,
   cashierPinSchema,
   categorySchema,
   outletRefSchema,
+  productImageRefSchema,
   outletUpdateSchema,
   parser,
   productActiveSchema,
@@ -91,7 +93,7 @@ export const listCatalog = createServerFn({ method: 'GET' })
       supabase.from('categories').select('id,name').eq('outlet_id', data.outletId).eq('is_active', true).order('sort_order').order('name'),
       supabase
         .from('products')
-        .select('id,category_id,name,hpp,selling_price,stock,track_stock,station,is_active')
+        .select('id,category_id,name,hpp,selling_price,stock,track_stock,station,is_active,image_url')
         .eq('outlet_id', data.outletId)
         .eq('is_temporary', false)
         .order('name'),
@@ -110,6 +112,7 @@ export const listCatalog = createServerFn({ method: 'GET' })
         trackStock: r.track_stock !== false,
         station: (r.station ?? 'kitchen') as 'kitchen' | 'bar',
         isActive: r.is_active,
+        imageUrl: r.image_url ?? null,
       })),
     };
   });
@@ -239,6 +242,73 @@ export const removeOutletLogo = createServerFn({ method: 'POST' })
       if (error) return { ok: false, error: describeError(error) };
       await logoFolder(supabase, data.outletId)
         .then((folder) => clearLogos(supabase.storage.from('outlet-logos'), folder))
+        .catch(() => {});
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: describeError(err) };
+    }
+  });
+
+// ---------- Product photo (migration 080) ----------
+// Same route as the outlet logo: the user's cookie session uploads to {business_id}/{outlet_id}/ in bucket
+// product-images, and owner_set_product_image stores the public URL. Each upload is {product_id}-{ms}.webp.
+
+/** Remove the product's photo files older than `keep` (all of them without it). Best effort. */
+async function clearProductImages(bucket: Bucket, folder: string, productId: string, keep?: string) {
+  const { data } = await bucket.list(folder, { search: productId });
+  const old = (data ?? [])
+    .filter((f) => f.name.startsWith(`${productId}-`))
+    .map((f) => `${folder}/${f.name}`)
+    .filter((p) => !keep || p < keep);
+  if (old.length) await bucket.remove(old);
+}
+
+export const uploadProductImage = createServerFn({ method: 'POST' })
+  .validator((form: FormData) => {
+    if (!(form instanceof FormData)) throw new Error('Data tidak valid.');
+    const ref = productImageRefSchema.parse({ outletId: form.get('outletId'), productId: form.get('productId') });
+    const file = form.get('file');
+    if (!(file instanceof File)) throw new Error('Pilih foto dulu.');
+    const error = productImageError(file.type, file.size);
+    if (error) throw new Error(error);
+    return { ...ref, file };
+  })
+  .handler(async ({ data }): Promise<ActionResult> => {
+    const { supabaseServer } = await import('./supabase.server');
+    const { describeError } = await import('../lib/errors');
+    try {
+      const head = new Uint8Array(await data.file.slice(0, 12).arrayBuffer());
+      if (!matchesImageType(head, data.file.type)) return { ok: false, error: 'Foto harus WebP atau JPEG.' };
+      const supabase = supabaseServer();
+      const folder = await logoFolder(supabase, data.outletId);
+      const path = `${folder}/${data.productId}-${Date.now()}.${data.file.type === 'image/jpeg' ? 'jpg' : 'webp'}`;
+      const bucket = supabase.storage.from('product-images');
+      const up = await bucket.upload(path, data.file, { contentType: data.file.type, upsert: false });
+      if (up.error) return { ok: false, error: describeError(up.error) };
+      const { error } = await supabase.rpc('owner_set_product_image', { p_product_id: data.productId, p_image_url: bucket.getPublicUrl(path).data.publicUrl });
+      if (error) {
+        await bucket.remove([path]);
+        return { ok: false, error: describeError(error) };
+      }
+      // A failed cleanup must not undo the new photo.
+      await clearProductImages(bucket, folder, data.productId, path).catch(() => {});
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: describeError(err) };
+    }
+  });
+
+export const removeProductImage = createServerFn({ method: 'POST' })
+  .validator(parser(productImageRefSchema))
+  .handler(async ({ data }): Promise<ActionResult> => {
+    const { supabaseServer } = await import('./supabase.server');
+    const { describeError } = await import('../lib/errors');
+    try {
+      const supabase = supabaseServer();
+      const { error } = await supabase.rpc('owner_set_product_image', { p_product_id: data.productId, p_image_url: '' });
+      if (error) return { ok: false, error: describeError(error) };
+      await logoFolder(supabase, data.outletId)
+        .then((folder) => clearProductImages(supabase.storage.from('product-images'), folder, data.productId))
         .catch(() => {});
       return { ok: true };
     } catch (err) {

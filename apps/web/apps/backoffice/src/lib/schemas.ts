@@ -110,6 +110,7 @@ export const cashierActiveSchema = z.object({ cashierId: uuid, active: z.boolean
 
 // ---------- Catalog ----------
 export const outletRefSchema = z.object({ outletId: uuid });
+export const productImageRefSchema = outletRefSchema.extend({ productId: uuid });
 export const categorySchema = z.object({ outletId: uuid, name: req('Isi nama kategori.', 20, 'Nama kategori maksimal 20 huruf.') });
 export const productSchema = z.object({
   id: uuid.nullish(),
