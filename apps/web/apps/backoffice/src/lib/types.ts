@@ -368,3 +368,7 @@ export type StockDocument = {
   lines: { productId: string; productName: string; qty: number; counted: number | null; bookQty: number | null; value: number }[];
 };
 export type StockDocumentList = { rows: StockDocument[]; total: number };
+
+/** Customers by the name typed on paid bills (owner_customers, migration 081). */
+export type Customer = { name: string; bills: number; total: number; lastAt: string };
+export type CustomerList = { rows: Customer[]; total: number };

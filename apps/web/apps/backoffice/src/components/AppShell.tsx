@@ -7,7 +7,7 @@ import { rememberAppContext } from '../lib/appContextCache';
 import { Bell } from './Bell';
 
 type NavItem = {
-  to: '/' | '/transactions' | '/closing' | '/outlets' | '/cashiers' | '/products' | '/stock' | '/expenses' | '/vouchers';
+  to: '/' | '/transactions' | '/closing' | '/outlets' | '/cashiers' | '/products' | '/stock' | '/expenses' | '/customers' | '/vouchers';
   label: string;
   meta?: string | number;
 };
@@ -99,6 +99,7 @@ function SidebarBody({ close }: { close?: ReactNode }) {
       items: [
         { to: '/expenses', label: 'Pengeluaran' },
         { to: '/stock', label: 'Stok' },
+        { to: '/customers', label: 'Pelanggan' },
       ],
     },
     {

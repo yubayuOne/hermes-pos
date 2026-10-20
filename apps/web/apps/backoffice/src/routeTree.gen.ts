@@ -19,6 +19,7 @@ import { Route as SubscriptionRouteImport } from './routes/subscription'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppCashiersRouteImport } from './routes/_app/cashiers'
 import { Route as AppClosingRouteImport } from './routes/_app/closing'
+import { Route as AppCustomersRouteImport } from './routes/_app/customers'
 import { Route as AppExpensesRouteImport } from './routes/_app/expenses'
 import { Route as AppOutletsRouteImport } from './routes/_app/outlets'
 import { Route as AppProductsRouteImport } from './routes/_app/products'
@@ -78,6 +79,11 @@ const AppClosingRoute = AppClosingRouteImport.update({
   path: '/closing',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCustomersRoute = AppCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppExpensesRoute = AppExpensesRouteImport.update({
   id: '/expenses',
   path: '/expenses',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/subscription': typeof SubscriptionRoute
   '/cashiers': typeof AppCashiersRoute
   '/closing': typeof AppClosingRoute
+  '/customers': typeof AppCustomersRoute
   '/expenses': typeof AppExpensesRoute
   '/outlets': typeof AppOutletsRoute
   '/products': typeof AppProductsRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/subscription': typeof SubscriptionRoute
   '/cashiers': typeof AppCashiersRoute
   '/closing': typeof AppClosingRoute
+  '/customers': typeof AppCustomersRoute
   '/expenses': typeof AppExpensesRoute
   '/outlets': typeof AppOutletsRoute
   '/products': typeof AppProductsRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/subscription': typeof SubscriptionRoute
   '/_app/cashiers': typeof AppCashiersRoute
   '/_app/closing': typeof AppClosingRoute
+  '/_app/customers': typeof AppCustomersRoute
   '/_app/expenses': typeof AppExpensesRoute
   '/_app/outlets': typeof AppOutletsRoute
   '/_app/products': typeof AppProductsRoute
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/subscription'
     | '/cashiers'
     | '/closing'
+    | '/customers'
     | '/expenses'
     | '/outlets'
     | '/products'
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/subscription'
     | '/cashiers'
     | '/closing'
+    | '/customers'
     | '/expenses'
     | '/outlets'
     | '/products'
@@ -238,6 +249,7 @@ export interface FileRouteTypes {
     | '/subscription'
     | '/_app/cashiers'
     | '/_app/closing'
+    | '/_app/customers'
     | '/_app/expenses'
     | '/_app/outlets'
     | '/_app/products'
@@ -333,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppClosingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/customers': {
+      id: '/_app/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof AppCustomersRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/expenses': {
       id: '/_app/expenses'
       path: '/expenses'
@@ -402,6 +421,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppCashiersRoute: typeof AppCashiersRoute
   AppClosingRoute: typeof AppClosingRoute
+  AppCustomersRoute: typeof AppCustomersRoute
   AppExpensesRoute: typeof AppExpensesRoute
   AppOutletsRoute: typeof AppOutletsRoute
   AppProductsRoute: typeof AppProductsRoute
@@ -416,6 +436,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppCashiersRoute: AppCashiersRoute,
   AppClosingRoute: AppClosingRoute,
+  AppCustomersRoute: AppCustomersRoute,
   AppExpensesRoute: AppExpensesRoute,
   AppOutletsRoute: AppOutletsRoute,
   AppProductsRoute: AppProductsRoute,

@@ -940,6 +940,17 @@ export const EN: Dict = {
   'Shift tidak ditemukan': 'Shift not found',
   // Corrections and Tutup hari (migration 073)
   'Shift|menu': 'Shifts',
+  // Customers (migration 081)
+  'Pelanggan|menu': 'Customers',
+  'Cari pelanggan': 'Search customers',
+  'Cari nama': 'Search a name',
+  '{n} pelanggan': '{n} customer(s)',
+  'Tidak ada pelanggan yang cocok.': 'No customer matches.',
+  'Belum ada pelanggan di periode ini.': 'No customers in this period.',
+  'Nama yang diisi kasir di bill muncul di sini.': 'Names the cashier types on bills show up here.',
+  'Total belanja': 'Total spent',
+  Nama: 'Name',
+  'Terakhir belanja': 'Last visit',
   // Product photo (migration 080)
   Foto: 'Photo',
   'Foto {name}': 'Photo of {name}',

@@ -690,6 +690,19 @@ const RPC = {
           o.id === a.p_outlet_id ? { ...o, logo_url: a.p_logo_url || null, logo_print_url: (a.p_logo_url && a.p_print_url) || null } : o,
         )),
         null),
+  owner_customers: (a) => {
+    const all =
+      scenario.data === 'empty'
+        ? []
+        : [
+            { name: 'Budi', bills: 6, total: 412000, lastAt: plusDays(0) },
+            { name: 'Ani', bills: 3, total: 158000, lastAt: plusDays(-2) },
+            { name: 'Pak Joko', bills: 1, total: 44000, lastAt: plusDays(-9) },
+          ];
+    const q = String(a.p_search ?? '').trim().toLowerCase();
+    const rows = q ? all.filter((c) => c.name.toLowerCase().includes(q)) : all;
+    return { total: rows.length, rows };
+  },
   owner_set_product_image: (a) => {
     const p = products.find((x) => x.id === a.p_product_id);
     if (!p) return fail('Produk tidak ditemukan');

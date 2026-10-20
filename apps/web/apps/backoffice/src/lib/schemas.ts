@@ -188,6 +188,17 @@ export const expenseListSchema = z
     before: z.iso.datetime({ offset: true }).nullable(),
   })
   .refine(...rangeCheck);
+// ---------- Customers (081) ----------
+export const customerListSchema = z
+  .object({
+    outletId: uuid.nullable(),
+    from: day,
+    to: day,
+    tz: z.enum(timezones),
+    q: z.string().trim().max(40),
+    page: z.number().int().min(1),
+  })
+  .refine(...rangeCheck);
 // ---------- Settings ----------
 export const profileSchema = z.object({
   fullName: z.string().trim().max(80, 'Maksimal 80 karakter.'),
