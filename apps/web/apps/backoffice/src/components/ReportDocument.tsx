@@ -71,7 +71,8 @@ export function ReportDocument({
   const sheet = { head: { business, meta: `No. ${number} · ${period}` }, footer, pages };
 
   return (
-    <div className="grid gap-8 print:block">
+    // minmax(0,1fr): a sheet never grows past the screen; wide tables scroll inside it (Scroll).
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-8 print:block">
       <style>{pageCss}</style>
 
       <Sheet n={1} {...sheet}>
