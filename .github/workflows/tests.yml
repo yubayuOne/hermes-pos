@@ -21,11 +21,12 @@ jobs:
       PSQL: psql -h localhost -U postgres
     steps:
       - uses: actions/checkout@v4
-      # run_all.sh prints test results and does not set its exit code, so fail on its ERROR and FAIL lines.
+      # run_all.sh prints test results and does not set its exit code, so fail on ERROR lines and on lines that start
+      # with FAIL (a failed test or migration); the "TOTAL n FAIL 0" summaries must not count.
       - name: Migrations and SQL tests
         run: |
           sh supabase/tests/run_all.sh | tee sql.log
-          ! grep -E "ERROR|FAIL" sql.log
+          ! grep -E "^FAIL|ERROR" sql.log
 
   mobile:
     runs-on: ubuntu-latest
