@@ -51,7 +51,7 @@ function SubscriptionBanner() {
             {t('Langganan berakhir pada {date}.', { date })}
           </h2>
           <p className="mt-2 text-mute">
-            {t('Aplikasi tetap terbuka, tetapi penjualan baru dan perubahan data terkunci. Laporan dan riwayat masih bisa dilihat.')}
+            {t('Penjualan dan perubahan data terkunci. Laporan tetap bisa dilihat.')}
           </p>
         </div>
         <Link to="/subscription" className={btn('fire')}>

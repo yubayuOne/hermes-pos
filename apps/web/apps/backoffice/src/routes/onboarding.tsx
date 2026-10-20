@@ -147,7 +147,7 @@ function StepBusiness({ value, needsUsername, onNext }: { value: Biz; needsUsern
           <Field
             label="Username"
             error={f.errors.username && t(f.errors.username)}
-            help={t('3 sampai 20 karakter: huruf kecil, angka, titik, atau garis bawah. Bisa dipakai untuk masuk.')}
+            help={t('3 sampai 20 karakter: huruf kecil, angka, titik, atau garis bawah.')}
           >
             <Input
               autoCapitalize="none"
@@ -241,7 +241,7 @@ function StepCashier({ outletId, count, onNext }: { outletId: string; count: num
       <StepCard
         n={3}
         title={t('Siapa yang jaga kasir?')}
-        sub={t('Kasir tidak butuh email. Di aplikasi, kasir memilih namanya lalu mengetik PIN 6 digit. Trial: maksimal 2 kasir.')}
+        sub={t('Kasir masuk dengan nama dan PIN 6 digit. Trial: maksimal 2 kasir.')}
       >
         {count > 0 && <p className="rounded border-[1.5px] border-ink bg-pine-soft px-4 py-3 font-semibold">{t('{n} kasir sudah dibuat.', { n: count })}</p>}
         {!full && (

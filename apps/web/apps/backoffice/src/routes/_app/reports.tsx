@@ -74,7 +74,7 @@ function Reports() {
       </div>
       {!empty && (
         <p className="mt-3 text-[14px] text-mute print:hidden">
-          {t('Di jendela cetak, pilih "Simpan sebagai PDF". Teks dan angka di PDF tetap bisa dipilih dan dicari.')}
+          {t('Di jendela cetak, pilih "Simpan sebagai PDF".')}
         </p>
       )}
 

@@ -159,7 +159,7 @@ export function PaymentScreen({
         { label: t('Kembalian'), value: money(change), tone: 'success' },
       ],
       message: offlineLikely
-        ? t('Saat tidak ada internet, pembayaran disimpan di perangkat dengan nomor sementara dan dikirim otomatis.')
+        ? t('Tanpa internet, pembayaran disimpan dan dikirim otomatis.')
         : t('Setelah dicatat, stok dan kas laci diperbarui. Struk bisa dicetak sesudahnya.'),
       actions: [
         { key: 'back', label: t('Periksa lagi'), variant: 'secondary' },
@@ -289,8 +289,8 @@ export function PaymentScreen({
         void notify.dialog({
           tone: 'warning',
           title: t('Pembayaran belum terkonfirmasi'),
-          message: t('Koneksi putus sebelum server menjawab, jadi belum jelas apakah pembayaran ini sudah tercatat.'),
-          hint: t('Jangan buat pembayaran baru. Di tab Jual, pilih Lanjutkan pada banner pemulihan supaya kunci pembayarannya sama.'),
+          message: t('Koneksi putus. Pembayaran ini mungkin sudah tercatat.'),
+          hint: t('Jangan buat pembayaran baru. Pilih Lanjutkan di tab Jual.'),
         });
       } else {
         await clearPendingCheckout().catch(() => undefined);

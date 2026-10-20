@@ -69,7 +69,7 @@ export function MoreScreen({
     void notify.dialog({
       title: t('Menu dikelola di backoffice'),
       message: t(
-        'Kategori dan produk diubah pemilik di {host}, menu Produk. Kasir melihat perubahannya setelah katalog dimuat ulang (tarik grid menu ke bawah).',
+        'Produk diubah pemilik di {host}. Tarik menu ke bawah untuk memuat ulang.',
         { host: BRAND.backofficeHost },
       ),
     });
@@ -120,7 +120,7 @@ export function MoreScreen({
       ) : (
         <Text className="mt-1 text-[14px] text-mute">{t('Status langganan belum dimuat.')}</Text>
       )}
-      <Text className="mt-2 text-[14px] text-mute">{t('Pemilik memperpanjang dari backoffice: Pengaturan, tab Langganan. Kasir hanya bisa melihat.')}</Text>
+      <Text className="mt-2 text-[14px] text-mute">{t('Pemilik memperpanjang di backoffice.')}</Text>
     </Card>
   );
 

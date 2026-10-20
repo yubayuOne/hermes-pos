@@ -81,8 +81,7 @@ export const EN: Record<string, string | [string, string]> = {
   'Bluetooth bermasalah': 'Bluetooth problem',
   'Buka Lainnya, Printer, lalu pilih peran yang sesuai untuk salah satu printer.': 'Open More, Printer, then give one printer the right role.',
   'Buka Pengaturan, tab Langganan, lalu Pilih paket dan bayar.': 'Open Settings, the Subscription tab, then Choose plan and pay.',
-  'Buka lagi Pisah bill dari tab Bill dan lanjutkan bagian yang belum dibayar. Kunci pembayarannya tetap sama.':
-    'Open Split bill again from the Bill tab and continue the unpaid part. The payment key stays the same.',
+  'Buka Pisah bill di tab Bill dan lanjutkan bagian yang belum dibayar.': 'Open Split bill on the Bills tab and continue the unpaid part.',
   'Buka shift': 'Open shift',
   'Buka shift dengan kas awal dulu, lalu lanjut jualan.': 'Open a shift with opening cash first, then keep selling.',
   'Buka shift dengan kas awal untuk mulai jualan.': 'Open a shift with opening cash to start selling.',
@@ -109,15 +108,13 @@ export const EN: Record<string, string | [string, string]> = {
   'Cetak ulang struk': 'Reprint receipt',
   'Coba lagi': 'Retry',
   'Daftar bill belum bisa dimuat.': 'The bill list could not load.',
-  'Daftar ini hanya berisi bill di shift yang sedang berjalan. Riwayat shift lama ada di backoffice.':
-    'This list only holds bills of the running shift. Older shifts are in the backoffice.',
+  'Hanya bill shift ini. Riwayat lama ada di backoffice.': "Only this shift's bills. Older ones are in the backoffice.",
   'Daftar ini kosong karena gagal dimuat, bukan karena tidak ada bill. Periksa internet.':
     'The list is empty because it failed to load, not because there are no bills. Check the internet.',
   'Daftar kasir belum bisa dimuat': 'The cashier list could not load',
   'Dalam ribu rupiah. Batang oranye adalah jam tersibuk shift ini.': 'In thousand rupiah. The orange bar is the busiest hour of this shift.',
   Dapur: 'Kitchen',
-  'Data bisnis tetap aman. Riwayat bill dan laporan shift masih bisa dibuka. Pembayaran offline yang dibuat sebelum berakhir tetap dikirim.':
-    'Business data stays safe. Bill history and shift reports can still be opened. Offline payments made before expiry are still sent.',
+  'Data aman. Riwayat bill dan laporan shift tetap bisa dibuka.': 'Your data is safe. Bills and shift reports stay open.',
   'Data tidak pernah dihapus selama langganan berakhir.': 'Data is never deleted while the subscription is expired.',
   'Dibuka {time} · kas awal {amount}': 'Opened {time} · opening cash {amount}',
   'Dicetak di': 'Prints at',
@@ -128,11 +125,8 @@ export const EN: Record<string, string | [string, string]> = {
   'Dipakai untuk': 'Used for',
   Diskon: 'Discount',
   'Diskon bill': 'Bill discount',
-  'Diskon bill dibagi ke tiap baris supaya rupiahnya tidak meleset. Bagian terakhir mengambil sisanya.':
-    'The bill discount is spread over the lines so no rupiah drifts. The last part takes the remainder.',
   'Belum ada menu terjual.': 'No menu items sold yet.',
-  'Bill ini belum tersimpan lengkap di HP, atau diubah saat offline. Pisah bill ini perlu internet.':
-    'This bill is not fully saved on this phone, or it was changed offline. Splitting it needs internet.',
+  'Pisah bill ini perlu internet.': 'Splitting this bill needs internet.',
   'MENU TERJUAL ({n} item)': 'MENU SOLD ({n} items)',
   'Menu terjual ({n} item)': 'Menu sold ({n} items)',
   Metode: 'Method',
@@ -146,8 +140,7 @@ export const EN: Record<string, string | [string, string]> = {
   'Diskon tidak boleh membuat total menjadi nol.': 'A discount cannot bring the total to zero.',
   'Diskon {label} · -{amount}': 'Discount {label} · -{amount}',
   Ditahan: 'Held',
-  'Ditolak server: {reason} Uang sudah diterima, jadi entri tidak dihapus otomatis. Tinjau bersama pemilik.':
-    'Rejected by the server: {reason} The money was already taken, so the entry is not deleted automatically. Review it with the owner.',
+  'Ditolak server: {reason} Tinjau bersama pemilik.': 'Refused by the server: {reason} Review it with the owner.',
   'Ditolak {n}': 'Rejected {n}',
   'Email/username atau kata sandi salah.': 'Wrong email/username or password.',
   'Entri antrean dihapus': 'Queue entry deleted',
@@ -179,29 +172,21 @@ export const EN: Record<string, string | [string, string]> = {
   'Harga harus lebih dari Rp0.': 'The price must be more than Rp0.',
   'Hasil tutup shift': 'Shift closing result',
   'Hitung semua uang di laci, lalu masukkan jumlahnya.': 'Count all the cash in the drawer, then enter the amount.',
-  'Hitung uang di laci lalu masukkan sebagai kas awal. Tanggal bisnis dikunci saat shift dibuka.':
-    'Count the cash in the drawer and enter it as opening cash. The business date is fixed when the shift opens.',
   'Hitung uang di laci, lalu masukkan sebagai kas awal.': 'Count the cash in the drawer, then enter it as opening cash.',
-  'Hitung ulang laci dan periksa bill tunai shift ini. Selisih tercatat di laporan shift dan terlihat oleh pemilik di backoffice.':
-    "Recount the drawer and check this shift's cash bills. The variance is recorded in the shift report and visible to the owner in the backoffice.",
+  'Hitung ulang laci dan periksa bill tunai.': 'Recount the drawer and check the cash bills.',
   'Hitungan kasir': 'Cashier count',
   'QRIS di aplikasi merchant': 'QRIS in the merchant app',
-  'Buka aplikasi merchant QRIS, lihat total uang masuk selama shift ini, lalu ketik di kotak QRIS.':
-    'Open the QRIS merchant app, check the total received during this shift, then type it in the QRIS box.',
-  'Cocokkan riwayat di aplikasi merchant dengan bill QRIS shift ini. Selisih QRIS terlihat oleh pemilik di backoffice.':
-    "Match the merchant app history with this shift's QRIS bills. The QRIS variance is visible to the owner in the backoffice.",
+  'Lihat total QRIS shift ini di aplikasi merchant.': "Check this shift's QRIS total in the merchant app.",
+  'Cocokkan aplikasi merchant dengan bill QRIS.': 'Match the merchant app with the QRIS bills.',
   'Indonesia atau English, disimpan di perangkat ini': 'Indonesian or English, saved on this device',
   'Isi email atau username, dan kata sandi.': 'Fill in email or username, and password.',
   'Email atau username': 'Email or username',
   'Isi nilai diskon lebih dari 0.': 'Enter a discount above 0.',
-  'Isi struk (logo, alamat, teks atas dan bawah) diatur pemilik di backoffice, menu Outlet. Printer yang gagal tidak pernah membatalkan pembayaran.':
-    'Receipt content (logo, address, top and bottom text) is set by the owner in the backoffice, Outlets menu. A failing printer never cancels the payment.',
+  'Isi struk diatur pemilik di backoffice, menu Outlet.': 'The owner sets the receipt content in the backoffice, Outlets.',
   'Izin Bluetooth ditolak. Izinkan Perangkat sekitar untuk HERMES POS di Pengaturan Android.':
     'Bluetooth permission denied. Allow Nearby devices for HERMES POS in Android Settings.',
-  'Jangan buat bill baru. Lanjutkan dari bill yang tersimpan supaya kunci pembayarannya sama.':
-    'Do not start a new bill. Continue from the stored bill so the payment key stays the same.',
-  'Jangan buat pembayaran baru. Di tab Jual, pilih Lanjutkan pada banner pemulihan supaya kunci pembayarannya sama.':
-    'Do not take a new payment. On the Sell tab, choose Continue on the recovery banner so the payment key stays the same.',
+  'Jangan buat bill baru. Lanjutkan bill yang tersimpan.': 'Do not start a new bill. Continue the saved one.',
+  'Jangan buat pembayaran baru. Pilih Lanjutkan di tab Jual.': 'Do not start a new payment. Choose Continue on the Sell tab.',
   Jual: 'Sell',
   Jumlah: 'Quantity',
   'Jumlah bill': 'Bills',
@@ -218,15 +203,13 @@ export const EN: Record<string, string | [string, string]> = {
   'Perkiraan di laci sekarang': 'Estimated in the drawer now',
   'Kas sesuai.': 'Cash matches.',
   Kasir: 'Cashier',
-  'Kasir hanya bisa melihat. Pemilik memperpanjang paket dari backoffice, menu Pengaturan, tab Langganan.':
-    'Cashiers can only view. The owner renews from the backoffice, Settings menu, Subscription tab.',
+  'Pemilik memperpanjang paket di backoffice.': 'The owner renews the plan in the backoffice.',
   'Kasir tidak ditemukan. Tarik layar ke bawah untuk memuat ulang.': 'Cashier not found. Pull down to reload.',
   'Kasir yang tetap jalan saat internet mati.': 'A till that keeps working when the internet is down.',
   'Kasir {name}': 'Cashier {name}',
   'Kata sandi': 'Password',
   Katalog: 'Catalog',
-  'Kategori dan produk diubah pemilik di {host}, menu Produk. Kasir melihat perubahannya setelah katalog dimuat ulang (tarik grid menu ke bawah).':
-    'The owner changes categories and products at {host}, Products menu. Cashiers see the change after the catalog reloads (pull the menu grid down).',
+  'Produk diubah pemilik di {host}. Tarik menu ke bawah untuk memuat ulang.': 'The owner edits products at {host}. Pull the menu down to reload.',
   'Kategori produk': 'Product categories',
   'Keluar akun': 'Sign out',
   'Keluar dengan antrean berisi?': 'Sign out with a queue?',
@@ -241,8 +224,7 @@ export const EN: Record<string, string | [string, string]> = {
   'Kode voucher tidak ditemukan.': 'Voucher code not found.',
   'Koneksi ke server terputus.': 'The connection to the server dropped.',
   'Konfirmasi QRIS {amount}': 'Confirm QRIS {amount}',
-  'Koneksi putus sebelum server menjawab, jadi belum jelas apakah pembayaran ini sudah tercatat.':
-    'The connection dropped before the server answered, so it is not clear whether this payment was recorded.',
+  'Koneksi putus. Pembayaran ini mungkin sudah tercatat.': 'The connection dropped. This payment may already be recorded.',
   'Kosongkan bill': 'Clear bill',
   'Kuota voucher ini sudah habis.': 'This voucher is used up.',
   Kurang: 'Short',
@@ -277,8 +259,7 @@ export const EN: Record<string, string | [string, string]> = {
   'Masih ada {n} bill ditahan.': ['{n} bill is still held.', '{n} bills are still held.'],
   'Tidak ada voucher di daftar terakhir. Coba lagi saat online.': 'No vouchers in the last list. Try again when online.',
   'Offline: daftar voucher terakhir hari ini': "Offline: today's last voucher list",
-  'Server memeriksa voucher lagi saat pembayaran terkirim. Kalau kuotanya sudah habis, pembayaran itu perlu ditinjau.':
-    'The server checks the voucher again when the payment is sent. If its quota ran out, that payment needs a review.',
+  'Voucher diperiksa lagi saat pembayaran terkirim.': 'The voucher is checked again when the payment is sent.',
   'Perubahan disimpan di perangkat': 'Changes saved on this device',
   'Tidak ada internet. Perubahan dikirim otomatis saat internet kembali.': 'No internet. The changes are sent automatically when it is back.',
   'Dipanggil dari data di perangkat': 'Recalled from this device',
@@ -292,28 +273,23 @@ export const EN: Record<string, string | [string, string]> = {
   'Kasir ini sudah tidak aktif': 'This cashier is no longer active',
   'Pemilik menonaktifkannya di backoffice. Pilih kasir lain.': 'The owner deactivated them in the backoffice. Pick another cashier.',
   'Buka tab Shift': 'Open the Shift tab',
-  'Jualan dan tutup shift hanya bisa di HP itu. Kalau HP itu hilang atau rusak, pemilik bisa memindahkan shift ini ke HP ini.':
-    'Selling and closing the shift only work on that phone. If that phone is lost or broken, the owner can move this shift to this phone.',
+  'Jualan dan tutup shift hanya bisa di HP itu. Pemilik bisa memindahkannya ke HP ini.': 'Selling and closing only work on that phone. The owner can move it to this phone.',
   'Jualan dan tutup shift hanya bisa di HP itu. Kalau HP itu hilang atau rusak, pemilik bisa memindahkannya di tab Shift.':
     'Selling and closing the shift only work on that phone. If that phone is lost or broken, the owner can move it in the Shift tab.',
-  'Jualan hanya bisa di HP itu. Kalau HP itu hilang atau rusak, pemilik bisa memindahkannya ke HP ini di tab Shift.':
-    'Selling only works on that phone. If that phone is lost or broken, the owner can move it to this phone in the Shift tab.',
+  'Jualan hanya bisa di HP itu. Pemilik bisa memindahkannya di tab Shift.': 'Selling only works on that phone. The owner can move it on the Shift tab.',
   'Memindahkan shift perlu internet. Sambungkan internet lalu coba lagi.': 'Moving a shift needs internet. Connect, then try again.',
-  'Pakai ini hanya kalau HP yang membuka shift hilang atau rusak. Penjualan yang masih tersimpan di HP itu akan ditolak server setelah shift dipindahkan.':
-    'Use this only if the phone that opened the shift is lost or broken. Sales still saved on that phone will be refused by the server once the shift is moved.',
+  'Hanya kalau HP pembuka shift hilang atau rusak. Penjualan yang tertinggal di HP itu akan ditolak.': 'Only if the phone that opened the shift is lost or broken. Sales left on that phone will be refused.',
   Pindahkan: 'Move',
   'Pindahkan ke HP ini': 'Move to this phone',
   'Pindahkan shift ke HP ini': 'Move shift to this phone',
   'Shift dipindahkan ke HP ini': 'Shift moved to this phone',
   'Shift ini dibuka di HP lain.': 'This shift was opened on another phone.',
   'Shift {n} sekarang dipakai di HP ini.': 'Shift {n} now runs on this phone.',
-  'Belum tercatat di server. Dikirim berurutan saat internet ada; tutup shift selalu terkirim paling akhir.':
-    'Not on the server yet. Sent in order when there is internet; a shift close always goes last.',
+  'Belum terkirim. Dikirim otomatis saat ada internet.': 'Not sent yet. Sent automatically when online.',
   'Entri ini tidak akan sampai ke server. Hapus hanya kalau memang batal.': 'This entry will never reach the server. Delete it only if it was cancelled.',
   'Hitungan kas {amount}': 'Counted cash {amount}',
   'Offline: angka terakhir yang dimuat': 'Offline: last loaded figures',
-  'Penjualan di shift ini akan ditolak server kalau pembukaannya dihapus. Hapus hanya kalau memang batal.':
-    "The server will refuse this shift's sales if its opening is deleted. Delete it only if it was cancelled.",
+  'Penjualan di shift ini akan ditolak server. Hapus hanya kalau batal.': 'Sales in this shift will be refused. Delete only if it was cancelled.',
   'Penjualan offline belum masuk ke angka ini. Tutup shift butuh internet.': 'Offline sales are not in these figures yet. Closing the shift needs internet.',
   'Buka dan tutup shift butuh internet. Penjualan yang sudah tercatat tetap aman di HP.':
     'Opening and closing a shift need internet. Sales already recorded stay safe on this phone.',
@@ -325,23 +301,19 @@ export const EN: Record<string, string | [string, string]> = {
   'Ganti kasir butuh internet': 'Switching cashier needs internet',
   'PIN kasir berikutnya diperiksa server. Sambungkan internet dulu.': "The next cashier's PIN is checked by the server. Connect to the internet first.",
   'Masuk kasir butuh internet. Sambungkan internet, lalu coba lagi.': 'Signing in a cashier needs internet. Connect, then try again.',
-  'Masuk kasir baru butuh internet. Kasir yang sedang bertugas tetap bisa lanjut dengan PIN-nya.':
-    'Signing in a new cashier needs internet. The cashier on shift can go on with their PIN.',
+  'Kasir baru perlu internet untuk masuk.': 'A new cashier needs internet to sign in.',
   'Tinjau entri yang ditolak dulu. Shift ditutup setelah semua entrinya beres.':
     'Review the refused entries first. The shift closes once all its entries are settled.',
   'Offline. Penjualan disimpan di perangkat dan dikirim saat internet kembali.': 'Offline. Sales are saved on this device and sent when the internet is back.',
   'Offline: daftar terakhir di perangkat': 'Offline: last list on this device',
-  'Bill bisa dipanggil, diubah, dan dibayar. Semuanya dikirim otomatis saat internet kembali.':
-    'Bills can be recalled, changed, and paid. Everything is sent automatically when the internet is back.',
+  'Bill tetap bisa diubah dan dibayar, lalu dikirim saat online.': 'Bills can still be changed and paid, and are sent when online.',
   'Perubahan bill ditahan': 'Held bill changes',
   'Bill bisa dibuka dan dicetak ulang. Void dan refund perlu internet.': 'Bills can be opened and reprinted. Voids and refunds need internet.',
   'Bill dipanggil dari perangkat': 'Bill recalled from this device',
   'Daftar dari server belum bisa dimuat.': 'The list from the server could not be loaded.',
-  'Yang tampil hanya bill yang dibuat di HP ini dan belum terkirim. Bill ini bisa dibuka dan dicetak ulang.':
-    'Only bills made on this phone and not sent yet are shown. They can be opened and reprinted.',
+  'Hanya bill dari HP ini yang belum terkirim.': 'Only bills from this phone that are not sent yet.',
   'Bill ini belum pernah terkirim. Bayar atau tahan lagi seperti bill baru.': 'This bill was never sent. Pay it or hold it again like a new bill.',
-  'Bill ini sedang dikirim atau mungkin sudah sampai di server. Tunggu sampai terkirim, lalu buka lagi dari daftar.':
-    'This bill is being sent or may already be on the server. Wait until it is sent, then open it again from the list.',
+  'Bill ini sedang dikirim. Tunggu sebentar, lalu buka lagi.': 'This bill is being sent. Wait a moment, then open it again.',
   Masuk: 'Sign in',
   'Masuk dengan akun pemilik.': 'Sign in with the owner account.',
   'Masuk gagal. Coba lagi.': 'Sign in failed. Try again.',
@@ -404,8 +376,7 @@ export const EN: Record<string, string | [string, string]> = {
   'PIN belum dibuat. Minta pemilik membuatnya di backoffice.': 'No PIN yet. Ask the owner to create one in the backoffice.',
   'PIN salah. Sisa percobaan: {n}.': 'Wrong PIN. Attempts left: {n}.',
   'PIN tidak bisa diperiksa. Periksa koneksi internet.': 'The PIN could not be checked. Check the internet connection.',
-  'Pair printer di Pengaturan Bluetooth Android dulu, lalu cari di sini. Printer thermal ESC/POS 58 mm atau 80 mm apa pun bisa dipakai.':
-    'Pair the printer in Android Bluetooth settings first, then search here. Any 58 mm or 80 mm ESC/POS thermal printer works.',
+  'Pair printer di Bluetooth Android dulu, lalu cari di sini.': 'Pair the printer in Android Bluetooth first, then search here.',
   'Pair printer di Pengaturan Bluetooth Android dulu, lalu cari lagi di sini.': 'Pair the printer in Android Bluetooth settings first, then search again here.',
   'Pakai voucher': 'Apply voucher',
   Paket: 'Plan',
@@ -426,24 +397,19 @@ export const EN: Record<string, string | [string, string]> = {
   'Server belum terjangkau': 'Server not reachable yet',
   'Coba Lanjutkan lagi saat internet kembali.': 'Tap Continue again when the internet is back.',
   'Pembayaran QRIS': 'QRIS payment',
-  'Pemilik belum membuat kode persetujuan. Kode dibuat di backoffice, Pengaturan, tab Bisnis dan struk.':
-    'The owner has not set an approval code. It is set in the backoffice, Settings, Business and receipt tab.',
+  'Pemilik belum membuat kode persetujuan di backoffice.': 'The owner has not set an approval code in the backoffice.',
   'Pemilik bisa memperpanjang paket di backoffice. Data tidak dihapus.': 'The owner can renew in the backoffice. No data is deleted.',
   'Pemilik bisa menambah paket atau menonaktifkan data lain di backoffice.': 'The owner can upgrade the plan or deactivate other data in the backoffice.',
   'Pemilik masuk ke {host} dari HP atau laptop.': 'The owner signs in at {host} from a phone or laptop.',
-  'Pemilik membuat kasir dan PIN-nya di {host}, menu Kasir. Setelah itu tarik layar ke bawah.':
-    'The owner creates cashiers and their PINs at {host}, Cashiers menu. Then pull down here.',
-  'Pemilik memperpanjang dari backoffice: Pengaturan, tab Langganan. Kasir hanya bisa melihat.':
-    'The owner renews from the backoffice: Settings, Subscription tab. Cashiers can only view.',
+  'Pemilik membuat kasir di {host}, menu Kasir. Lalu tarik layar ke bawah.': 'The owner adds cashiers at {host}, Cashiers. Then pull down to refresh.',
+  'Pemilik memperpanjang di backoffice.': 'The owner renews in the backoffice.',
   'Pemilik perlu memperpanjang paket di backoffice.': 'The owner needs to renew in the backoffice.',
   'Penjualan baru dikunci.': 'New sales are locked.',
   'Penjualan baru sudah dibuka.': 'New sales are open again.',
-  'Penjualan ini tidak akan masuk laporan. Hapus hanya kalau sudah dicatat ulang atau memang batal.':
-    'This sale will not reach the reports. Delete it only if it was recorded again or really cancelled.',
+  'Penjualan ini tidak akan masuk laporan. Hapus hanya kalau batal.': 'This sale will not be in the report. Delete only if it was cancelled.',
   'Penjualan per jam': 'Sales per hour',
   Perangkat: 'Device',
-  'Perangkat ini tetap masuk sampai Anda memilih Keluar akun. Setelah itu kasir memilih nama dan memasukkan PIN.':
-    'This device stays signed in until you choose Sign out. Next, the cashier picks a name and enters a PIN.',
+  'HP ini tetap masuk sampai Anda memilih Keluar akun.': 'This phone stays signed in until you choose Sign out.',
   'Periksa ejaannya, lalu coba lagi.': 'Check the spelling, then try again.',
   'Periksa internet di perangkat ini, lalu coba lagi.': 'Check the internet on this device, then try again.',
   'Periksa internet, lalu buka tab Shift untuk menyegarkan.': 'Check the internet, then open the Shift tab to refresh.',
@@ -486,8 +452,7 @@ export const EN: Record<string, string | [string, string]> = {
   'Rincian bill belum dimuat': 'Bill details not loaded',
   Ringkas: 'Compact',
   'SHIFT {n} DITUTUP': 'SHIFT {n} CLOSED',
-  'Saat tidak ada internet, pembayaran disimpan di perangkat dengan nomor sementara dan dikirim otomatis.':
-    'Without internet, the payment is stored on this device with a provisional number and sent automatically.',
+  'Tanpa internet, pembayaran disimpan dan dikirim otomatis.': 'Offline, the payment is saved and sent automatically.',
   'Sambungan {type} belum didukung. Pakai printer Bluetooth.': '{type} connections are not supported yet. Use a Bluetooth printer.',
   'Pilih satu voucher untuk bill ini. Server memeriksanya lagi saat bayar.': 'Pick one voucher for this bill. The server checks it again at payment.',
   'Belum ada voucher aktif. Pemilik membuatnya di backoffice, menu Voucher.':
@@ -499,8 +464,7 @@ export const EN: Record<string, string | [string, string]> = {
   'Selesai|tombol': 'Done',
   Selisih: 'Variance',
   'Selisih QRIS': 'QRIS variance',
-  'Seluruh bill dibatalkan. Stok kembali dan kas laci dikoreksi otomatis. Tidak bisa dibatalkan dan perlu internet.':
-    'The whole bill is cancelled. Stock is restored and the cash drawer is corrected automatically. It cannot be undone and needs internet.',
+  'Stok kembali dan kas laci dikoreksi. Tidak bisa diurungkan, perlu internet.': 'Stock comes back and the drawer is corrected. Cannot be undone; needs internet.',
   Sembunyikan: 'Hide',
   Semua: 'All',
   'Semua porsi bill ini sudah dibayar.': 'Every portion of this bill is paid.',
@@ -527,13 +491,10 @@ export const EN: Record<string, string | [string, string]> = {
   'Siapa yang jaga kasir?': 'Who is on the till?',
   'Pilih outlet untuk HP ini': 'Choose the outlet for this phone',
   'Pakai outlet {name}?': 'Use outlet {name}?',
-  'HP ini hanya menampilkan kasir outlet ini. Untuk memindahkannya, keluar akun lalu masuk lagi.':
-    'This phone will only show this outlet’s cashiers. To move it, sign out and sign in again.',
+  'Untuk pindah outlet, keluar akun lalu masuk lagi.': 'To switch outlets, sign out and sign in again.',
   'Pakai outlet ini': 'Use this outlet',
   'Outlet {name}': 'Outlet {name}',
   Simpan: 'Save',
-  'Sinkron berjalan otomatis saat masuk, saat aplikasi dibuka lagi, dan tiap 30 detik selama antrean berisi. Setiap entri memakai kunci yang sama, jadi tidak pernah tercatat dua kali.':
-    'Sync runs automatically on sign-in, when the app returns to the foreground, and every 30 seconds while the queue is not empty. Each entry keeps the same key, so it is never recorded twice.',
   'Sinkron gagal': 'Sync failed',
   Sinkronkan: 'Sync',
   'Sisa bill': 'Remaining',
@@ -629,8 +590,7 @@ export const EN: Record<string, string | [string, string]> = {
   'Direfund {n}': 'Refunded {n}',
   Bersih: 'Net',
   'Shift ini': 'This shift',
-  'Shift sudah ditutup. Bill bisa dilihat, dicetak ulang, dan direfund dalam 24 jam. Refund masuk ke shift ini.':
-    'This shift is closed. Bills can be viewed, reprinted, and refunded within 24 hours. Refunds go into the current shift.',
+  'Shift sudah ditutup. Refund masih bisa dalam 24 jam.': 'The shift is closed. Refunds are still possible within 24 hours.',
   'STRUK REFUND': 'REFUND SLIP',
   'TOTAL REFUND': 'TOTAL REFUND',
   Dikembalikan: 'Returned by',
@@ -760,8 +720,7 @@ export const EN: Record<string, string | [string, string]> = {
   'Tidak ada refund.': 'No refunds.',
   'Kirim ke WA': 'Send to WhatsApp',
   'WhatsApp belum terpasang': 'WhatsApp is not installed',
-  'Laporan tidak bisa dibuka di WhatsApp di perangkat ini. Pasang WhatsApp, atau bagikan lewat aplikasi lain.':
-    'The report cannot open in WhatsApp on this device. Install WhatsApp, or share it with another app.',
+  'WhatsApp tidak terpasang. Bagikan lewat aplikasi lain.': 'WhatsApp is not installed. Share with another app.',
   Bagikan: 'Share',
   Jam: 'Hours',
   Kas: 'Cash',

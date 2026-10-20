@@ -32,7 +32,7 @@ export function ErrorPage({ code, path }: { code: 404 | 500; path?: string }) {
           <h1 className="mt-6 text-[clamp(38px,4.4vw,52px)]">{is404 ? t('Halaman ini tidak ada di struk kami.') : t('Ada yang macet di pihak kami.')}</h1>
           <p className="mt-4 max-w-[34em] text-mute">
             {is404
-              ? t('Tautannya mungkin salah ketik, atau halamannya sudah dipindahkan. Data bisnis Anda tidak terpengaruh.')
+              ? t('Tautannya salah atau halamannya sudah dipindah.')
               : t('Ini bukan salah Anda. Coba muat ulang halaman dalam beberapa saat.')}
           </p>
           {!is404 && (
@@ -91,7 +91,7 @@ export function ErrorPage({ code, path }: { code: 404 | 500; path?: string }) {
             </nav>
           ) : (
             <p className="mt-8 max-w-[34em] text-[15px] text-mute">
-              {t('Masalah berlanjut? Hubungi kami di WhatsApp {wa} atau email {email} dan sebutkan kode referensi di samping.', {
+              {t('Masih bermasalah? Hubungi WhatsApp {wa} atau {email} dengan kode di samping.', {
                 wa: SUPPORT.whatsapp,
                 email: SUPPORT.email,
               })}

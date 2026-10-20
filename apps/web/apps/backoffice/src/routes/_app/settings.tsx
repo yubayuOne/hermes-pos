@@ -364,7 +364,7 @@ function ReceiptTab() {
           <p className="font-semibold">{t('Diatur per outlet')}</p>
           <p className="mt-1 text-[15px] text-mute">
             {t(
-              'Logo, alamat, telepon, teks atas, dan teks bawah punya isi sendiri di tiap outlet. Isi di halaman Outlet; di sini Anda hanya memilih bagian mana yang tampil.',
+              'Isinya diatur per outlet di halaman Outlet.',
             )}{' '}
             <Link to="/outlets" className="lnk">
               {t('Buka halaman Outlet')}
@@ -391,7 +391,7 @@ function ReceiptTab() {
               </Tag>
             </p>
             <p className="mt-1 text-[15px] text-mute">
-              {t('Persen pajak, persen biaya layanan, dan harga sudah termasuk pajak. Rilis pertama belum menghitung pajak.')}
+              {t('Pajak dan biaya layanan belum dihitung.')}
             </p>
           </div>
           <FormAlert>{saveR.error && t(saveR.error)}</FormAlert>
@@ -551,7 +551,7 @@ function SubscriptionTab() {
           {expired && (
             <p className="mt-5">
               {t(
-                'Terkunci: penjualan baru, shift baru, serta penambahan outlet, kasir, dan produk. Laporan dan riwayat tetap bisa dilihat. Data tidak dihapus.',
+                'Terkunci: penjualan, shift, serta tambah outlet, kasir, dan produk. Data tidak dihapus.',
               )}
             </p>
           )}
@@ -590,7 +590,7 @@ function SubscriptionTab() {
           ))}
         </ul>
         <p className="mt-4 text-[15px] text-mute">
-          {t('Bayar lewat transfer bank. Kami memeriksa setiap transfer secara manual, lalu masa aktif ditambahkan.')}
+          {t('Bayar lewat transfer bank, kami periksa manual.')}
         </p>
         <Link to="/subscription" className={`${btn('fire')} mt-5`}>
           {t('Pilih paket dan bayar')}

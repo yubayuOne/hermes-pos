@@ -195,7 +195,7 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
     <Card>
       <Display size={22}>{t('Tambah printer')}</Display>
       <Text className="mt-1.5 text-[14px] text-mute">
-        {t('Pair printer di Pengaturan Bluetooth Android dulu, lalu cari di sini. Printer thermal ESC/POS 58 mm atau 80 mm apa pun bisa dipakai.')}
+        {t('Pair printer di Bluetooth Android dulu, lalu cari di sini.')}
       </Text>
       <Button className="mt-3" variant="pine" label={scanning ? t('Mencari...') : t('Cari printer Bluetooth')} loading={scanning} onPress={() => void scan()} />
       {devices.map((d) => (
@@ -234,7 +234,7 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
         )}
         <Text className="text-[13px] text-mute">
           {t(
-            'Isi struk (logo, alamat, teks atas dan bawah) diatur pemilik di backoffice, menu Outlet. Printer yang gagal tidak pernah membatalkan pembayaran.',
+            'Isi struk diatur pemilik di backoffice, menu Outlet.',
           )}
         </Text>
       </ScrollView>

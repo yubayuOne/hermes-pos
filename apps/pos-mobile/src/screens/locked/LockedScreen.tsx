@@ -50,7 +50,7 @@ export function LockedScreen({ onOpenBills }: { onOpenBills: () => void }) {
         {t('Penjualan baru dikunci.')}
       </Display>
       <Text className="mt-2 text-[15px] leading-[22px] text-mute">
-        {t('Data bisnis tetap aman. Riwayat bill dan laporan shift masih bisa dibuka. Pembayaran offline yang dibuat sebelum berakhir tetap dikirim.')}
+        {t('Data aman. Riwayat bill dan laporan shift tetap bisa dibuka.')}
       </Text>
       <Slip className="mt-4 w-full max-w-[400px]">
         <View className="flex-row items-center justify-between">

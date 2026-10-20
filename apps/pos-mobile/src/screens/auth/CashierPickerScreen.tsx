@@ -144,7 +144,7 @@ export function CashierPickerScreen({
   const pickOutlet = async (c: DeviceCashier) => {
     const ok = await notify.confirm({
       title: t('Pakai outlet {name}?', { name: c.outletName }),
-      message: t('HP ini hanya menampilkan kasir outlet ini. Untuk memindahkannya, keluar akun lalu masuk lagi.'),
+      message: t('Untuk pindah outlet, keluar akun lalu masuk lagi.'),
       confirmLabel: t('Pakai outlet ini'),
     });
     if (!ok) return;
@@ -272,7 +272,7 @@ export function CashierPickerScreen({
               className="mt-4"
               tone="fire"
               title={t('Tidak ada internet')}
-              message={t('Masuk kasir baru butuh internet. Kasir yang sedang bertugas tetap bisa lanjut dengan PIN-nya.')}
+              message={t('Kasir baru perlu internet untuk masuk.')}
             />
           ) : null}
           <View className="mt-4 gap-2.5">
@@ -291,7 +291,7 @@ export function CashierPickerScreen({
                 <Banner
                   tone="slip"
                   title={t('Belum ada kasir')}
-                  message={t('Pemilik membuat kasir dan PIN-nya di {host}, menu Kasir. Setelah itu tarik layar ke bawah.', { host: BRAND.backofficeHost })}
+                  message={t('Pemilik membuat kasir di {host}, menu Kasir. Lalu tarik layar ke bawah.', { host: BRAND.backofficeHost })}
                 />
               )
             ) : needsOutlet ? (

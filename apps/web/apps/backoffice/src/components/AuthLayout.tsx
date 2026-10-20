@@ -22,7 +22,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             {t('Kasir yang')} <Hl>{t('tidak ikut mati')}</Hl> {t('saat internet mati.')}
           </p>
           <p className="mt-7 max-w-[30em] text-mute">
-            {t('Transaksi tersimpan di perangkat dan terkirim sendiri begitu internet kembali. Pemilik memantau penjualan dari Backoffice.')}
+            {t('Penjualan tetap tercatat saat internet putus.')}
           </p>
           <Receipt ink torn className="mt-9 max-w-[380px]" label={t('Contoh struk tertunda')}>
             <div className="flex items-center justify-between gap-3">

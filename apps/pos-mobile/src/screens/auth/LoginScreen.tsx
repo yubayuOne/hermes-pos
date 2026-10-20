@@ -83,7 +83,7 @@ export function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
         {t('Masuk dengan akun pemilik.')}
       </Display>
       <Text className="mt-3 text-[15px] leading-[22px] text-mute">
-        {t('Perangkat ini tetap masuk sampai Anda memilih Keluar akun. Setelah itu kasir memilih nama dan memasukkan PIN.')}
+        {t('HP ini tetap masuk sampai Anda memilih Keluar akun.')}
       </Text>
       <View className="mt-5 gap-4">
         <TextField

@@ -62,7 +62,7 @@ export function SplitBillScreen({
         setName('');
       } catch (e) {
         void notify.fail(t('Pisah bill belum bisa dibuka'), e, undefined, {
-          hint: isNetworkError(e) ? t('Bill ini belum tersimpan lengkap di HP, atau diubah saat offline. Pisah bill ini perlu internet.') : undefined,
+          hint: isNetworkError(e) ? t('Pisah bill ini perlu internet.') : undefined,
         });
         onBack();
       } finally {
@@ -161,9 +161,6 @@ export function SplitBillScreen({
                 );
               })}
             </View>
-            <Text className="mt-2 text-[13px] text-mute">
-              {t('Diskon bill dibagi ke tiap baris supaya rupiahnya tidak meleset. Bagian terakhir mengambil sisanya.')}
-            </Text>
           </>
         )}
       </SheetBody>

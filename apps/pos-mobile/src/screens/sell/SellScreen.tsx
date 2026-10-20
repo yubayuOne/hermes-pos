@@ -333,7 +333,7 @@ export function SellScreen({
       tone="error"
       title={t('Pembayaran belum terkonfirmasi')}
       compact={phoneLandscape}
-      message={phoneLandscape ? null : t('Jangan buat bill baru. Lanjutkan dari bill yang tersimpan supaya kunci pembayarannya sama.')}
+      message={phoneLandscape ? null : t('Jangan buat bill baru. Lanjutkan bill yang tersimpan.')}
     >
       <ButtonRow>
         <Button
@@ -366,7 +366,7 @@ export function SellScreen({
             if (p.kind === 'split') {
               void notify.warning(
                 t('Bagian pisah bill belum terkonfirmasi'),
-                t('Buka lagi Pisah bill dari tab Bill dan lanjutkan bagian yang belum dibayar. Kunci pembayarannya tetap sama.'),
+                t('Buka Pisah bill di tab Bill dan lanjutkan bagian yang belum dibayar.'),
               );
               return;
             }
@@ -466,7 +466,7 @@ export function SellScreen({
       tone="error"
       compact={phoneLandscape}
       title={t('Shift ini dibuka di HP lain.')}
-      message={phoneLandscape ? null : t('Jualan hanya bisa di HP itu. Kalau HP itu hilang atau rusak, pemilik bisa memindahkannya ke HP ini di tab Shift.')}
+      message={phoneLandscape ? null : t('Jualan hanya bisa di HP itu. Pemilik bisa memindahkannya di tab Shift.')}
     >
       <ButtonRow>
         <Button size="sm" label={t('Buka tab Shift')} onPress={onOpenShift} />

@@ -140,8 +140,8 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
             </h1>
             <p className="mt-4 max-w-[34em] text-mute">
               {expired
-                ? t('Langganan Anda berakhir. Fitur tulis terkunci, data tidak dihapus. Pilih paket untuk membukanya lagi.')
-                : t('Paket Anda aktif sampai {date}. Perpanjangan menambah sisa waktu, bukan mulai dari hari bayar.', {
+                ? t('Langganan berakhir. Data aman; pilih paket untuk membuka kunci.')
+                : t('Aktif sampai {date}. Perpanjangan menambah sisa waktu.', {
                     date: dateShort(sub.expiresAt, lang, tz),
                   })}
             </p>
@@ -288,7 +288,7 @@ function Transfer({ total, onBack, onNext }: { total: number; onBack: () => void
       <div className="mt-5 rounded border-[1.5px] border-ink bg-fire-soft p-4">
         <p className="font-semibold">{t('Belum ada pembayaran otomatis.')}</p>
         <p className="mt-1 text-[15px]">
-          {t('Kami memeriksa setiap transfer secara manual pada {hours}. Paket aktif setelah transfer terverifikasi.', { hours: t(SUPPORT.hours) })}
+          {t('Transfer diperiksa manual pada {hours}.', { hours: t(SUPPORT.hours) })}
         </p>
       </div>
       <div className="mt-6 flex flex-wrap gap-3">
@@ -409,7 +409,7 @@ function Verify({ payment }: { payment: Payment }) {
         {t('Sedang kami periksa.')}
       </h1>
       <p className="mt-4 text-mute">
-        {t('Konfirmasi {inv} sudah masuk. Anda tidak perlu menunggu di halaman ini; backoffice dan aplikasi kasir tetap bisa dibuka.', {
+        {t('Konfirmasi {inv} sudah masuk. Halaman ini boleh ditutup.', {
           inv: payment.invoiceNumber,
         })}
       </p>

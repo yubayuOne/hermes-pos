@@ -440,7 +440,7 @@ export function BillsScreen({
       if (!e) {
         void notify.warning(
           t('Bill belum bisa dipanggil'),
-          t('Bill ini sedang dikirim atau mungkin sudah sampai di server. Tunggu sampai terkirim, lalu buka lagi dari daftar.'),
+          t('Bill ini sedang dikirim. Tunggu sebentar, lalu buka lagi.'),
         );
         return;
       }
@@ -475,7 +475,7 @@ export function BillsScreen({
       if (!e) {
         void notify.warning(
           t('Bill belum terhapus'),
-          t('Bill ini sedang dikirim atau mungkin sudah sampai di server. Tunggu sampai terkirim, lalu buka lagi dari daftar.'),
+          t('Bill ini sedang dikirim. Tunggu sebentar, lalu buka lagi.'),
         );
         return;
       }
@@ -545,7 +545,7 @@ export function BillsScreen({
           <Card>
             <Display size={26}>{t('Belum ada shift yang buka.')}</Display>
             <Text className="mt-2 text-[15px] text-mute">
-              {t('Daftar ini hanya berisi bill di shift yang sedang berjalan. Riwayat shift lama ada di backoffice.')}
+              {t('Hanya bill shift ini. Riwayat lama ada di backoffice.')}
             </Text>
             {!locked ? <Button className="mt-4" variant="fire" label={t('Buka shift')} onPress={onOpenShift} /> : null}
           </Card>
@@ -575,7 +575,7 @@ export function BillsScreen({
         .filter((r) => !needle || `${r.number} ${r.customerName} ${r.table}`.toLowerCase().includes(needle))
         .reverse();
 
-  const closedNote = t('Shift sudah ditutup. Bill bisa dilihat, dicetak ulang, dan direfund dalam 24 jam. Refund masuk ke shift ini.');
+  const closedNote = t('Shift sudah ditutup. Refund masih bisa dalam 24 jam.');
   const total = filter === 'completed' ? counts.completed : filter === 'held' ? counts.held : counts.voided;
   const list = (
     <View className="flex-1">
@@ -620,7 +620,7 @@ export function BillsScreen({
               phoneLandscape
                 ? null
                 : filter === 'held'
-                  ? t('Bill bisa dipanggil, diubah, dan dibayar. Semuanya dikirim otomatis saat internet kembali.')
+                  ? t('Bill tetap bisa diubah dan dibayar, lalu dikirim saat online.')
                   : t('Bill bisa dibuka dan dicetak ulang. Void dan refund perlu internet.')
             }
           />
@@ -630,7 +630,7 @@ export function BillsScreen({
             tone="error"
             compact={phoneLandscape}
             title={t('Daftar dari server belum bisa dimuat.')}
-            message={phoneLandscape ? null : t('Yang tampil hanya bill yang dibuat di HP ini dan belum terkirim. Bill ini bisa dibuka dan dicetak ulang.')}
+            message={phoneLandscape ? null : t('Hanya bill dari HP ini yang belum terkirim.')}
           >
             <ButtonRow>
               <Button size="sm" variant="pine" label={t('Coba lagi')} onPress={() => void load()} />
@@ -729,7 +729,7 @@ export function BillsScreen({
       <View className="gap-2">
         {holdLocked ? (
           <Text className="text-[14px] text-mute">
-            {t('Bill ini sedang dikirim atau mungkin sudah sampai di server. Tunggu sampai terkirim, lalu buka lagi dari daftar.')}
+            {t('Bill ini sedang dikirim. Tunggu sebentar, lalu buka lagi.')}
           </Text>
         ) : null}
         <ButtonRow>
@@ -869,7 +869,7 @@ function VoidSheet({ bill, onClose, onVoided }: { bill: TransactionSummary | nul
         setCode('');
         if (r.reason === 'wrong') setErrors({ code: t('Kode salah. Sisa percobaan: {n}.', { n: r.attemptsLeft }) });
         else if (r.reason === 'locked') setErrors({ code: t('Terlalu banyak kode salah. Coba lagi dalam 5 menit.') });
-        else setErrors({ form: t('Pemilik belum membuat kode persetujuan. Kode dibuat di backoffice, Pengaturan, tab Bisnis dan struk.') });
+        else setErrors({ form: t('Pemilik belum membuat kode persetujuan di backoffice.') });
         return;
       }
       haptic.heavy();
@@ -898,7 +898,7 @@ function VoidSheet({ bill, onClose, onVoided }: { bill: TransactionSummary | nul
       />
       <SheetBody contentClassName="gap-3.5">
         <Text className="text-[15px] leading-[22px] text-mute">
-          {t('Seluruh bill dibatalkan. Stok kembali dan kas laci dikoreksi otomatis. Tidak bisa dibatalkan dan perlu internet.')}
+          {t('Stok kembali dan kas laci dikoreksi. Tidak bisa diurungkan, perlu internet.')}
         </Text>
         <TextField
           label={t('Alasan')}

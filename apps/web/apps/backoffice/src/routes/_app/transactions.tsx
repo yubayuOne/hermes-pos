@@ -305,7 +305,7 @@ function PastNote({ bill: b }: { bill: Bill }) {
   if (isoDay(new Date(b.createdAt), tz) >= isoDay(new Date(), tz)) return null;
   return (
     <p role="note" className="rounded border-[1.5px] border-fire bg-tint p-3 text-[14px]">
-      {t('Bill ini dari {date}. Laporan hari itu dan selisih kas shift-nya ikut berubah. Perubahan ini tercatat di riwayat bill.', {
+      {t('Bill ini dari {date}. Laporan dan kas shift hari itu ikut berubah.', {
         date: dateShort(b.createdAt, lang, tz),
       })}
     </p>
@@ -455,7 +455,7 @@ function VoidDialog({ bill: b, onClose, onBack }: EditProps) {
       open
       onOpenChange={(o) => !o && onClose()}
       title={t('Batalkan bill {number}?', { number: b.number })}
-      description={t('Stok dikembalikan dan {amount} keluar dari penjualan. Kalau tunai, kas shift ikut dihitung ulang. Tidak bisa diurungkan.', {
+      description={t('Stok kembali dan {amount} keluar dari penjualan. Tidak bisa diurungkan.', {
         amount: money(b.total),
       })}
       footer={<EditFooter busy={act.busy} onBack={onBack} label={t('Batalkan bill')} danger />}
@@ -518,7 +518,7 @@ function CorrectDialog({ bill: b, items, onClose, onBack }: EditProps & { items:
       wide
       onOpenChange={(o) => !o && onClose()}
       title={t('Koreksi bill {number}', { number: b.number })}
-      description={t('Isi bill seperti seharusnya. Bill ini dibatalkan dan diganti bill baru di hari dan shift yang sama; stok, kas, dan laporan ikut benar.')}
+      description={t('Bill lama dibatalkan dan diganti bill baru di shift yang sama.')}
       footer={<EditFooter busy={act.busy} onBack={onBack} label={t('Simpan koreksi')} />}
     >
       <form id="bill-edit" noValidate onSubmit={save} className="grid gap-4">

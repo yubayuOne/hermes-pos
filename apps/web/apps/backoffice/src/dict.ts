@@ -65,8 +65,7 @@ export const EN: Dict = {
   'Stok produk menipis.': 'Product stock is running low.',
   'Refund {amount} pada {number} oleh {cashier}. Alasan: {reason}': 'Refund of {amount} on {number} by {cashier}. Reason: {reason}',
   'Langganan berakhir pada {date}.': 'Your subscription ended on {date}.',
-  'Aplikasi tetap terbuka, tetapi penjualan baru dan perubahan data terkunci. Laporan dan riwayat masih bisa dilihat.':
-    'The app stays open, but new sales and data changes are locked. Reports and history are still visible.',
+  'Penjualan dan perubahan data terkunci. Laporan tetap bisa dilihat.': 'Sales and changes are locked. Reports stay open.',
   'Perpanjang paket': 'Renew plan',
   'Terkunci: langganan berakhir': 'Locked: subscription ended',
   Terkunci: 'Locked',
@@ -76,8 +75,7 @@ export const EN: Dict = {
   'Kasir yang': 'The cashier that',
   'tidak ikut mati': 'does not die',
   'saat internet mati.': 'when the internet dies.',
-  'Transaksi tersimpan di perangkat dan terkirim sendiri begitu internet kembali. Pemilik memantau penjualan dari Backoffice.':
-    'Transactions are stored on the device and sent on their own when the internet returns. Owners follow sales from the Backoffice.',
+  'Penjualan tetap tercatat saat internet putus.': 'Sales keep recording when the internet is down.',
   'Contoh struk tertunda': 'Sample pending receipt',
   'Struk tertunda': 'Pending receipt',
   contoh: 'sample',
@@ -106,8 +104,7 @@ export const EN: Dict = {
   '1 outlet, 2 kasir, 40 produk. Tidak perlu kartu kredit.': '1 outlet, 2 cashiers, 40 products. No credit card needed.',
   'Nama bisnis': 'Business name',
   'Contoh: Kopi Pojok': 'Example: Kopi Pojok',
-  '3 sampai 20 karakter: huruf kecil, angka, titik, atau garis bawah. Bisa dipakai untuk masuk.':
-    '3 to 20 characters: lowercase letters, numbers, dots, or underscores. Can be used to sign in.',
+  '3 sampai 20 karakter: huruf kecil, angka, titik, atau garis bawah.': '3 to 20 characters: lowercase letters, digits, dots, or underscores.',
   'Saya setuju dengan syarat layanan dan kebijakan privasi.': 'I agree to the terms of service and the privacy policy.',
   'Baca syarat layanan': 'Read the terms of service',
   'pukul 07.00–24.00 WIB setiap hari': '07:00 to 24:00 WIB (UTC+7), every day',
@@ -125,8 +122,7 @@ export const EN: Dict = {
   Baik: 'Good',
   Kuat: 'Strong',
   'Cek email Anda.': 'Check your email.',
-  'Kami mengirim tautan konfirmasi ke {email}. Buka tautan itu untuk melanjutkan ke data awal.':
-    'We sent a confirmation link to {email}. Open it to continue to setup.',
+  'Buka tautan yang kami kirim ke {email} untuk melanjutkan.': 'Open the link we sent to {email} to continue.',
   'Tidak ada email? Lihat folder spam, atau daftar lagi dengan email yang benar.': 'No email? Check the spam folder, or sign up again with the right address.',
   'Ubah email': 'Change email',
   'Lupa kata sandi.': 'Forgot password.',
@@ -135,8 +131,7 @@ export const EN: Dict = {
   'Mengirim...': 'Sending...',
   'Ingat kata sandinya?': 'Remember it?',
   'Tautan terkirim.': 'Link sent.',
-  'Kalau {email} terdaftar, tautan untuk membuat kata sandi baru sudah kami kirim. Tautan berlaku 1 jam.':
-    'If {email} is registered, we have sent a link to set a new password. The link is valid for 1 hour.',
+  'Kalau {email} terdaftar, tautannya sudah kami kirim. Berlaku 1 jam.': 'If {email} is registered, the link is on its way. It works for 1 hour.',
   'Kembali ke halaman masuk': 'Back to sign in',
   'Kata sandi baru.': 'New password.',
   'Untuk akun {email}.': 'For the account {email}.',
@@ -274,8 +269,7 @@ export const EN: Dict = {
   'Menyiapkan bisnis...': 'Setting up the business...',
   'Simpan dan lanjut': 'Save and continue',
   'Siapa yang jaga kasir?': 'Who runs the register?',
-  'Kasir tidak butuh email. Di aplikasi, kasir memilih namanya lalu mengetik PIN 6 digit. Trial: maksimal 2 kasir.':
-    'Cashiers need no email. In the app, a cashier picks their name and types a 6-digit PIN. Trial: up to 2 cashiers.',
+  'Kasir masuk dengan nama dan PIN 6 digit. Trial: maksimal 2 kasir.': 'Cashiers sign in with their name and a 6-digit PIN. Trial: up to 2 cashiers.',
   '{n} kasir sudah dibuat.': '{n} cashiers created.',
   'Nama kasir': 'Cashier name',
   'Contoh: Sari': 'Example: Sari',
@@ -317,8 +311,7 @@ export const EN: Dict = {
   'Belum ada penjualan.': 'No sales yet.',
   'Buat produk': 'Create products',
   'Buat kasir': 'Create cashiers',
-  'Siapkan menu dan kasir di sini, lalu masuk ke aplikasi kasir dengan akun yang sama dan buka shift. Penjualan muncul di halaman ini.':
-    'Set up the menu and cashiers here, then sign in to the cashier app with the same account and open a shift. Sales appear on this page.',
+  'Siapkan menu dan kasir, lalu buka shift di aplikasi kasir.': 'Set up the menu and cashiers, then open a shift in the cashier app.',
   Penjualan: 'Sales',
   'Jumlah bill': 'Bills',
   'Rata-rata per bill': 'Average per bill',
@@ -354,8 +347,7 @@ export const EN: Dict = {
   // Reports (POS migration 042, DESIGN.md F)
   'segera hadir': 'coming soon',
   'Cetak / simpan PDF': 'Print / save PDF',
-  'Di jendela cetak, pilih "Simpan sebagai PDF". Teks dan angka di PDF tetap bisa dipilih dan dicari.':
-    'In the print window, choose "Save as PDF". Text and numbers in the PDF stay selectable and searchable.',
+  'Di jendela cetak, pilih "Simpan sebagai PDF".': 'In the print window, choose "Save as PDF".',
   'Belum ada data di periode ini.': 'No data in this period yet.',
   'Laporan berisi penjualan, shift, dan pengeluaran. Pilih periode lain atau outlet lain.':
     'The report holds sales, shifts, and expenses. Pick another period or outlet.',
@@ -404,8 +396,7 @@ export const EN: Dict = {
   'Margin laba kotor': 'Gross margin',
   'Pengeluaran operasional': 'Operating expenses',
   'Margin operasional': 'Operating margin',
-  'Angka dalam kurung adalah pengurang. Selisih positif menambah laba, negatif menguranginya. Pembelian bahan ({amount}) tidak masuk laba rugi karena biayanya sudah ada di HPP. Laba operasional dihitung sebelum penyusutan, bunga, dan pajak penghasilan.':
-    'Figures in brackets are deductions. A positive difference adds to profit, a negative one reduces it. Ingredient purchases ({amount}) are left out of profit and loss because their cost already shows in COGS. Operating profit is before depreciation, interest, and income tax.',
+  'Angka dalam kurung adalah pengurang. Pembelian bahan ({amount}) tidak masuk laba rugi karena sudah ada di HPP.': 'Figures in brackets are deductions. Supply purchases ({amount}) are left out of the P&L because they are in COGS.',
   'Rekonsiliasi kas laci': 'Cash drawer reconciliation',
   '{n} shift yang sudah ditutup, dari buku kas.': '{n} closed shifts, from the cash book.',
   '{n} shift masih buka, belum dihitung.': '{n} shift(s) still open, not counted.',
@@ -421,8 +412,7 @@ export const EN: Dict = {
   'Dan {n} shift lainnya dengan selisih.': 'And {n} more shifts with a difference.',
   '{n} shift lainnya sesuai, selisih Rp0.': 'The other {n} shifts matched, difference Rp0.',
   'Pengeluaran per kategori': 'Expenses by category',
-  'Dicatat kasir di aplikasi dan bisa diubah pemilik di menu Pengeluaran, menurut tanggal shift. Belanja bahan tidak masuk laba rugi karena biayanya sudah ada di HPP.':
-    'Recorded by cashiers in the app and editable by the owner in the Expenses menu, by shift date. Ingredient purchases are left out of profit and loss because their cost already shows in COGS.',
+  'Menurut tanggal shift. Belanja bahan tidak masuk laba rugi.': 'By shift date. Supply purchases are left out of the P&L.',
   Jenis: 'Type',
   Entri: 'Entries',
   Porsi: 'Share',
@@ -439,8 +429,6 @@ export const EN: Dict = {
   'QRIS masuk ke rekening outlet, bukan ke laci.': 'QRIS goes to the outlet’s account, not the drawer.',
   'Dibayar dari': 'Paid from',
   'Kas laci outlet': 'Outlet cash drawer',
-  'Bukan dari laci artinya dibayar pemilik atau lewat transfer, sehingga uang laci tidak berubah.':
-    'Not from the drawer means paid by the owner or by transfer, so the drawer does not change.',
   'Pengeluaran terbesar': 'Largest expenses',
   Keterangan: 'Description',
   'Rincian lengkap ada di menu Pengeluaran.': 'Full details are in the Expenses menu.',
@@ -450,8 +438,7 @@ export const EN: Dict = {
   'Urut dari penjualan terbesar. Margin adalah laba kotor dibagi penjualan.': 'Sorted by sales, highest first. Margin is gross profit divided by sales.',
   Terjual: 'Sold',
   Margin: 'Margin',
-  'Penjualan produk setelah semua diskon (item dan bill), sebelum refund. Margin di bawah {x}% (5 poin di bawah rata-rata) ditandai merah.':
-    'Product sales are after all discounts (item and bill), before refunds. Margins under {x}% (5 points under the average) are marked red.',
+  'Setelah semua diskon, sebelum refund. Margin di bawah {x}% ditandai merah.': 'After all discounts, before refunds. Margins under {x}% are red.',
   'Menampilkan {n} dari {m} menu dengan penjualan terbesar; total mencakup semuanya.':
     'Showing {n} of {m} menu items with the highest sales; the total covers all of them.',
   'Per kategori': 'By category',
@@ -472,12 +459,9 @@ export const EN: Dict = {
   'Rencana tindakan': 'Action plan',
   'Tindakan, penanggung jawab, tenggat, ukuran berhasil, dan status.': 'Action, owner of the task, due date, success measure, and status.',
   'Catatan dan definisi': 'Notes and definitions',
-  'Penjualan bersih adalah penjualan kotor dikurangi diskon, voucher, dan refund. Aplikasi belum mencatat pajak (PPN).':
-    'Net sales is gross sales minus discounts, vouchers, and refunds. The app does not record tax (VAT) yet.',
-  'HPP memakai harga pokok per produk saat bill dibuat. Harga pokok kosong dihitung Rp0, jadi isi di menu Produk supaya margin akurat.':
-    'COGS uses the cost per product when the bill was made. Missing costs count as Rp0, so fill them in the Products menu for accurate margins.',
-  'Refund dihitung pada tanggal refund. Barang refund yang kembali ke stok dikeluarkan dari HPP.':
-    'Refunds count on the refund date. Refunded items that went back to stock are taken out of COGS.',
+  'Penjualan bersih: penjualan kotor dikurangi diskon, voucher, dan refund. PPN belum dicatat.': 'Net sales: gross sales minus discounts, vouchers, and refunds. VAT is not recorded.',
+  'HPP memakai harga pokok produk saat bill dibuat. Harga pokok kosong dihitung Rp0.': "COGS uses each product's cost when the bill was made. An empty cost counts as Rp0.",
+  'Refund dihitung pada tanggal refund.': 'Refunds count on the refund date.',
   'Bill offline masuk setelah tersinkron. Bill yang masih antre di perangkat belum masuk.':
     'Bills made offline are included once synced. Bills still queued on a device are not included.',
   'Sumber data: aplikasi kasir {brand} dan menu Pengeluaran di backoffice.': 'Data sources: the {brand} cashier app and the Expenses menu in the backoffice.',
@@ -487,8 +471,7 @@ export const EN: Dict = {
   'Nama, tanggal, paraf': 'Name, date, initials',
 
   // Outlets
-  'Satu bisnis, satu tanggal berakhir. Paket berisi 1 outlet; outlet tambahan {price} per bulan, dihitung proporsional.':
-    'One business, one expiry date. Plans include 1 outlet; extra outlets are {price} per month, prorated.',
+  'Paket berisi 1 outlet. Outlet tambahan {price} per bulan.': 'A plan includes 1 outlet. Extra outlets are {price} a month.',
   'Tambah outlet': 'Add outlet',
   'termasuk paket': 'included',
   tambahan: 'extra',
@@ -507,8 +490,7 @@ export const EN: Dict = {
   'Data bisnis': 'Business details',
   'Isi struk': 'Receipt content',
   'Diatur per outlet': 'Set per outlet',
-  'Logo, alamat, telepon, teks atas, dan teks bawah punya isi sendiri di tiap outlet. Isi di halaman Outlet; di sini Anda hanya memilih bagian mana yang tampil.':
-    'Logo, address, phone, top text, and bottom text are separate for each outlet. Fill them on the Outlets page; here you only choose which parts show.',
+  'Isinya diatur per outlet di halaman Outlet.': 'Set the content per outlet on the Outlet page.',
   'Buka halaman Outlet': 'Open the Outlets page',
   'Data pemilik akun, bahasa, kata sandi, dan keluar dari akun.': 'Account owner details, language, password, and signing out.',
   'Bahasa tampilan backoffice. Pilihan diingat di perangkat ini.': 'Backoffice display language. Your choice is remembered on this device.',
@@ -521,11 +503,9 @@ export const EN: Dict = {
   'Kasir aktif': 'Active cashiers',
   'Produk aktif': 'Active products',
   Nonaktif: 'Inactive',
-  'Outlet tambahan diaktifkan setelah pembayaran: {price} per outlet per bulan, dengan tanggal berakhir yang sama untuk semua outlet.':
-    'Extra outlets are activated after payment: {price} per outlet per month, with the same expiry date for all outlets.',
+  '{price} per outlet per bulan, aktif setelah dibayar.': '{price} per outlet a month, active once paid.',
   Mengerti: 'Got it',
-  'Hubungi kami di WhatsApp {wa} dengan nama bisnis dan jumlah outlet yang dibutuhkan. Setelah dibayar, outlet baru muncul di sini dan di aplikasi kasir.':
-    'Contact us on WhatsApp {wa} with your business name and how many outlets you need. Once paid, the new outlet appears here and in the cashier app.',
+  'Hubungi WhatsApp {wa} untuk menambah outlet.': 'Contact WhatsApp {wa} to add an outlet.',
 
   // Cashiers
   'Tambah kasir': 'Add cashier',
@@ -686,23 +666,20 @@ export const EN: Dict = {
   'Catatan item': 'Item notes',
   'Teks bawah': 'Footer text',
   'Pajak dan biaya layanan': 'Tax and service charge',
-  'Persen pajak, persen biaya layanan, dan harga sudah termasuk pajak. Rilis pertama belum menghitung pajak.':
-    'Tax percent, service percent, and tax-inclusive prices. The first release does not compute tax yet.',
+  'Pajak dan biaya layanan belum dihitung.': 'Tax and service charge are not calculated yet.',
   'Simpan struk': 'Save receipt',
   Data: 'Data',
   'Pratinjau struk': 'Receipt preview',
   Tunai: 'Cash',
   'Notifikasi disimpan.': 'Notifications saved.',
   'Kode persetujuan void': 'Void approval code',
-  'Kasir hanya bisa membatalkan bill yang sudah dibayar kalau pemilik mengetik kode ini di perangkat kasir.':
-    'A cashier can only void a paid bill when the owner types this code on the till.',
+  'Dibutuhkan untuk membatalkan bill yang sudah dibayar.': 'Needed to void a paid bill.',
   'Status kode belum dimuat.': 'Code status not loaded.',
   'sudah dibuat': 'set',
   'belum dibuat': 'not set',
   'Kode baru': 'New code',
   'Kode 6 digit': '6-digit code',
-  'Kode disimpan sebagai hash dan tidak bisa dilihat lagi. Kalau lupa, buat kode baru di sini. Lima kali salah mengunci void selama 5 menit.':
-    'The code is stored as a hash and cannot be shown again. If you forget it, set a new one here. Five wrong codes lock voids for 5 minutes.',
+  'Kode tidak bisa dilihat lagi. Kalau lupa, buat yang baru.': 'The code cannot be shown again. If you forget it, make a new one.',
   'Ganti kode': 'Change code',
   'Simpan kode': 'Save code',
   'Kode persetujuan disimpan. Berlaku langsung di semua kasir.': 'Approval code saved. It works on every till right away.',
@@ -718,8 +695,7 @@ export const EN: Dict = {
   'Sisa waktu': 'Time left',
   'Habis {n} hari lalu': 'Ended {n} days ago',
   '{n} hari': '{n} days',
-  'Terkunci: penjualan baru, shift baru, serta penambahan outlet, kasir, dan produk. Laporan dan riwayat tetap bisa dilihat. Data tidak dihapus.':
-    'Locked: new sales, new shifts, and adding outlets, cashiers, and products. Reports and history stay visible. No data is deleted.',
+  'Terkunci: penjualan, shift, serta tambah outlet, kasir, dan produk. Data tidak dihapus.': 'Locked: sales, shifts, and adding outlets, cashiers, and products. No data is deleted.',
   Pemakaian: 'Usage',
   'Outlet (1 termasuk paket + tambahan)': 'Outlets (1 included + extra)',
   '{n} dari {max}': '{n} of {max}',
@@ -729,8 +705,7 @@ export const EN: Dict = {
   'Perpanjang untuk membuka kunci.': 'Renew to unlock.',
   'Perpanjang atau ganti paket.': 'Renew or change plan.',
   'Perpanjangan menambah sisa waktu Anda, bukan mulai dari hari bayar.': 'Renewing adds to your remaining time instead of starting on the payment day.',
-  'Bayar lewat transfer bank. Kami memeriksa setiap transfer secara manual, lalu masa aktif ditambahkan.':
-    'Pay by bank transfer. We check every transfer by hand, then extend your plan.',
+  'Bayar lewat transfer bank, kami periksa manual.': 'Pay by bank transfer; we check it by hand.',
   'Pilih paket dan bayar': 'Choose a plan and pay',
 
   // Checkout
@@ -748,10 +723,8 @@ export const EN: Dict = {
   Konfirmasi: 'Confirm',
   Verifikasi: 'Verify',
   'Pilih paket.': 'Choose a plan.',
-  'Langganan Anda berakhir. Fitur tulis terkunci, data tidak dihapus. Pilih paket untuk membukanya lagi.':
-    'Your subscription has ended. Writing is locked; no data is deleted. Choose a plan to unlock it.',
-  'Paket Anda aktif sampai {date}. Perpanjangan menambah sisa waktu, bukan mulai dari hari bayar.':
-    'Your plan is active until {date}. Renewing adds to the remaining time instead of starting on the payment day.',
+  'Langganan berakhir. Data aman; pilih paket untuk membuka kunci.': 'Your subscription ended. Your data is safe; pick a plan to unlock.',
+  'Aktif sampai {date}. Perpanjangan menambah sisa waktu.': 'Active until {date}. Renewing adds to the time left.',
   'per bulan': 'per month',
   '{amount} per bulan': '{amount} per month',
   'hemat {amount}': 'save {amount}',
@@ -787,8 +760,7 @@ export const EN: Dict = {
   'Simpan bukti transfer.': 'Keep the transfer receipt.',
   'Isi konfirmasi di langkah berikutnya.': 'Fill in the confirmation in the next step.',
   'Belum ada pembayaran otomatis.': 'No automatic payment yet.',
-  'Kami memeriksa setiap transfer secara manual pada {hours}. Paket aktif setelah transfer terverifikasi.':
-    'We check every transfer by hand during {hours}. The plan activates once the transfer is verified.',
+  'Transfer diperiksa manual pada {hours}.': 'Transfers are checked by hand during {hours}.',
   'Saya sudah transfer': 'I have transferred',
   'Konfirmasi transfer.': 'Confirm the transfer.',
   'Data ini kami cocokkan dengan mutasi rekening.': 'We match this against our bank statement.',
@@ -810,8 +782,7 @@ export const EN: Dict = {
   'Paket aktif': 'Plan active',
   'Tanggal berakhir baru tampil di sidebar': 'The new expiry date appears in the sidebar',
   'Sedang kami periksa.': 'We are checking it.',
-  'Konfirmasi {inv} sudah masuk. Anda tidak perlu menunggu di halaman ini; backoffice dan aplikasi kasir tetap bisa dibuka.':
-    'Confirmation {inv} has arrived. No need to wait on this page; the backoffice and the cashier app stay open.',
+  'Konfirmasi {inv} sudah masuk. Halaman ini boleh ditutup.': 'Confirmation {inv} received. You can close this page.',
   'Belum ada tagihan.': 'No invoices yet.',
   'Faktur muncul di sini setelah Anda mengirim konfirmasi transfer.': 'Invoices appear here after you send a transfer confirmation.',
   Jumlah: 'Amount',
@@ -828,8 +799,7 @@ export const EN: Dict = {
   'kode 500 · galat di server kami': 'code 500 · error on our server',
   'Halaman ini tidak ada di struk kami.': 'This page is not on our receipt.',
   'Ada yang macet di pihak kami.': 'Something got stuck on our side.',
-  'Tautannya mungkin salah ketik, atau halamannya sudah dipindahkan. Data bisnis Anda tidak terpengaruh.':
-    'The link may have a typo, or the page has moved. Your business data is not affected.',
+  'Tautannya salah atau halamannya sudah dipindah.': 'The link is wrong or the page has moved.',
   'Ini bukan salah Anda. Coba muat ulang halaman dalam beberapa saat.': 'This is not your fault. Try reloading the page in a moment.',
   'Aplikasi kasir tetap bisa dipakai.': 'The cashier app still works.',
   'Transaksi tersimpan di perangkat kasir dan terkirim otomatis saat sistem pulih.':
@@ -842,8 +812,7 @@ export const EN: Dict = {
   'Mungkin Anda mencari:': 'You may be looking for:',
   'Daftar trial 3 hari': '3-day trial sign-up',
   'Bayar langganan': 'Pay subscription',
-  'Masalah berlanjut? Hubungi kami di WhatsApp {wa} atau email {email} dan sebutkan kode referensi di samping.':
-    'Still stuck? Contact us on WhatsApp {wa} or email {email} and quote the reference code shown here.',
+  'Masih bermasalah? Hubungi WhatsApp {wa} atau {email} dengan kode di samping.': 'Still stuck? Contact WhatsApp {wa} or {email} with the code beside this.',
   'Struk tidak ditemukan': 'Receipt not found',
   'Laporan galat': 'Error report',
   Halaman: 'Page',
@@ -916,8 +885,7 @@ export const EN: Dict = {
   'Batalkan bill': 'Void bill',
   'Bill {number} dibatalkan.': 'Bill {number} voided.',
   'Batalkan bill {number}?': 'Void bill {number}?',
-  'Stok dikembalikan dan {amount} keluar dari penjualan. Kalau tunai, kas shift ikut dihitung ulang. Tidak bisa diurungkan.':
-    'Stock goes back and {amount} leaves sales. For cash, the shift cash is recomputed. This cannot be undone.',
+  'Stok kembali dan {amount} keluar dari penjualan. Tidak bisa diurungkan.': 'Stock comes back and {amount} leaves sales. This cannot be undone.',
   'Produk dibuat di menu Produk.': 'Products are created under Products.',
   Urutkan: 'Sort',
   nonaktif: 'inactive',
@@ -931,8 +899,7 @@ export const EN: Dict = {
   'Nama, meja, catatan': 'Name, table, notes',
   Item: 'Items',
   'Riwayat perubahan': 'Edit history',
-  'Bill ini dari {date}. Laporan hari itu dan selisih kas shift-nya ikut berubah. Perubahan ini tercatat di riwayat bill.':
-    "This bill is from {date}. That day's reports and its shift's cash variance change too. The edit is kept in the bill's history.",
+  'Bill ini dari {date}. Laporan dan kas shift hari itu ikut berubah.': "This bill is from {date}. That day's report and shift cash change too.",
   'Alasan perubahan wajib diisi, minimal 3 karakter': 'A reason for the change is required, at least 3 characters',
   'Status bill tidak valid': 'Invalid bill status',
   // Database messages (migration 066)
@@ -973,6 +940,9 @@ export const EN: Dict = {
   'Shift tidak ditemukan': 'Shift not found',
   // Corrections and Tutup hari (migration 073)
   'Shift|menu': 'Shifts',
+  'Setiap hari|menu': 'Every day',
+  'Catatan|menu': 'Records',
+  'Atur toko|menu': 'Store setup',
   'Tidak ada shift pada {date}.': 'No shifts on {date}.',
   'Semua angka hari ini cocok: setiap bill, uang tunai, QRIS, dan produk seimbang.':
     'Every number for this day matches: each bill, the cash, QRIS, and products balance.',
@@ -982,8 +952,7 @@ export const EN: Dict = {
   'Total per produk ({products}) tidak sama dengan omzet ({sales}).': 'Sales by product ({products}) do not match the sales ({sales}).',
   'Shift {n}: buku kas tidak cocok dengan catatan kasnya.': "Shift {n}: the cash book does not match the shift's cash records.",
   'Ada angka yang tidak cocok. Laporan hari ini belum bisa dipercaya penuh.': "Some numbers do not match. This day's report cannot be fully trusted yet.",
-  'Ini bukan kesalahan kasir biasa. Hubungi dukungan HERMES POS dan sebutkan tanggal dan outlet ini.':
-    'This is not an ordinary cashier mistake. Contact HERMES POS support and give this date and outlet.',
+  'Hubungi dukungan HERMES POS dan sebutkan tanggal serta outlet ini.': 'Contact HERMES POS support with this date and outlet.',
   'masih buka': 'still open',
   'omzet {amount}': 'sales {amount}',
   ditutup: 'closed',
@@ -1015,8 +984,7 @@ export const EN: Dict = {
   'Pengeluaran dibatalkan': 'Expense cancelled',
   'Koreksi dan pembatalan': 'Corrections and cancellations',
   'Void {amount} pada {number} oleh {cashier}. Alasan: {reason}': 'Void {amount} on {number} by {cashier}. Reason: {reason}',
-  'Shift {n} di {outlet} ({cashier}) ditutup dengan selisih: kas {cash}, QRIS {qris}. Periksa di menu Shift.':
-    'Shift {n} at {outlet} ({cashier}) closed with a difference: cash {cash}, QRIS {qris}. Check it on Shifts.',
+  'Shift {n} di {outlet} ({cashier}) selisih: kas {cash}, QRIS {qris}.': 'Shift {n} at {outlet} ({cashier}) is off: cash {cash}, QRIS {qris}.',
   'Ada angka yang tidak cocok di {outlet}. Periksa di menu Shift.': 'Some figures do not match at {outlet}. Check them on Shifts.',
   '{n} hari di {outlet} belum ditutup, mulai {date}. Tutup di menu Tutup hari.': '{n} day(s) at {outlet} not closed yet, from {date}. Close them on Day close.',
   'Shift {n} di {outlet} ({cashier}) sudah buka lebih dari 16 jam.': 'Shift {n} at {outlet} ({cashier}) has been open for more than 16 hours.',
@@ -1040,8 +1008,7 @@ export const EN: Dict = {
   'dibatalkan {date}: {reason}': 'cancelled {date}: {reason}',
   '{name} dibatalkan.': '{name} cancelled.',
   'Batalkan {name}?': 'Cancel {name}?',
-  '{amount} tidak dihitung lagi dan kembali ke kas seharusnya shift {n}. Catatannya tetap terlihat.':
-    '{amount} no longer counts and goes back into the expected cash of shift {n}. The record stays visible.',
+  '{amount} kembali ke kas seharusnya shift {n}.': "{amount} goes back to shift {n}'s expected cash.",
   '{amount} tidak dihitung lagi sebagai pengeluaran. Catatannya tetap terlihat.': '{amount} no longer counts as an expense. The record stays visible.',
   'Batalkan barang': 'Cancel item',
   'Contoh: dicatat dua kali, nominal salah (catat ulang yang benar dengan Tambah barang).':
@@ -1049,10 +1016,7 @@ export const EN: Dict = {
   'Pengeluaran shift {n} ditambah.': 'Expenses of shift {n} added.',
   'Tambah barang ke shift {n}': 'Add items to shift {n}',
   'Catat pengeluaran': 'Record expense',
-  'Catat belanja dan biaya operasional di sini; semua catatan satu shift jadi satu daftar. Barang yang salah dibatalkan dengan alasan, lalu dicatat ulang.':
-    "Record supplies and operating costs here; a shift's records form one list. A wrong item is cancelled with a reason, then recorded again.",
-  'Tekan Catat pengeluaran untuk mencatat belanja atau biaya. Catatannya muncul di sini per shift.':
-    'Press Record expense to record supplies or a cost. Records appear here per shift.',
+  'Tekan Catat pengeluaran untuk mulai.': 'Press Record expense to start.',
   'Pengeluaran dicatat di laporan shift dan tidak mengubah kas laci.': "Expenses go into the shift's report and do not change the cash drawer.",
   'Memuat...': 'Loading...',
   'Tidak ada shift': 'No shift',
@@ -1072,8 +1036,7 @@ export const EN: Dict = {
   'Koreksi bill': 'Correct bill',
   'Bill {old} diganti {number}, total {amount}.': 'Bill {old} replaced by {number}, total {amount}.',
   'Koreksi bill {number}': 'Correct bill {number}',
-  'Isi bill seperti seharusnya. Bill ini dibatalkan dan diganti bill baru di hari dan shift yang sama; stok, kas, dan laporan ikut benar.':
-    'Fill in the bill as it should have been. This bill is voided and replaced by a new one on the same day and shift; stock, cash, and reports follow.',
+  'Bill lama dibatalkan dan diganti bill baru di shift yang sama.': 'The old bill is voided and replaced by a new one in the same shift.',
   'Item dan jumlah': 'Items and quantities',
   Tambah: 'Add',
   'Dibayar dengan': 'Paid by',
@@ -1119,8 +1082,7 @@ export const EN: Dict = {
   'Stok sekarang': 'Current stock',
   Riwayat: 'History',
   'Belum ada produk yang stoknya dilacak.': 'No products have their stock tracked yet.',
-  'Aktifkan Lacak stok di data produk (menu Produk) untuk produk yang ingin dihitung stoknya.':
-    'Turn on Track stock in the product (menu Products) for products whose stock you want to count.',
+  'Aktifkan Lacak stok di menu Produk.': 'Turn on Track stock in Products.',
   'Stok masuk': 'Stock in',
   Penyesuaian: 'Adjustment',
   'Hitung stok': 'Stock count',

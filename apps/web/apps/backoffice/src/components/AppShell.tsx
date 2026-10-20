@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Link, useRouterState } from '@tanstack/react-router';
 import { Dialog as D } from 'radix-ui';
 import { CloseIcon, MenuIcon, Wordmark, cn, useI18n } from '@hermes-pos/ui';
@@ -82,16 +82,34 @@ function SidebarBody({ close }: { close?: ReactNode }) {
   const app = useApp();
   const { t } = useI18n();
   const c = app.counts;
-  const items: NavItem[] = [
-    { to: '/', label: 'Ringkasan' },
-    { to: '/transactions', label: 'Transaksi' },
-    { to: '/closing', label: 'Shift' },
-    { to: '/outlets', label: 'Outlet', meta: c.outlets },
-    { to: '/cashiers', label: 'Kasir', meta: c.cashiers },
-    { to: '/products', label: 'Produk', meta: c.products },
-    { to: '/stock', label: 'Stok' },
-    { to: '/expenses', label: 'Pengeluaran' },
-    { to: '/vouchers', label: 'Voucher', meta: c.vouchers },
+  // The drawer and the sidebar can both be mounted, so each copy needs its own heading ids.
+  const id = useId();
+  // Grouped by how often the owner opens them: the daily pages first, then records, then the store's setup.
+  const groups: { label: string; items: NavItem[] }[] = [
+    {
+      label: 'Setiap hari',
+      items: [
+        { to: '/', label: 'Ringkasan' },
+        { to: '/transactions', label: 'Transaksi' },
+        { to: '/closing', label: 'Shift' },
+      ],
+    },
+    {
+      label: 'Catatan',
+      items: [
+        { to: '/expenses', label: 'Pengeluaran' },
+        { to: '/stock', label: 'Stok' },
+      ],
+    },
+    {
+      label: 'Atur toko',
+      items: [
+        { to: '/products', label: 'Produk', meta: c.products },
+        { to: '/vouchers', label: 'Voucher', meta: c.vouchers },
+        { to: '/outlets', label: 'Outlet', meta: c.outlets },
+        { to: '/cashiers', label: 'Kasir', meta: c.cashiers },
+      ],
+    },
   ];
   return (
     <div className={cn('flex min-h-full flex-col px-4 pb-5', close ? 'pt-3' : 'pt-6')}>
@@ -102,16 +120,23 @@ function SidebarBody({ close }: { close?: ReactNode }) {
         </div>
         <p className="mt-2 truncate font-mono text-[13px] text-mute">backoffice · {app.business.name || '[NAMA BISNIS]'}</p>
       </div>
-      <nav aria-label={t('Menu utama')} className="mt-7">
-        <ul className="grid gap-1">
-          {items.map((it) => (
-            <li key={it.to}>
-              <NavLink to={it.to} meta={it.meta}>
-                {t(`${it.label}|menu`)}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
+      <nav aria-label={t('Menu utama')} className="mt-7 grid gap-6">
+        {groups.map((g, i) => (
+          <section key={g.label} aria-labelledby={`${id}-${i}`}>
+            <h2 id={`${id}-${i}`} className="px-2.5 pb-1.5 text-[13px] font-semibold text-mute">
+              {t(`${g.label}|menu`)}
+            </h2>
+            <ul className="grid gap-1">
+              {g.items.map((it) => (
+                <li key={it.to}>
+                  <NavLink to={it.to} meta={it.meta}>
+                    {t(`${it.label}|menu`)}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </nav>
       <div className="min-h-8 flex-1" />
       <div className="border-t-[1.5px] border-ink pt-3">

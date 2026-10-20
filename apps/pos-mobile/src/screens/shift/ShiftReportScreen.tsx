@@ -201,7 +201,7 @@ export function ShiftReportScreen({ shift, onBack, onQueue, onBell }: { shift: S
     } catch {
       const share = await notify.confirm({
         title: t('WhatsApp belum terpasang'),
-        message: t('Laporan tidak bisa dibuka di WhatsApp di perangkat ini. Pasang WhatsApp, atau bagikan lewat aplikasi lain.'),
+        message: t('WhatsApp tidak terpasang. Bagikan lewat aplikasi lain.'),
         confirmLabel: t('Bagikan'),
       });
       if (share) await Share.share({ message: text }).catch(() => undefined);

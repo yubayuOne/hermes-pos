@@ -35,7 +35,7 @@ export function VoidCodeCard() {
   }
   return (
     <Card>
-      <CardTitle sub={t('Kasir hanya bisa membatalkan bill yang sudah dibayar kalau pemilik mengetik kode ini di perangkat kasir.')}>
+      <CardTitle sub={t('Dibutuhkan untuk membatalkan bill yang sudah dibayar.')}>
         {t('Kode persetujuan void')}
       </CardTitle>
       <p className="mt-3 flex items-center gap-2 text-[15px]">
@@ -51,7 +51,7 @@ export function VoidCodeCard() {
         <Field
           label={has ? t('Kode baru') : t('Kode 6 digit')}
           error={(error && t(error)) || (act.error && t(act.error))}
-          help={t('Kode disimpan sebagai hash dan tidak bisa dilihat lagi. Kalau lupa, buat kode baru di sini. Lima kali salah mengunci void selama 5 menit.')}
+          help={t('Kode tidak bisa dilihat lagi. Kalau lupa, buat yang baru.')}
         >
           <Input
             inputMode="numeric"

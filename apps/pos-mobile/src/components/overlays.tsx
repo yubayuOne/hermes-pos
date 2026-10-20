@@ -82,9 +82,9 @@ export function QueueSheet({ visible, onClose }: { visible: boolean; onClose: ()
       message: `${entryTitle(e)} · ${entryDetail(e)}`,
       hint:
         e.kind === 'open_shift'
-          ? t('Penjualan di shift ini akan ditolak server kalau pembukaannya dihapus. Hapus hanya kalau memang batal.')
+          ? t('Penjualan di shift ini akan ditolak server. Hapus hanya kalau batal.')
           : (e.kind ?? 'checkout') === 'checkout'
-            ? t('Penjualan ini tidak akan masuk laporan. Hapus hanya kalau sudah dicatat ulang atau memang batal.')
+            ? t('Penjualan ini tidak akan masuk laporan. Hapus hanya kalau batal.')
             : t('Entri ini tidak akan sampai ke server. Hapus hanya kalau memang batal.'),
       confirmLabel: t('Hapus entri'),
       destructive: true,
@@ -107,7 +107,7 @@ export function QueueSheet({ visible, onClose }: { visible: boolean; onClose: ()
     <Sheet visible={visible} onClose={onClose} size="tall" label={t('Antrean offline')}>
       <SheetHeader
         title={t('Antrean offline')}
-        subtitle={t('Belum tercatat di server. Dikirim berurutan saat internet ada; tutup shift selalu terkirim paling akhir.')}
+        subtitle={t('Belum terkirim. Dikirim otomatis saat ada internet.')}
         onClose={onClose}
       />
       <SheetBody contentClassName="gap-2.5">
@@ -133,7 +133,7 @@ export function QueueSheet({ visible, onClose }: { visible: boolean; onClose: ()
                 <Text className="font-body-600 text-[14px] text-error">
                   {(e.kind ?? 'checkout') !== 'checkout'
                     ? t('Ditolak server: {reason} Entri tidak dihapus otomatis. Tinjau bersama pemilik.', { reason: e.lastError })
-                    : t('Ditolak server: {reason} Uang sudah diterima, jadi entri tidak dihapus otomatis. Tinjau bersama pemilik.', { reason: e.lastError })}
+                    : t('Ditolak server: {reason} Tinjau bersama pemilik.', { reason: e.lastError })}
                 </Text>
               ) : e.attempts > 0 ? (
                 <Mono className="text-[13px] text-mute">
@@ -147,11 +147,6 @@ export function QueueSheet({ visible, onClose }: { visible: boolean; onClose: ()
             </View>
           );
         })}
-        <Text className="mt-1 text-[13px] text-mute">
-          {t(
-            'Sinkron berjalan otomatis saat masuk, saat aplikasi dibuka lagi, dan tiap 30 detik selama antrean berisi. Setiap entri memakai kunci yang sama, jadi tidak pernah tercatat dua kali.',
-          )}
-        </Text>
       </SheetBody>
       <ActionFooter>
         <Button
@@ -247,7 +242,7 @@ export function BellSheet({ visible, onClose }: { visible: boolean; onClose: () 
         ))}
         <Card className="mt-3 bg-paper">
           <Text className="text-[14px] text-mute">
-            {t('Kasir hanya bisa melihat. Pemilik memperpanjang paket dari backoffice, menu Pengaturan, tab Langganan.')}
+            {t('Pemilik memperpanjang paket di backoffice.')}
           </Text>
         </Card>
       </SheetBody>

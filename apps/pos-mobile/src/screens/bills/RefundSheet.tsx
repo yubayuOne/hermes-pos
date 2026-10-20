@@ -91,7 +91,7 @@ export function RefundSheet({
         setCode('');
         if (r.reason === 'wrong') setErrors({ code: t('Kode salah. Sisa percobaan: {n}.', { n: r.attemptsLeft }) });
         else if (r.reason === 'locked') setErrors({ code: t('Terlalu banyak kode salah. Coba lagi dalam 5 menit.') });
-        else setErrors({ form: t('Pemilik belum membuat kode persetujuan. Kode dibuat di backoffice, Pengaturan, tab Bisnis dan struk.') });
+        else setErrors({ form: t('Pemilik belum membuat kode persetujuan di backoffice.') });
         return;
       }
       haptic.heavy();

@@ -108,10 +108,7 @@ function Expenses() {
 
   return (
     <Page title={t('Pengeluaran')} tools={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <p className="max-w-[46em] text-mute">
-          {t('Catat belanja dan biaya operasional di sini; semua catatan satu shift jadi satu daftar. Barang yang salah dibatalkan dengan alasan, lalu dicatat ulang.')}
-        </p>
+      <div className="flex justify-end">
         <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
           {lock.label(t('Catat pengeluaran'))}
         </Button>
@@ -135,7 +132,7 @@ function Expenses() {
 
       {data.rows.length === 0 ? (
         <Empty className="mt-5" title={t('Belum ada pengeluaran di periode ini.')}>
-          {t('Tekan Catat pengeluaran untuk mencatat belanja atau biaya. Catatannya muncul di sini per shift.')}
+          {t('Tekan Catat pengeluaran untuk mulai.')}
         </Empty>
       ) : (
         <div className="mt-6 grid gap-8">
@@ -267,7 +264,7 @@ function CancelDialog({ expense: e, item: i, onClose }: { expense: Expense; item
       title={t('Batalkan {name}?', { name: i.name })}
       description={
         i.paidFrom === 'drawer'
-          ? t('{amount} tidak dihitung lagi dan kembali ke kas seharusnya shift {n}. Catatannya tetap terlihat.', { amount: money(i.amount), n: e.shiftNumber })
+          ? t('{amount} kembali ke kas seharusnya shift {n}.', { amount: money(i.amount), n: e.shiftNumber })
           : t('{amount} tidak dihitung lagi sebagai pengeluaran. Catatannya tetap terlihat.', { amount: money(i.amount) })
       }
       footer={

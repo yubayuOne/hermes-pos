@@ -130,7 +130,7 @@ function NotificationText({ n }: { n: Notification }) {
   }
   if (n.kind === 'shift_difference') {
     const d: Vars = { n: String(p.shift ?? ''), outlet, cashier: String(p.cashier ?? ''), cash: money(Number(p.cash ?? 0)), qris: money(Number(p.qris ?? 0)) };
-    return <>{t('Shift {n} di {outlet} ({cashier}) ditutup dengan selisih: kas {cash}, QRIS {qris}. Periksa di menu Shift.', d)}</>;
+    return <>{t('Shift {n} di {outlet} ({cashier}) selisih: kas {cash}, QRIS {qris}.', d)}</>;
   }
   if (n.kind === 'checks_failed') return <>{t('Ada angka yang tidak cocok di {outlet}. Periksa di menu Shift.', { outlet })}</>;
   if (n.kind === 'day_not_closed') {

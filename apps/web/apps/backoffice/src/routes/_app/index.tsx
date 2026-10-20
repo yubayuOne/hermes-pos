@@ -119,7 +119,7 @@ function Summary() {
             </>
           }
         >
-          {t('Siapkan menu dan kasir di sini, lalu masuk ke aplikasi kasir dengan akun yang sama dan buka shift. Penjualan muncul di halaman ini.')}
+          {t('Siapkan menu dan kasir, lalu buka shift di aplikasi kasir.')}
         </Empty>
       ) : (
         <>

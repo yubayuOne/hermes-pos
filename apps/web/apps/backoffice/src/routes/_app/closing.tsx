@@ -152,7 +152,7 @@ function Checks({ failures, shifts }: { failures: CheckFailure[]; shifts: DayShi
           <li key={i}>{text(f)}</li>
         ))}
       </ul>
-      <p className="mt-2 text-[14px] text-mute">{t('Ini bukan kesalahan kasir biasa. Hubungi dukungan HERMES POS dan sebutkan tanggal dan outlet ini.')}</p>
+      <p className="mt-2 text-[14px] text-mute">{t('Hubungi dukungan HERMES POS dan sebutkan tanggal serta outlet ini.')}</p>
     </section>
   );
 }

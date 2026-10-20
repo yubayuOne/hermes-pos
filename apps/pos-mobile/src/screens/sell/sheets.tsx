@@ -98,7 +98,7 @@ export function VoucherSheet({ visible, onClose }: { visible: boolean; onClose: 
               <Banner
                 tone="fire"
                 title={t('Offline: daftar voucher terakhir hari ini')}
-                message={t('Server memeriksa voucher lagi saat pembayaran terkirim. Kalau kuotanya sudah habis, pembayaran itu perlu ditinjau.')}
+                message={t('Voucher diperiksa lagi saat pembayaran terkirim.')}
               />
             ) : null}
             {list.map((v) => {

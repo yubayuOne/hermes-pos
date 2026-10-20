@@ -68,7 +68,7 @@ function Register() {
       <AuthLayout>
         <AuthTitle
           title={t('Cek email Anda.')}
-          sub={t('Kami mengirim tautan konfirmasi ke {email}. Buka tautan itu untuk melanjutkan ke data awal.', { email: sent })}
+          sub={t('Buka tautan yang kami kirim ke {email} untuk melanjutkan.', { email: sent })}
         />
         <p className="text-[15px] text-mute">{t('Tidak ada email? Lihat folder spam, atau daftar lagi dengan email yang benar.')}</p>
         <Button className="mt-6" onClick={() => setSent(null)}>
@@ -93,7 +93,7 @@ function Register() {
         <Field
           label="Username"
           error={f.errors.username && t(f.errors.username)}
-          help={t('3 sampai 20 karakter: huruf kecil, angka, titik, atau garis bawah. Bisa dipakai untuk masuk.')}
+          help={t('3 sampai 20 karakter: huruf kecil, angka, titik, atau garis bawah.')}
         >
           <Input
             autoComplete="username"

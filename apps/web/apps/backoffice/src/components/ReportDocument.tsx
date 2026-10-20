@@ -192,7 +192,7 @@ export function ReportDocument({
           </Scroll>
           <p className="mt-3 text-[12px] text-mute">
             {t(
-              'Angka dalam kurung adalah pengurang. Selisih positif menambah laba, negatif menguranginya. Pembelian bahan ({amount}) tidak masuk laba rugi karena biayanya sudah ada di HPP. Laba operasional dihitung sebelum penyusutan, bunga, dan pajak penghasilan.',
+              'Angka dalam kurung adalah pengurang. Pembelian bahan ({amount}) tidak masuk laba rugi karena sudah ada di HPP.',
               { amount: money(cur.inventoryPurchases) },
             )}
           </p>
@@ -290,7 +290,7 @@ export function ReportDocument({
           n={5}
           title={t('Pengeluaran per kategori')}
           sub={t(
-            'Dicatat kasir di aplikasi dan bisa diubah pemilik di menu Pengeluaran, menurut tanggal shift. Belanja bahan tidak masuk laba rugi karena biayanya sudah ada di HPP.',
+            'Menurut tanggal shift. Belanja bahan tidak masuk laba rugi.',
           )}
         >
           <Scroll>
@@ -397,9 +397,6 @@ export function ReportDocument({
                   </tr>
                 </tbody>
               </table>
-              <p className="mt-2 text-[12px] text-mute">
-                {t('Bukan dari laci artinya dibayar pemilik atau lewat transfer, sehingga uang laci tidak berubah.')}
-              </p>
             </div>
           </div>
         </Section>
@@ -592,7 +589,7 @@ export function ReportDocument({
             </table>
           </Scroll>
           <p className="mt-2 text-[12px] text-mute">
-            {t('Penjualan produk setelah semua diskon (item dan bill), sebelum refund. Margin di bawah {x}% (5 poin di bawah rata-rata) ditandai merah.', {
+            {t('Setelah semua diskon, sebelum refund. Margin di bawah {x}% ditandai merah.', {
               x: decimal(redBelow, lang),
             })}
             {r.productCount > r.products.length
@@ -716,9 +713,9 @@ export function ReportDocument({
         <Coming n={15} title={t('Rencana tindakan')} text={t('Tindakan, penanggung jawab, tenggat, ukuran berhasil, dan status.')} />
         <Section n={16} title={t('Catatan dan definisi')}>
           <ul className="list-disc space-y-1 pl-5 text-[12.5px] text-mute">
-            <li>{t('Penjualan bersih adalah penjualan kotor dikurangi diskon, voucher, dan refund. Aplikasi belum mencatat pajak (PPN).')}</li>
-            <li>{t('HPP memakai harga pokok per produk saat bill dibuat. Harga pokok kosong dihitung Rp0, jadi isi di menu Produk supaya margin akurat.')}</li>
-            <li>{t('Refund dihitung pada tanggal refund. Barang refund yang kembali ke stok dikeluarkan dari HPP.')}</li>
+            <li>{t('Penjualan bersih: penjualan kotor dikurangi diskon, voucher, dan refund. PPN belum dicatat.')}</li>
+            <li>{t('HPP memakai harga pokok produk saat bill dibuat. Harga pokok kosong dihitung Rp0.')}</li>
+            <li>{t('Refund dihitung pada tanggal refund.')}</li>
             <li>{t('Bill offline masuk setelah tersinkron. Bill yang masih antre di perangkat belum masuk.')}</li>
             <li>{t('Pengeluaran dihitung menurut tanggal shift, langsung saat dicatat.')}</li>
             <li>{t('Sumber data: aplikasi kasir {brand} dan menu Pengeluaran di backoffice.', { brand: BRAND_UPPER })}</li>

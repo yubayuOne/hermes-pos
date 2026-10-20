@@ -30,7 +30,7 @@ function Outlets() {
     <Page title={t('Outlet|menu')}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="max-w-[44em] text-mute">
-          {t('Satu bisnis, satu tanggal berakhir. Paket berisi 1 outlet; outlet tambahan {price} per bulan, dihitung proporsional.', {
+          {t('Paket berisi 1 outlet. Outlet tambahan {price} per bulan.', {
             price: money(EXTRA_OUTLET),
           })}
         </p>
@@ -76,7 +76,7 @@ function Outlets() {
         open={info}
         onOpenChange={setInfo}
         title={t('Tambah outlet')}
-        description={t('Outlet tambahan diaktifkan setelah pembayaran: {price} per outlet per bulan, dengan tanggal berakhir yang sama untuk semua outlet.', {
+        description={t('{price} per outlet per bulan, aktif setelah dibayar.', {
           price: money(EXTRA_OUTLET),
         })}
         footer={
@@ -87,7 +87,7 @@ function Outlets() {
       >
         <p>
           {t(
-            'Hubungi kami di WhatsApp {wa} dengan nama bisnis dan jumlah outlet yang dibutuhkan. Setelah dibayar, outlet baru muncul di sini dan di aplikasi kasir.',
+            'Hubungi WhatsApp {wa} untuk menambah outlet.',
             { wa: SUPPORT.whatsapp },
           )}
         </p>

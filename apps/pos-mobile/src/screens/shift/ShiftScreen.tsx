@@ -416,7 +416,7 @@ export function ShiftScreen({
         <Banner
           tone="error"
           title={t('Shift ini dibuka di HP lain.')}
-          message={t('Jualan dan tutup shift hanya bisa di HP itu. Kalau HP itu hilang atau rusak, pemilik bisa memindahkan shift ini ke HP ini.')}
+          message={t('Jualan dan tutup shift hanya bisa di HP itu. Pemilik bisa memindahkannya ke HP ini.')}
         >
           <ButtonRow>
             <Button size="sm" variant="danger" label={t('Pindahkan ke HP ini')} onPress={() => setTakeOver(true)} />
@@ -519,7 +519,7 @@ export function ShiftScreen({
       <Display size={30} className="mt-2">
         {t('Buka shift untuk mulai jualan.')}
       </Display>
-      <Text className="mt-2 text-[15px] text-mute">{t('Hitung uang di laci lalu masukkan sebagai kas awal. Tanggal bisnis dikunci saat shift dibuka.')}</Text>
+      <Text className="mt-2 text-[15px] text-mute">{t('Hitung uang di laci, lalu masukkan sebagai kas awal.')}</Text>
       <Button
         className="mt-4"
         size="lg"
@@ -674,7 +674,7 @@ export function ShiftScreen({
             second={askQris ? { label: t('QRIS di aplikasi merchant'), value: qris, onChange: setQris } : undefined}
           />
           {askQris ? (
-            <Text className="text-[13px] text-mute">{t('Buka aplikasi merchant QRIS, lihat total uang masuk selama shift ini, lalu ketik di kotak QRIS.')}</Text>
+            <Text className="text-[13px] text-mute">{t('Lihat total QRIS shift ini di aplikasi merchant.')}</Text>
           ) : null}
           <Text className="text-[13px] text-mute">{t('Server menghitung selisih setelah shift ditutup. Perlu internet.')}</Text>
         </SheetBody>
@@ -735,12 +735,12 @@ export function ShiftScreen({
               </Slip>
               {closed.variance ? (
                 <Text className="mt-3 text-[14px] text-mute">
-                  {t('Hitung ulang laci dan periksa bill tunai shift ini. Selisih tercatat di laporan shift dan terlihat oleh pemilik di backoffice.')}
+                  {t('Hitung ulang laci dan periksa bill tunai.')}
                 </Text>
               ) : null}
               {closed.qrisVariance ? (
                 <Text className="mt-3 text-[14px] text-mute">
-                  {t('Cocokkan riwayat di aplikasi merchant dengan bill QRIS shift ini. Selisih QRIS terlihat oleh pemilik di backoffice.')}
+                  {t('Cocokkan aplikasi merchant dengan bill QRIS.')}
                 </Text>
               ) : null}
             </SheetBody>
@@ -790,7 +790,7 @@ function TakeOverSheet({ shift, onClose, onDone }: { shift: Shift | null; onClos
             ? t('Kode salah. Sisa percobaan: {n}.', { n: r.attemptsLeft })
             : r.reason === 'locked'
               ? t('Terlalu banyak kode salah. Coba lagi dalam 5 menit.')
-              : t('Pemilik belum membuat kode persetujuan. Kode dibuat di backoffice, Pengaturan, tab Bisnis dan struk.'),
+              : t('Pemilik belum membuat kode persetujuan di backoffice.'),
         );
         return;
       }
@@ -816,7 +816,7 @@ function TakeOverSheet({ shift, onClose, onDone }: { shift: Shift | null; onClos
       <SheetBody contentClassName="gap-3.5">
         <Text className="text-[15px] leading-[22px] text-mute">
           {t(
-            'Pakai ini hanya kalau HP yang membuka shift hilang atau rusak. Penjualan yang masih tersimpan di HP itu akan ditolak server setelah shift dipindahkan.',
+            'Hanya kalau HP pembuka shift hilang atau rusak. Penjualan yang tertinggal di HP itu akan ditolak.',
           )}
         </Text>
         <TextField

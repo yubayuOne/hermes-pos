@@ -37,7 +37,7 @@ function Forgot() {
       <AuthLayout>
         <AuthTitle
           title={t('Tautan terkirim.')}
-          sub={t('Kalau {email} terdaftar, tautan untuk membuat kata sandi baru sudah kami kirim. Tautan berlaku 1 jam.', { email: f.values.email })}
+          sub={t('Kalau {email} terdaftar, tautannya sudah kami kirim. Berlaku 1 jam.', { email: f.values.email })}
         />
         <Link to="/login" className="btn btn-block">
           {t('Kembali ke halaman masuk')}

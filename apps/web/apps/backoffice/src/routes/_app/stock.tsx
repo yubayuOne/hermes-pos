@@ -79,7 +79,7 @@ function Stock() {
         <History docs={data.docs?.rows ?? []} total={data.docs?.total ?? 0} set={set} />
       ) : data.items.length === 0 ? (
         <Empty className="mt-6" title={t('Belum ada produk yang stoknya dilacak.')}>
-          {t('Aktifkan Lacak stok di data produk (menu Produk) untuk produk yang ingin dihitung stoknya.')}
+          {t('Aktifkan Lacak stok di menu Produk.')}
         </Empty>
       ) : (
         <>
