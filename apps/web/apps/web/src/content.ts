@@ -36,12 +36,12 @@ export const FAQ: [string, string][] = [
     'Tidak untuk bill yang sudah dibayar. Void dan refund butuh kode persetujuan 6 digit dari pemilik, dan alasannya wajib diisi. Lima kali salah kode mengunci void selama 5 menit. Refund per item hanya untuk bill berumur sampai 24 jam, dan pemilik mendapat notifikasi di backoffice.',
   ],
   [
-    'Bagaimana pengeluaran kasir dicatat?',
-    'Kasir mencatat di menu Shift: nama barang, jenis (operasional atau belanja), jumlah, harga, dan apakah uangnya dari laci. Yang dari laci langsung mengurangi kas yang seharusnya ada, jadi selisih tidak muncul gara-gara beli es batu. Pemilik mendapat notifikasi dan bisa mengoreksi catatannya di backoffice; kas dan selisih shift dihitung ulang.',
+    'Bagaimana pengeluaran dicatat?',
+    'Anda mencatatnya di backoffice, menu Pengeluaran: nama barang, jenis (operasional atau belanja), jumlah, dan harga. Pengeluaran masuk laporan dan laba rugi, tanpa mengubah kas laci.',
   ],
   [
     'Bagaimana laporan shift sampai ke saya?',
-    'Di akhir shift, kasir mengetuk Kirim ke WA. WhatsApp terbuka dengan laporan siap kirim dan kasir memilih penerimanya. Isinya penjualan setelah refund, setiap refund beserta alasannya, pengeluaran, kas, dan selisih. Laporan yang sama bisa dicetak ulang, dan angkanya juga ada di backoffice.',
+    'Di akhir shift, kasir mengetuk Kirim ke WA. WhatsApp terbuka dengan laporan siap kirim dan kasir memilih penerimanya. Isinya penjualan setelah refund, setiap refund beserta alasannya, kas, dan selisih. Laporan yang sama bisa dicetak ulang, dan angkanya juga ada di backoffice.',
   ],
   [
     'Bagaimana kalau internet mati di tengah jam ramai?',

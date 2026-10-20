@@ -5,7 +5,7 @@ const box = 'border border-line bg-paper font-mono text-[14px] tabular-nums';
 
 /**
  * C5a. Why an owner who is not in the shop can trust the till. The void and refund approval is bigger than the other two
- * because it is the rule that stops money from leaving; the expense and WhatsApp report sit beside it. Every amount is
+ * because it is the rule that stops money from leaving; the drawer correction and WhatsApp report sit beside it. Every amount is
  * an illustration and says so.
  */
 export function Control() {
@@ -31,10 +31,8 @@ export function Control() {
           <Approval />
         </article>
         <div className="grid gap-6">
-          <Side title={t('Uang keluar dari laci ikut terhitung.')} mock={<Expense />}>
-            {t(
-              'Kasir mencatat pengeluaran di aplikasi dan memilih apakah uangnya dari laci. Yang dari laci langsung mengurangi kas yang seharusnya ada. Anda bisa mengoreksi catatannya di backoffice, dan selisih shift dihitung ulang.',
-            )}
+          <Side title={t('Selisih laci diperbaiki dengan satu catatan.')} mock={<Correction />}>
+            {t('Uang laci kurang? Catat Uang masuk. Lebih? Catat Uang keluar. Selisih shift dihitung ulang dan alasannya tersimpan.')}
           </Side>
           <Side title={t('Laporan shift sampai ke WhatsApp.')} mock={<Report />}>
             {t('Di akhir shift, satu ketukan membuka WhatsApp dengan laporan siap kirim. Struknya juga bisa dicetak ulang kapan saja.')}
@@ -84,17 +82,17 @@ function Approval() {
   );
 }
 
-function Expense() {
+function Correction() {
   const { t } = useI18n();
   return (
-    <div className={cn(box, 'px-[18px] pt-2')} role="figure" aria-label={t('Contoh pengeluaran dari laci')}>
+    <div className={cn(box, 'px-[18px] pt-2')} role="figure" aria-label={t('Contoh koreksi selisih laci')}>
       <div className="flex items-center justify-between gap-3 pb-1 text-[13px] text-mute">
-        <span>{t('Kas seharusnya')}</span>
+        <span>{t('Shift 2')}</span>
         <Tag>{t('contoh')}</Tag>
       </div>
-      <Row l={t('Sebelum')} r={amount(2874000)} />
-      <Row l={t('Es batu 3 kg, dari laci')} r={`- ${amount(35000)}`} />
-      <Row l={t('Sesudah')} r={amount(2839000)} bold last />
+      <Row l={t('Selisih')} r={`- ${amount(5000)}`} />
+      <Row l={t('Uang masuk: kasir mengganti')} r={`+ ${amount(5000)}`} />
+      <Row l={t('Selisih sesudah')} r="Rp0" bold last />
     </div>
   );
 }
@@ -108,7 +106,6 @@ function Report() {
         <p className="pb-2 text-[13px] text-mute">{t('Outlet Utama · contoh')}</p>
         <Row l={t('Penjualan bersih')} r={amount(4280000)} />
         <Row l={t('Refund 1: Salah pesan')} r={amount(22000)} />
-        <Row l={t('Pengeluaran')} r={amount(35000)} />
         <Row l={t('Selisih kas')} r="Rp0" last />
       </div>
       <div className="mt-3 grid min-h-11 place-items-center rounded bg-pine font-sans text-[15px] font-semibold text-paper">{t('Kirim ke WA')}</div>

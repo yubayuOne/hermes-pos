@@ -4,7 +4,7 @@
 
 **Android point of sale for cafés and small restaurants in Indonesia, with cash control for owners who are not always in the shop.**
 
-Voids and refunds need the owner's code. Money taken from the drawer lowers the expected cash. Sales keep recording when the internet is down.
+Voids and refunds need the owner's code. A short or over drawer shows the moment a shift closes. Sales keep recording when the internet is down.
 
 [Download the app](#download) · [Features](#features) · [Architecture](#architecture) · [Getting started](#getting-started) · [Documentation](#documentation)
 
@@ -30,14 +30,14 @@ cashier with a 6-digit PIN, then sign in on the app with the owner account (emai
 
 ## Why HERMES POS
 
-Most small cafés lose track of cash in three places: voids, refunds, and money taken from the drawer for supplies.
+Most small cafés lose track of cash in three places: voids, refunds, and a drawer that does not add up.
 HERMES POS gives each one a rule and a trace.
 
 - **The owner holds the key.** A cashier cannot void or refund a paid bill alone. The owner sets a 6-digit approval
   code in the backoffice, and a reason is required. Item refunds work only on bills up to 24 hours old.
-- **The drawer adds up.** Cashiers record expenses in the app. Money that came from the drawer lowers the expected
-  cash at once, so a variance does not appear just because someone bought ice. The owner can correct an entry later and
-  the shift is recalculated.
+- **The drawer adds up.** The cashier counts the drawer at shift close and the difference shows at once. The owner fixes
+  it in the backoffice with money in or money out and a reason, and the shift is recalculated. Expenses are recorded by
+  the owner in the backoffice and never come out of the drawer.
 - **It works offline.** Bills wait in a queue on the device with a provisional number and are sent exactly once when the
   internet returns. The same key on every resend means the server rejects duplicates.
 - **The report reaches the owner.** At the end of a shift the cashier taps *Kirim ke WA*; WhatsApp opens with the
@@ -63,7 +63,6 @@ HERMES POS gives each one a rule and a trace.
 - **Printing:** Bluetooth ESC/POS printers on 58 mm or 80 mm paper, with printers assigned per role (cashier, kitchen,
   bar). Receipts carry the outlet's logo, address, phone, and header and footer text.
 - **Refunds and voids:** owner-approved, with a mandatory reason, and a refund slip.
-- **Expenses:** per shift, with a source (drawer or not), queued offline like a sale.
 - **History:** every shift of the outlet with a period filter, reports per shift, reprint, and WhatsApp share.
 
 ### Backoffice (web, for the owner)
@@ -80,7 +79,7 @@ HERMES POS gives each one a rule and a trace.
   replacement is made, both linked).
 - **Stock:** stock now and its history; stock in, adjustments with a reason, and stock counts. Stock never changes from
   the product form.
-- **Expenses:** every shift's expenses by period; a wrong item is cancelled with a reason and recorded again.
+- **Expenses:** recorded by the owner per shift (Catat pengeluaran), by period; a wrong item is cancelled with a reason and recorded again.
 - **Shifts:** per outlet and business date, each shift's cash and QRIS reconciled line by line, the day's corrections,
   and the automatic balance checks. A short drawer is fixed with Uang masuk, an over drawer with Uang keluar, on any day.
   There is no day close and no day lock (078).

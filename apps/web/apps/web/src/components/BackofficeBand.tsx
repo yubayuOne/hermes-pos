@@ -5,10 +5,10 @@ export function BackofficeBand() {
   const { t } = useI18n();
   const points: [string, string][] = [
     [t('Laporan'), t('penjualan, laba, dan kas, gabungan atau per outlet dan per kasir, plus 10 produk terlaris. Siap cetak.')],
-    [t('Pengeluaran'), t('dicatat kasir per shift dan bisa Anda koreksi kapan saja. Kas dan selisih shift dihitung ulang.')],
+    [t('Pengeluaran'), t('Anda catat per shift. Masuk laporan dan laba rugi, tanpa mengubah kas laci.')],
     [t('Per outlet'), t('logo, alamat, dan teks struk diatur di tiap outlet. Satu HP terikat ke satu outlet, dan server menolak PIN dari outlet lain.')],
     [t('Menu dan kasir'), t('disiapkan dari browser, bahkan sebelum perangkat kasir ada. PIN diganti tanpa memegang perangkatnya.')],
-    [t('Lonceng'), t('refund dan pengeluaran dari kasir muncul di sini, juga pengingat sebelum langganan berakhir.')],
+    [t('Lonceng'), t('refund, void, dan selisih shift muncul di sini, juga pengingat sebelum langganan berakhir.')],
     [t('Data usaha Anda saja.'), t('Pemisahan antarbisnis dijaga di database, bukan hanya disembunyikan di layar.')],
   ];
   return (
@@ -35,7 +35,7 @@ export function BackofficeBand() {
 
 function Window() {
   const { t } = useI18n();
-  const menu = ['Ringkasan', 'Laporan', 'Outlet', 'Kasir', 'Produk', 'Pengeluaran', 'Voucher'];
+  const menu = ['Ringkasan', 'Transaksi', 'Shift', 'Pengeluaran', 'Stok', 'Produk', 'Voucher'];
   const bars = [3.1, 2.6, 3.4, 2.9, 3.9, 5.1, 4.3];
   const cashiers: [string, number][] = [
     ['Sari', 1420000],

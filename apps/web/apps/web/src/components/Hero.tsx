@@ -13,7 +13,7 @@ export function Hero() {
           </h1>
           <p className="mt-8 max-w-[30em] text-[19px] text-mute sm:text-[21px]">
             {t(
-              '{brand} adalah aplikasi kasir Android untuk kafe dan restoran kecil. Void dan refund butuh kode Anda, dan pengeluaran dari laci langsung mengurangi kas yang seharusnya ada. Internet mati pun, tidak ada transaksi yang hilang atau tercatat dua kali.',
+              '{brand} adalah aplikasi kasir Android untuk kafe dan restoran kecil. Void dan refund butuh kode Anda, dan selisih laci terlihat begitu shift ditutup. Internet mati pun, tidak ada transaksi yang hilang atau tercatat dua kali.',
               { brand: BRAND_UPPER },
             )}
           </p>
@@ -39,14 +39,13 @@ export function Hero() {
             <RRow l={t('Kas awal')} r={amount(300000)} className="border-0 py-1.5" />
             <RRow l={t('Penjualan tunai')} r={`+ ${amount(2650000)}`} className="border-0 py-1.5" />
             <RRow l="Void" r={`- ${amount(76000)}`} className="border-0 py-1.5" />
-            <RRow l={t('Pengeluaran dari laci')} r={`- ${amount(35000)}`} className="border-0 py-1.5" />
             <RCut />
             <RRow
               l={<b className="font-semibold">{t('Kas seharusnya')}</b>}
-              r={<b className="font-semibold">{amount(2839000)}</b>}
+              r={<b className="font-semibold">{amount(2874000)}</b>}
               className="border-0 py-1.5"
             />
-            <RRow l={t('Hitungan kasir')} r={amount(2834000)} className="border-0 py-1.5" />
+            <RRow l={t('Hitungan kasir')} r={amount(2869000)} className="border-0 py-1.5" />
             <div className="mt-3 flex justify-between bg-fire px-4 py-3 font-semibold">
               <span>{t('Selisih')}</span>
               <span>{`- ${amount(5000)}`}</span>
