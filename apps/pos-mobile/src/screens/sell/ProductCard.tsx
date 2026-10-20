@@ -105,7 +105,8 @@ function ProductCardBase({
           ) : null}
         </View>
       ) : null}
-      <View className={`flex-1 justify-between ${photo ? 'px-2.5 pb-2.5 pt-2' : landscape ? 'p-2.5' : 'p-3'}`}>
+      {/* Foto: sized by its text. flex-1 there (no card height to fill) let the name and price collapse under a loaded photo. */}
+      <View className={photo ? 'px-2.5 pb-2.5 pt-2' : `flex-1 justify-between ${landscape ? 'p-2.5' : 'p-3'}`}>
         <Text numberOfLines={photo && landscape ? 1 : 2} className="font-body-600 text-[15px]" style={{ color: soldOut ? colors.mute : colors.ink }}>
           {product.name}
         </Text>
