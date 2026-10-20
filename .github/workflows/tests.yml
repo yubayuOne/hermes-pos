@@ -1,0 +1,43 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  sql:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGPASSWORD: postgres
+      PSQL: psql -h localhost -U postgres
+    steps:
+      - uses: actions/checkout@v4
+      # run_all.sh prints test results and does not set its exit code, so fail on its ERROR and FAIL lines.
+      - name: Migrations and SQL tests
+        run: |
+          sh supabase/tests/run_all.sh | tee sql.log
+          ! grep -E "ERROR|FAIL" sql.log
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/pos-mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/pos-mobile/package-lock.json
+      - run: npm ci
+      - run: npm run test:js

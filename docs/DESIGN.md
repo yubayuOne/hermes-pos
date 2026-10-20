@@ -728,17 +728,14 @@ Tiga tab chip di bawah header: **Profil**, **Bisnis dan struk**, **Langganan**.
 - Hari yang sudah dikunci (D14) menolak pembatalan dan koreksi; koreksinya lewat refund di hari yang masih buka.
 - **Produk terjual:** satu outlet (produk milik outlet). Semua produk, termasuk yang 0 terjual dan yang nonaktif, dengan Terjual dan Penjualan (setelah diskon item, refund belum dikurangi). Cari nama produk langsung saat mengetik. Dialog Filter: Outlet, Periode, Urutkan (Terlaris bawaan, Penjualan terbesar, Nama A-Z). Ringkasan: outlet · periode · urutan · {n} produk. 20 per halaman.
 
-## D14. Tutup hari
+## D14. Shift
 
-**Yang sudah dibangun** (`/closing?outlet=&date=`, migrasi 073 dan 075; menggantikan Balancing 071). Menu di sidebar di bawah Transaksi. Rincian pembukuan: [`ACCOUNTING.md`](ACCOUNTING.md).
+**Yang sudah dibangun** (`/closing?outlet=&date=`, migrasi 073, 075, dan 078). Menu "Shift" di sidebar di bawah Transaksi. Tidak ada tutup hari dan tidak ada kunci hari (078): kasir menutup shift di aplikasi, pemilik tidak punya langkah harian. Rincian pembukuan: [`ACCOUNTING.md`](ACCOUNTING.md).
 
 - Isian Outlet (satu outlet) dan Tanggal (maksimal hari ini).
 - **Pemeriksaan:** satu kotak pine-soft "Semua angka hari ini cocok…" atau kotak fire-soft berisi setiap aturan yang gagal dalam kalimat biasa (P1 sampai P5, P7).
-- **Status hari:** "Hari belum ditutup." dengan satu kalimat langkah berikutnya dan tombol **Tutup dan kunci hari** (`btn-fire`, nonaktif selama ada shift buka atau pemeriksaan gagal); atau "Hari sudah ditutup dan dikunci." dengan tag `terkunci`, QRIS tercatat, QRIS masuk rekening, selisihnya, dan tombol **Buka kunci**. Di bawahnya riwayat tutup dan buka kunci.
-- **Satu kartu per shift:** Shift n · kasir, jam buka sampai tutup, jumlah bill, omzet. Dua kolom: **Kas laci** (Kas awal, Penjualan tunai, Refund tunai, Pengeluaran dari laci, Uang masuk, Uang keluar, Kas seharusnya, Kas dihitung kasir, lalu Cocok / Kurang / Lebih) dan **QRIS** (Penjualan QRIS, Refund QRIS, QRIS seharusnya masuk, QRIS di aplikasi merchant, lalu Cocok / Kurang / Lebih). Catatan uang laci di bawahnya. Tombol kecil **Uang masuk** dan **Uang keluar** (hilang saat hari terkunci).
+- **Satu kartu per shift:** Shift n · kasir, jam buka sampai tutup, jumlah bill, omzet. Dua kolom: **Kas laci** (Kas awal, Penjualan tunai, Refund tunai, Uang masuk, Uang keluar, Kas seharusnya, Kas dihitung kasir, lalu Cocok / Kurang / Lebih) dan **QRIS** (Penjualan QRIS, Refund QRIS, QRIS seharusnya masuk, QRIS di aplikasi merchant, lalu Cocok / Kurang / Lebih). Catatan uang laci di bawahnya. Tombol kecil **Uang masuk** (uang laci kurang) dan **Uang keluar** (uang laci lebih), selalu ada.
 - **Koreksi dan pembatalan:** void, koreksi bill, refund, pengeluaran dibatalkan, penyesuaian dan hitung stok hari itu, dengan nominal, alasan, dan jam.
-- **Dialog Tutup dan kunci hari:** QRIS tercatat (pratinjau), QRIS masuk rekening (opsional, dari mutasi bank), catatan. **Dialog Buka kunci hari:** alasan wajib.
-- Hari terkunci ditolak database di semua jalur (POS dan backoffice): "Hari itu sudah ditutup dan dikunci. Buka kuncinya dulu di Tutup hari, atau catat koreksinya di hari yang masih buka."
 
 ## D15. Stok
 

@@ -1,13 +1,13 @@
 import { supabase } from '../supabase/client';
 import { localDb } from './db';
-import { DashboardSummary, toBillItem, toBillRow, toCashSummary, toDashboard, toExpense, toRefunds } from '../transaction/repository';
+import { DashboardSummary, toBillItem, toBillRow, toCashSummary, toDashboard, toRefunds } from '../transaction/repository';
 import { RecalledBill, toRecalledBill, toRemainingItems } from '../transaction/heldBills';
 import { SalesReport, toSalesReport } from '../report/report';
-import { CartItem, Expense, Refund, TransactionItemSummary, TransactionSummary } from '../../types/domain';
+import { CartItem, Refund, TransactionItemSummary, TransactionSummary } from '../../types/domain';
 
 /**
  * Whole shifts on the phone (offline architecture, stage 3; migrations 055 and 057): every bill of the shift from any
- * phone, the items of each, refunds, expenses, the server's report, kas laci, the dashboard figures and what a recall of
+ * phone, the items of each, refunds, the server's report, kas laci, the dashboard figures and what a recall of
  * each held bill needs. syncShift refreshes one; readShift never touches the network. Bills still in this phone's queue
  * are not in here: the screens add them on top (they are not on the server).
  */
@@ -15,7 +15,6 @@ export interface ShiftData {
   bills: TransactionSummary[];
   items: Record<string, TransactionItemSummary[]>;
   refunds: Refund[];
-  expenses: Expense[];
   report: SalesReport;
   /** Null until migration 057 is applied on the server. */
   cash: { cashIn: number; cashOut: number; expectedCash: number } | null;
@@ -73,7 +72,6 @@ export async function readShift(shiftId: string): Promise<ShiftData | null> {
     bills: ((d.bills ?? []) as any[]).map(toBillRow),
     items,
     refunds: toRefunds(d.refunds),
-    expenses: ((d.expenses ?? []) as any[]).map(toExpense),
     report: toSalesReport(d.report),
     cash: d.cash ? toCashSummary(d.cash) : null,
     dashboard: d.dashboard ? toDashboard(d.dashboard) : null,

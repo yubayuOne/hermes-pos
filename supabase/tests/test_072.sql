@@ -56,11 +56,11 @@ select set_config('t.cc', pg_temp.pay(jsonb_build_object('items', jsonb_build_ar
 select public.refund_items_approved(current_setting('t.cc')::uuid, current_setting('t.sh')::uuid, current_setting('t.c')::uuid,
   jsonb_build_array(jsonb_build_object('item_id', (select id from public.transaction_items where transaction_id = current_setting('t.cc')::uuid), 'quantity', 1, 'restock', true)),
   'cash', 'Roti gosong', '271828', 'r-1');
--- An expense from the drawer (belanja) and one from outside (operasional).
-select public.record_expense(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid, 'drawer',
-  jsonb_build_array(jsonb_build_object('name', 'Gula', 'category', 'belanja', 'quantity', 1, 'unit', 'kg', 'amount', 15000)), 'k-1');
-select public.record_expense(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid, 'other',
-  jsonb_build_array(jsonb_build_object('name', 'Listrik', 'category', 'operasional', 'quantity', 1, 'unit', 'pcs', 'amount', 50000)), 'k-2');
+-- Two owner expenses, neither from the drawer: belanja and operasional.
+select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other',
+  jsonb_build_array(jsonb_build_object('name', 'Gula', 'category', 'belanja', 'quantity', 1, 'unit', 'kg', 'amount', 15000)));
+select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other',
+  jsonb_build_array(jsonb_build_object('name', 'Listrik', 'category', 'operasional', 'quantity', 1, 'unit', 'pcs', 'amount', 50000)));
 
 -- ===== per-product figures add up to the sales
 select set_config('t.ps', public.owner_product_sales(current_setting('t.o')::uuid, now() - interval '1 day', now() + interval '1 day')::text, false);
@@ -73,21 +73,21 @@ select pg_temp.ok('P2 the report''s product total matches its sales before refun
 reset role;
 select pg_temp.ok('L1 every document balances', not exists (
   select 1 from public.ledger where business_id = current_setting('t.b')::uuid group by doc_type, doc_id having sum(amount) <> 0));
-select pg_temp.ok('L2 cash in the drawer: 100.000 + 48.999 + 18.000 - 18.000 refund - 15.000 = 133.999 (the cash book agrees)',
-  (select coalesce(sum(amount), 0) from public.ledger where shift_id = current_setting('t.sh')::uuid and account = 'cash_drawer') = 133999
-  and (select (public.get_shift_cash_summary(current_setting('t.sh')::uuid) ->> 'expected_cash')::numeric) = 133999);
+select pg_temp.ok('L2 cash in the drawer: 100.000 + 48.999 + 18.000 - 18.000 refund = 148.999, expenses do not count (the cash book agrees)',
+  (select coalesce(sum(amount), 0) from public.ledger where shift_id = current_setting('t.sh')::uuid and account = 'cash_drawer') = 148999
+  and (select (public.get_shift_cash_summary(current_setting('t.sh')::uuid) ->> 'expected_cash')::numeric) = 148999);
 select pg_temp.ok('L3 QRIS 39.600, net sales 106.599 - 18.000 = 88.599',
   pg_temp.acct('qris') = 39600 and -(pg_temp.acct('sales') + pg_temp.acct('discount') + pg_temp.acct('sales_return')) = 88599);
 select pg_temp.ok('L4 stock: restocked roti back in inventory, cost of goods 8.000 + 6.000 + 3.000 + 16.000 + 6.000 - 6.000',
   pg_temp.acct('cogs') = 33000 and pg_temp.acct('cost_absorbed') = -3000
   and (select sum(amount) from public.ledger where business_id = current_setting('t.b')::uuid and account = 'inventory' and doc_type in ('sale', 'refund')) = -30000);
-select pg_temp.ok('L5 expenses: belanja 15.000 as purchase, operasional 50.000, 50.000 paid outside the drawer',
+select pg_temp.ok('L5 expenses: belanja 15.000 as purchase, operasional 50.000, both paid outside the drawer',
   pg_temp.acct('purchase') = 15000 and pg_temp.acct('expense') = 50000);
 select pg_temp.ok('C1 clean data passes every check', pg_temp.checks() = '[]'::jsonb);
 
 -- ===== close the shift: the drawer goes to zero, the variance is booked
 set role authenticated;
-select public.close_shift(current_setting('t.sh')::uuid, 133000);
+select public.close_shift(current_setting('t.sh')::uuid, 148000);
 reset role;
 select pg_temp.ok('C2 closed with 999 short: drawer at zero, variance -999 booked, checks still clean',
   (select coalesce(sum(amount), 0) from public.ledger where shift_id = current_setting('t.sh')::uuid and account = 'cash_drawer') = 0

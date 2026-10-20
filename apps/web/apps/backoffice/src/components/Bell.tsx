@@ -130,9 +130,9 @@ function NotificationText({ n }: { n: Notification }) {
   }
   if (n.kind === 'shift_difference') {
     const d: Vars = { n: String(p.shift ?? ''), outlet, cashier: String(p.cashier ?? ''), cash: money(Number(p.cash ?? 0)), qris: money(Number(p.qris ?? 0)) };
-    return <>{t('Shift {n} di {outlet} ({cashier}) ditutup dengan selisih: kas {cash}, QRIS {qris}. Periksa di Tutup hari.', d)}</>;
+    return <>{t('Shift {n} di {outlet} ({cashier}) ditutup dengan selisih: kas {cash}, QRIS {qris}. Periksa di menu Shift.', d)}</>;
   }
-  if (n.kind === 'checks_failed') return <>{t('Ada angka yang tidak cocok di {outlet}. Periksa di Tutup hari.', { outlet })}</>;
+  if (n.kind === 'checks_failed') return <>{t('Ada angka yang tidak cocok di {outlet}. Periksa di menu Shift.', { outlet })}</>;
   if (n.kind === 'day_not_closed') {
     const d: Vars = { outlet, n: Number(p.days ?? 0), date: p.date ? dateShort(`${String(p.date)}T12:00:00Z`, lang, 'UTC') : '' };
     return <>{t('{n} hari di {outlet} belum ditutup, mulai {date}. Tutup di menu Tutup hari.', d)}</>;

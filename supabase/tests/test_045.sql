@@ -1,4 +1,4 @@
--- Tests for 045 (expense pages, shift history period, notification cleanup) on top of 001 to 045.
+-- Tests for 045 (expense pages, shift history period, notification cleanup) on top of 001 to 077 (expenses recorded by the owner).
 -- Every line of output must start with PASS. Speed is checked by perf_volume.sql, not here.
 \set ON_ERROR_STOP on
 set client_min_messages = notice;
@@ -6,8 +6,8 @@ set client_min_messages = notice;
 create or replace function pg_temp.ok(label text, cond boolean) returns void language plpgsql as $$
 begin raise notice '%', (case when coalesce(cond, false) then 'PASS ' else 'FAIL ' end) || label; end $$;
 create or replace function pg_temp.rec(k text, amount int) returns jsonb language sql as $$
-  select public.record_expense(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid, 'other',
-    jsonb_build_array(jsonb_build_object('name', 'Es', 'category', 'belanja', 'quantity', 1, 'unit', 'pcs', 'amount', amount)), k)
+  select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other',
+    jsonb_build_array(jsonb_build_object('name', 'Es', 'category', 'belanja', 'quantity', 1, 'unit', 'pcs', 'amount', amount)))
 $$;
 
 insert into auth.users(id, email) values ('b4500000-0000-0000-0000-000000000001', 'rara@kedai.id');

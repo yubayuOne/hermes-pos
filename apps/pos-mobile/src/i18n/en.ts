@@ -193,7 +193,6 @@ export const EN: Record<string, string | [string, string]> = {
   'Indonesia atau English, disimpan di perangkat ini': 'Indonesian or English, saved on this device',
   'Isi email atau username, dan kata sandi.': 'Fill in email or username, and password.',
   'Email atau username': 'Email or username',
-  'Isi kode voucher.': 'Enter a voucher code.',
   'Isi nilai diskon lebih dari 0.': 'Enter a discount above 0.',
   'Isi struk (logo, alamat, teks atas dan bawah) diatur pemilik di backoffice, menu Outlet. Printer yang gagal tidak pernah membatalkan pembayaran.':
     'Receipt content (logo, address, top and bottom text) is set by the owner in the backoffice, Outlets menu. A failing printer never cancels the payment.',
@@ -437,13 +436,11 @@ export const EN: Record<string, string | [string, string]> = {
   'Pemilik memperpanjang dari backoffice: Pengaturan, tab Langganan. Kasir hanya bisa melihat.':
     'The owner renews from the backoffice: Settings, Subscription tab. Cashiers can only view.',
   'Pemilik perlu memperpanjang paket di backoffice.': 'The owner needs to renew in the backoffice.',
-  Penjualan: 'Sales',
   'Penjualan baru dikunci.': 'New sales are locked.',
   'Penjualan baru sudah dibuka.': 'New sales are open again.',
   'Penjualan ini tidak akan masuk laporan. Hapus hanya kalau sudah dicatat ulang atau memang batal.':
     'This sale will not reach the reports. Delete it only if it was recorded again or really cancelled.',
   'Penjualan per jam': 'Sales per hour',
-  'Penjualan · shift {n}': 'Sales · shift {n}',
   Perangkat: 'Device',
   'Perangkat ini tetap masuk sampai Anda memilih Keluar akun. Setelah itu kasir memilih nama dan memasukkan PIN.':
     'This device stays signed in until you choose Sign out. Next, the cashier picks a name and enters a PIN.',
@@ -731,48 +728,8 @@ export const EN: Record<string, string | [string, string]> = {
   'Trial berakhir {n} hari lagi': 'Trial ends in {n} days',
   'Paket {plan} berlaku sampai {date}. Pemilik memperpanjang di backoffice.': 'The {plan} plan runs until {date}. The owner renews it in the backoffice.',
   'Tutup pengingat': 'Close reminder',
-  // Expenses (migration 040)
-  'Catat pengeluaran': 'Record expense',
-  'Belanja bahan atau biaya operasional outlet.': 'Supplies bought or operating costs of the outlet.',
-  'Barang {n}': 'Item {n}',
-  'Hapus barang {n}': 'Remove item {n}',
-  'Nama barang atau biaya': 'Item or cost name',
-  'Gula pasir, galon, listrik': 'Sugar, water gallon, electricity',
-  Belanja: 'Supplies',
-  Operasional: 'Operating',
-  Satuan: 'Unit',
-  'Harga total': 'Total price',
-  'Total untuk {qty} {unit}, bukan harga per satuan.': 'Total for {qty} {unit}, not the price per unit.',
-  'Tambah barang': 'Add item',
-  'Uang dari': 'Paid from',
-  'Kas laci': 'Cash drawer',
-  'Bukan dari laci': 'Not from the drawer',
-  'Mengurangi kas seharusnya di shift ini sekarang juga.': 'Lowers the expected cash of this shift right away.',
-  'Misalnya dibayar pemilik atau transfer. Kas laci tidak berubah.': 'For example paid by the owner or by transfer. The drawer does not change.',
-  'Total pengeluaran': 'Total expense',
-  'Langsung masuk laporan shift ini tanpa persetujuan. Pemilik bisa mengubahnya di backoffice. Tanpa internet, disimpan dulu di perangkat.':
-    "Goes into this shift's report at once, no approval needed. The owner can edit it in the backoffice. Without internet it is kept on the device first.",
-  'Menyimpan...': 'Saving...',
-  'Catat {amount}': 'Record {amount}',
-  'Pengeluaran tercatat': 'Expense recorded',
-  '{amount} keluar dari kas laci dan masuk laporan shift.': "{amount} left the cash drawer and is in the shift's report.",
-  '{amount} dicatat di laporan shift, bukan dari kas laci.': "{amount} is in the shift's report, not from the drawer.",
-  'Pengeluaran disimpan di perangkat': 'Expense saved on the device',
-  '{amount} terkirim otomatis saat internet kembali.': '{amount} is sent automatically when the internet is back.',
-  'Pengeluaran belum tersimpan. Coba lagi.': 'The expense was not saved. Try again.',
-  'Pengeluaran shift ini': 'Expenses this shift',
-  'Belum ada pengeluaran di shift ini.': 'No expenses in this shift yet.',
-  'Yang belum terkirim masuk laporan dan kas setelah internet kembali.': 'Items not sent yet join the report and the cash when the internet is back.',
   'belum terkirim': 'not sent yet',
-  'ditolak server': 'refused by server',
-  'kas laci': 'cash drawer',
-  'bukan dari laci': 'not from drawer',
-  'bukan laci': 'not drawer',
   'Alasan: {reason}': 'Reason: {reason}',
-  // Offline queue: expense entries (migration 043)
-  Pengeluaran: 'Expense',
-  'Pengeluaran ini tidak akan masuk laporan. Hapus hanya kalau sudah dicatat ulang atau memang batal.':
-    'This expense will not be in the report. Delete it only if it was recorded again or really cancelled.',
   'Ditolak server: {reason} Entri tidak dihapus otomatis. Tinjau bersama pemilik.':
     'Refused by the server: {reason} The entry is not deleted automatically. Review it with the owner.',
   // Refund quick reasons
@@ -800,11 +757,7 @@ export const EN: Record<string, string | [string, string]> = {
   'Void {n} bill, {amount}': 'Void {n} bill(s), {amount}',
   'REFUND ({n})': 'REFUNDS ({n})',
   REFUND: 'REFUNDS',
-  PENGELUARAN: 'EXPENSES',
   'Tidak ada refund.': 'No refunds.',
-  'Tidak ada pengeluaran.': 'No expenses.',
-  'Dihitung server dari buku kas, termasuk refund tunai dan pengeluaran dari laci.':
-    'Computed by the server from the cash book, including cash refunds and drawer expenses.',
   'Kirim ke WA': 'Send to WhatsApp',
   'WhatsApp belum terpasang': 'WhatsApp is not installed',
   'Laporan tidak bisa dibuka di WhatsApp di perangkat ini. Pasang WhatsApp, atau bagikan lewat aplikasi lain.':
@@ -813,13 +766,8 @@ export const EN: Record<string, string | [string, string]> = {
   Jam: 'Hours',
   Kas: 'Cash',
   'Ringkasan penjualan': 'Sales summary',
-  'Kas keluar (refund, pengeluaran)': 'Cash out (refunds, expenses)',
-  // checkLines() messages, translated as t(error) in ExpenseSheet, so the checker reports them as unused.
-  'Tulis nama barang atau biaya.': 'Write the item or cost name.',
-  'Nama barang maksimal 60 huruf.': 'The item name can be at most 60 characters.',
-  'Jumlah lebih dari 0, maksimal 3 angka di belakang koma.': 'Quantity above 0, at most 3 decimals.',
-  'Pilih satuan.': 'Choose a unit.',
-  'Harga total lebih dari Rp0, tanpa koma.': 'Total price above Rp0, whole rupiah.',
+  'Kas keluar (refund)': 'Cash out (refunds)',
+  'Dihitung server dari buku kas, termasuk refund tunai.': 'Computed by the server from the cash book, including cash refunds.',
   // Sign-out confirmation (utils/logout.ts)
   'Keluar dari akun pemilik?': 'Sign out of the owner account?',
   'Setelah keluar, kasir tidak bisa masuk sampai pemilik mengetik email dan kata sandinya lagi di perangkat ini.':

@@ -287,11 +287,10 @@ function CancelDialog({ expense: e, item: i, onClose }: { expense: Expense; item
 type Draft = { name: string; category: ExpenseItem['category']; quantity: string; unit: string; amount: string };
 const blank = (): Draft => ({ name: '', category: 'belanja', quantity: '1', unit: 'pcs', amount: '' });
 
-/** New items for this shift, all paid the same way. The database recomputes the total and the shift's cash. */
+/** New items for this shift. Expenses never come out of the drawer (077); the database recomputes the total. */
 function AddDialog({ expense: e, onClose }: { expense: Expense; onClose: () => void }) {
   const { t } = useI18n();
   const act = useAction();
-  const [paidFrom, setPaidFrom] = useState<ExpenseItem['paidFrom']>('other');
   const [rows, setRows] = useState<Draft[]>([blank()]);
   const [errors, setErrors] = useState<string[]>([]);
   const set = (k: number, patch: Partial<Draft>) => {
@@ -306,7 +305,7 @@ function AddDialog({ expense: e, onClose }: { expense: Expense; onClose: () => v
     setErrors(errs);
     if (errs.some(Boolean)) return;
     const items = checks.map((c) => (c.success ? c.data : null)).filter((x) => x !== null);
-    const res = await act.run(() => addExpenseItems({ data: { shiftId: e.shiftId, paidFrom, items } }), {
+    const res = await act.run(() => addExpenseItems({ data: { shiftId: e.shiftId, items } }), {
       success: t('Pengeluaran shift {n} ditambah.', { n: e.shiftNumber }),
     });
     if (res) onClose();
@@ -317,11 +316,7 @@ function AddDialog({ expense: e, onClose }: { expense: Expense; onClose: () => v
       wide
       onOpenChange={(o) => !o && onClose()}
       title={t('Tambah barang ke shift {n}', { n: e.shiftNumber })}
-      description={
-        e.shiftOpen
-          ? t('Shift masih buka. Kas seharusnya di aplikasi kasir ikut berubah kalau dibayar dari laci.')
-          : t('Shift sudah ditutup. Kalau dibayar dari laci, kas seharusnya dan selisih shift dihitung ulang.')
-      }
+      description={t('Pengeluaran dicatat di laporan shift ini dan tidak mengubah kas laci.')}
       footer={
         <>
           <Button onClick={onClose} disabled={act.busy}>
@@ -334,12 +329,6 @@ function AddDialog({ expense: e, onClose }: { expense: Expense; onClose: () => v
       }
     >
       <div className="grid gap-4">
-        <Field label={t('Uang dari')}>
-          <Select value={paidFrom} onChange={(ev) => setPaidFrom(ev.target.value === 'drawer' ? 'drawer' : 'other')}>
-            <option value="other">{t('Bukan dari laci')}</option>
-            <option value="drawer">{t('Kas laci')}</option>
-          </Select>
-        </Field>
         {rows.map((r, k) => (
           <fieldset key={k} className="grid grid-cols-2 gap-3 rounded border-[1.5px] border-ink bg-slip p-4 sm:grid-cols-6">
             <legend className="sr-only">{t('Barang {n}', { n: k + 1 })}</legend>
