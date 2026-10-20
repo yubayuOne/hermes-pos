@@ -44,9 +44,9 @@ select pg_temp.fails('A1 the owner cannot take an expense from the drawer', form
   current_setting('t.sh'), 'drawer', pg_temp.items(5000)), 'tidak diambil dari kas laci');
 select pg_temp.ok('A2 refused: the drawer is still the opening cash', pg_temp.cash() = 100000);
 
-select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', pg_temp.items(50000));
+select set_config('t.ex', public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', pg_temp.items(50000))::text, false);
 select pg_temp.ok('A3 an owner expense is recorded and the expected cash stays 100.000',
-  (select total from public.expenses where shift_id = current_setting('t.sh')::uuid) = 50000 and pg_temp.cash() = 100000);
+  (current_setting('t.ex')::jsonb ->> 'total')::numeric = 50000 and pg_temp.cash() = 100000);
 
 select public.close_shift(current_setting('t.sh')::uuid, 100000);
 select pg_temp.ok('C1 closed with the opening cash counted: expected 100.000, variance 0',
@@ -63,9 +63,11 @@ insert into public.expense_items(expense_id, position, name, category, quantity,
 select id, 0, 'Gula', 'belanja', 1, 'kg', 30000, 'drawer' from public.expenses where shift_id = current_setting('t.sh')::uuid;
 select public._073_sync_expense((select id from public.expenses where shift_id = current_setting('t.sh')::uuid));
 select pg_temp.ok('L1 old drawer expense: expected cash 70.000', pg_temp.cash() = 70000);
+select set_config('t.item', (select i.id::text from public.expense_items i join public.expenses e on e.id = i.expense_id
+  where e.shift_id = current_setting('t.sh')::uuid and i.name = 'Gula'), false);
 set role authenticated;
-select public.owner_cancel_expense_item((select id from public.expense_items i where i.name = 'Gula' and i.expense_id =
-  (select id from public.expenses where shift_id = current_setting('t.sh')::uuid)), 'Salah catat');
+select public.owner_cancel_expense_item(current_setting('t.item')::uuid, 'Salah catat');
 select pg_temp.ok('L2 cancelling it puts the 30.000 back: expected cash 100.000', pg_temp.cash() = 100000);
+reset role;
 select pg_temp.ok('L3 ledger checks stay clean',
   public.ledger_checks(current_setting('t.b')::uuid, current_setting('t.o')::uuid, now() - interval '1 day', now() + interval '1 day') = '[]'::jsonb);
