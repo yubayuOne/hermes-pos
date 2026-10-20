@@ -148,6 +148,29 @@ function ensureLoaded() {
   return loaded;
 }
 
+/** Unsent expenses left by an app version before 077, set aside by the loader: what the owner must record again. */
+export async function oldExpenses(): Promise<{ count: number; total: number; names: string[] } | null> {
+  const raw = await AsyncStorage.getItem(`${QUEUE_KEY}:expense`).catch(() => null);
+  const list: any[] = (() => {
+    try {
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  })();
+  if (!Array.isArray(list) || list.length === 0) return null;
+  return {
+    count: list.length,
+    total: list.reduce((n, e) => n + (Number(e.total) || 0), 0),
+    names: list.flatMap((e) => (Array.isArray(e.expense?.items) ? e.expense.items.map((i: any) => String(i.name)) : [])),
+  };
+}
+
+/** The owner has recorded them again in the backoffice. */
+export async function forgetOldExpenses() {
+  await AsyncStorage.removeItem(`${QUEUE_KEY}:expense`);
+}
+
 /** Loads the queue from storage (safe to call repeatedly). */
 export async function loadQueue(): Promise<QueuedCheckout[]> {
   await ensureLoaded();

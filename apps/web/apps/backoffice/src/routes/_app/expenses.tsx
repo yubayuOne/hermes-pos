@@ -303,18 +303,26 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
   const [outlet, setOutlet] = useState<string | null>(outletId ?? app.outlets[0]?.id ?? null);
   const [date, setDate] = useState(today ?? '');
   const [shifts, setShifts] = useState<DayShift[] | null>(null);
+  // The day the shifts come from: the chosen date, or the nearest earlier day with a shift (a purchase on a closed day).
+  const [shiftDay, setShiftDay] = useState('');
   const [shiftId, setShiftId] = useState('');
   useEffect(() => {
     if (shift || !outlet || !date) return;
     let live = true;
     setShifts(null);
-    getDay({ data: { outletId: outlet, date } })
-      .then((d) => {
+    (async () => {
+      for (let back = 0; back <= 7; back++) {
+        const day = new Date(Date.parse(`${date}T00:00:00Z`) - back * 86_400_000).toISOString().slice(0, 10);
+        const d = await getDay({ data: { outletId: outlet, date: day } });
         if (!live) return;
-        setShifts(d.shifts);
-        setShiftId(d.shifts[d.shifts.length - 1]?.id ?? '');
-      })
-      .catch(() => live && setShifts([]));
+        if (d.shifts.length || back === 7) {
+          setShiftDay(day);
+          setShifts(d.shifts);
+          setShiftId(d.shifts[d.shifts.length - 1]?.id ?? '');
+          return;
+        }
+      }
+    })().catch(() => live && setShifts([]));
     return () => {
       live = false;
     };
@@ -377,7 +385,12 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
             </Field>
             {shifts?.length === 0 && (
               <p role="status" className="col-span-full text-[14px] text-mute">
-                {t('Tidak ada shift pada {date}. Pilih tanggal shift terdekat.', { date: dateLong(`${date}T12:00:00Z`, lang, 'UTC') })}
+                {t('Tidak ada shift dalam 7 hari sampai {date}.', { date: dateLong(`${date}T12:00:00Z`, lang, 'UTC') })}
+              </p>
+            )}
+            {!!shifts?.length && shiftDay !== date && (
+              <p role="status" className="col-span-full text-[14px] text-mute">
+                {t('Tidak ada shift pada tanggal ini. Dicatat di shift {date}.', { date: dateLong(`${shiftDay}T12:00:00Z`, lang, 'UTC') })}
               </p>
             )}
           </div>

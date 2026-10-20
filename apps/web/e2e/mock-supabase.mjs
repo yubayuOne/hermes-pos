@@ -247,6 +247,34 @@ let expenses = [
   ),
   exp('e3', 1, false, [{ id: 'i4', name: 'Susu UHT', category: 'belanja', quantity: 1.5, unit: 'L', amount: 45000, paidFrom: 'drawer' }], 30),
 ];
+// Today's shifts for the Shift page and the expense form's shift picker (owner_day_close, 073 to 078).
+const dayShift = (id, shiftNumber, open, hoursAgo, opening, cashSales, counted) => ({
+  id,
+  shiftNumber,
+  open,
+  openedAt: new Date(Date.now() - hoursAgo * 3_600_000).toISOString(),
+  closedAt: open ? null : new Date(Date.now() - (hoursAgo - 7) * 3_600_000).toISOString(),
+  cashierName: 'Sari',
+  bills: 14,
+  netSales: cashSales + 120000,
+  opening,
+  cashSales,
+  cashRefunds: 0,
+  drawerExpenses: 0,
+  cashIn: 0,
+  cashOut: 0,
+  expected: opening + cashSales,
+  counted,
+  variance: counted === null ? null : counted - (opening + cashSales),
+  qrisSales: 120000,
+  qrisRefunds: 0,
+  qrisExpected: 120000,
+  qrisReported: open ? null : 120000,
+  qrisVariance: open ? null : 0,
+  movements: [],
+  oldCorrections: [],
+});
+let dayShifts = [dayShift('s-e3', 1, false, 9, 300000, 850000, 1145000), dayShift('s-e1', 2, true, 2, 300000, 410000, null)];
 let profile = { username: 'kopipojok', full_name: 'Rina Sari', whatsapp: '0812 3456 7890' };
 
 function subscription() {
@@ -590,6 +618,39 @@ const RPC = {
       productTotals: { qty: 970, sales: 26_540_000, hpp: 9_127_500 },
       productCount: 2,
     };
+  },
+  owner_day_close: (a) => ({
+    date: a.p_date,
+    closed: null,
+    log: [],
+    trail: [],
+    checks: [],
+    shifts: scenario.data === 'empty' || a.p_date !== today() ? [] : dayShifts,
+  }),
+  owner_add_cash_movement: (a) => {
+    const s = dayShifts.find((x) => x.id === a.p_shift_id);
+    if (!s) return fail('Shift tidak ditemukan');
+    if (expired()) return fail('Langganan berakhir. Perpanjang paket untuk mencatat uang laci.');
+    const m = { id: crypto.randomUUID(), direction: a.p_direction, amount: a.p_amount, reason: a.p_reason, createdAt: new Date().toISOString() };
+    s.movements.push(m);
+    if (a.p_direction === 'in') s.cashIn += a.p_amount;
+    else s.cashOut += a.p_amount;
+    s.expected = s.opening + s.cashSales - s.cashRefunds + s.cashIn - s.cashOut;
+    if (s.counted !== null) s.variance = s.counted - s.expected;
+    return m;
+  },
+  owner_add_expense_items: (a) => {
+    if (expired()) return fail('Langganan berakhir. Perpanjang paket untuk mencatat pengeluaran.');
+    if (a.p_paid_from !== 'other') return fail('Pengeluaran tidak diambil dari kas laci.');
+    const s = dayShifts.find((x) => x.id === a.p_shift_id);
+    let e = expenses.find((x) => x.shiftId === a.p_shift_id);
+    if (!e) {
+      e = { ...exp(crypto.randomUUID(), s?.shiftNumber ?? 1, s?.open ?? false, [], 0), shiftId: a.p_shift_id };
+      expenses.unshift(e);
+    }
+    e.items.push(...a.p_items.map((i) => ({ id: crypto.randomUUID(), ...i, paidFrom: 'other' })));
+    e.total = e.items.reduce((n, i) => n + i.amount, 0);
+    return e;
   },
   owner_update_expense: (a) => {
     const e = expenses.find((x) => x.id === a.p_expense_id);

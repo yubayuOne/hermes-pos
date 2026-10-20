@@ -1,9 +1,9 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 import { useNotify } from '../../hooks/NotifyProvider';
-import { getQueueSnapshot, isSyncing, loadQueue, subscribeQueue, syncCheckoutQueue, QueuedCheckout } from './offlineQueue';
+import { forgetOldExpenses, getQueueSnapshot, isSyncing, loadQueue, oldExpenses, subscribeQueue, syncCheckoutQueue, QueuedCheckout } from './offlineQueue';
 import { isOnline, subscribeNetwork } from '../network/network';
-import { t } from '../../i18n';
+import { money, t } from '../../i18n';
 
 const SYNC_INTERVAL_MS = 30000;
 
@@ -51,8 +51,22 @@ export function useCheckoutQueueSync(who: { outletId: string } | null) {
     };
 
     void loadQueue().then(
-      () => {
+      async () => {
         if (live && getQueueSnapshot().length) void run();
+        // Asked on every start until the owner confirms, so the money is never forgotten.
+        const old = await oldExpenses();
+        if (!live || !old) return;
+        const ok = await notifyRef.current.confirm({
+          title: t('Pengeluaran lama belum terkirim'),
+          message: t('{n} pengeluaran, total {amount}: {names}. Catat ulang di backoffice.', {
+            n: old.count,
+            amount: money(old.total),
+            names: old.names.join(', '),
+          }),
+          confirmLabel: t('Sudah dicatat'),
+          cancelLabel: t('Nanti'),
+        });
+        if (ok) await forgetOldExpenses().catch(() => undefined);
       },
       () => undefined,
     );

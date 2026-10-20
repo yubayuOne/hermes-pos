@@ -135,7 +135,7 @@ function NotificationText({ n }: { n: Notification }) {
   if (n.kind === 'checks_failed') return <>{t('Ada angka yang tidak cocok di {outlet}. Periksa di menu Shift.', { outlet })}</>;
   if (n.kind === 'day_not_closed') {
     const d: Vars = { outlet, n: Number(p.days ?? 0), date: p.date ? dateShort(`${String(p.date)}T12:00:00Z`, lang, 'UTC') : '' };
-    return <>{t('{n} hari di {outlet} belum ditutup, mulai {date}. Tutup di menu Tutup hari.', d)}</>;
+    return <>{t('{n} hari di {outlet} belum ditutup, mulai {date}.', d)}</>;
   }
   if (n.kind === 'shift_open_long') {
     return <>{t('Shift {n} di {outlet} ({cashier}) sudah buka lebih dari 16 jam.', { n: String(p.shift ?? ''), outlet, cashier: String(p.cashier ?? '') })}</>;

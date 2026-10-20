@@ -23,6 +23,9 @@ const AsyncStorage = {
     if (failSet) throw new Error('disk full');
     store.set(k, v);
   },
+  removeItem: async (k) => {
+    store.delete(k);
+  },
 };
 let behave = () => ({ ok: true });
 const calls = [];
@@ -287,13 +290,18 @@ const reset = () => {
   ok(Q.getQueueSnapshot().length === 0 && store.get(Q.QUEUE_KEY + ':corrupt') === '{corrupt', 'corrupt JSON: raw copy saved');
   // 16 an expense entry left on the device by an older version is kept aside and never sent (077)
   reset();
-  const leftover = { id: 'x', kind: 'expense', idempotencyKey: 'expense:1', shiftId: 's1', status: 'waiting' };
+  const leftover = { id: 'x', kind: 'expense', idempotencyKey: 'expense:1', shiftId: 's1', status: 'waiting', total: 15000,
+    expense: { paidFrom: 'drawer', items: [{ name: 'Es batu', amount: 15000 }] } };
   store.set(Q.QUEUE_KEY, JSON.stringify([leftover]));
   await Q.loadQueue();
   ok(
     Q.getQueueSnapshot().length === 0 && !Q.hasQueuedForShift('s1') && JSON.parse(store.get(Q.QUEUE_KEY + ':expense'))[0].id === 'x',
     'old expense entry: off the queue, copy kept, closing the shift not blocked',
   );
+  const old = await Q.oldExpenses();
+  ok(old && old.count === 1 && old.total === 15000 && old.names[0] === 'Es batu', 'old expense: count, total, and names for the owner');
+  await Q.forgetOldExpenses();
+  ok((await Q.oldExpenses()) === null, 'old expense: forgotten once the owner confirms');
   // 17 recalled held bill offline: its changes, then its payment, in order, against the same bill
   reset();
   checkoutArgs.length = 0;

@@ -986,7 +986,7 @@ export const EN: Dict = {
   'Void {amount} pada {number} oleh {cashier}. Alasan: {reason}': 'Void {amount} on {number} by {cashier}. Reason: {reason}',
   'Shift {n} di {outlet} ({cashier}) selisih: kas {cash}, QRIS {qris}.': 'Shift {n} at {outlet} ({cashier}) is off: cash {cash}, QRIS {qris}.',
   'Ada angka yang tidak cocok di {outlet}. Periksa di menu Shift.': 'Some figures do not match at {outlet}. Check them on Shifts.',
-  '{n} hari di {outlet} belum ditutup, mulai {date}. Tutup di menu Tutup hari.': '{n} day(s) at {outlet} not closed yet, from {date}. Close them on Day close.',
+  '{n} hari di {outlet} belum ditutup, mulai {date}.': '{n} day(s) at {outlet} not closed yet, from {date}.',
   'Shift {n} di {outlet} ({cashier}) sudah buka lebih dari 16 jam.': 'Shift {n} at {outlet} ({cashier}) has been open for more than 16 hours.',
   'Stok {name} ({stock}) tidak sama dengan riwayat stoknya ({book}).': 'Stock of {name} ({stock}) does not match its stock history ({book}).',
   terkunci: 'locked',
@@ -1020,7 +1020,8 @@ export const EN: Dict = {
   'Pengeluaran dicatat di laporan shift dan tidak mengubah kas laci.': "Expenses go into the shift's report and do not change the cash drawer.",
   'Memuat...': 'Loading...',
   'Tidak ada shift': 'No shift',
-  'Tidak ada shift pada {date}. Pilih tanggal shift terdekat.': 'No shift on {date}. Pick the nearest date with a shift.',
+  'Tidak ada shift dalam 7 hari sampai {date}.': 'No shift in the 7 days up to {date}.',
+  'Tidak ada shift pada tanggal ini. Dicatat di shift {date}.': 'No shift on this date. Recorded on the shift of {date}.',
   'Shift masih buka. Kas seharusnya di aplikasi kasir ikut berubah kalau dibayar dari laci.':
     'The shift is still open. If paid from the drawer, the expected cash in the cashier app changes too.',
   'Shift sudah ditutup. Kalau dibayar dari laci, kas seharusnya dan selisih shift dihitung ulang.':

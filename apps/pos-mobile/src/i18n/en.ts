@@ -140,6 +140,10 @@ export const EN: Record<string, string | [string, string]> = {
   'Diskon tidak boleh membuat total menjadi nol.': 'A discount cannot bring the total to zero.',
   'Diskon {label} · -{amount}': 'Discount {label} · -{amount}',
   Ditahan: 'Held',
+  // Expenses left unsent by a version before 1.1.0 (useCheckoutQueue)
+  'Pengeluaran lama belum terkirim': 'Old expenses not sent',
+  '{n} pengeluaran, total {amount}: {names}. Catat ulang di backoffice.': '{n} expense(s), total {amount}: {names}. Record them again in the backoffice.',
+  'Sudah dicatat': 'Recorded',
   'Ditolak server: {reason} Tinjau bersama pemilik.': 'Refused by the server: {reason} Review it with the owner.',
   'Ditolak {n}': 'Rejected {n}',
   'Email/username atau kata sandi salah.': 'Wrong email/username or password.',
