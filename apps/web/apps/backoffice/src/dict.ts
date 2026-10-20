@@ -1021,17 +1021,6 @@ export const EN: Dict = {
   'Shift {n} di {outlet} ({cashier}) sudah buka lebih dari 16 jam.': 'Shift {n} at {outlet} ({cashier}) has been open for more than 16 hours.',
   'Stok {name} ({stock}) tidak sama dengan riwayat stoknya ({book}).': 'Stock of {name} ({stock}) does not match its stock history ({book}).',
   terkunci: 'locked',
-  'Bill, kas, dan pengeluaran hari itu tidak bisa diubah lagi. Koreksi yang ketahuan kemudian dicatat di hari yang masih buka, misalnya lewat refund.':
-    "That day's bills, cash, and expenses can no longer change. Corrections found later are recorded on a day that is still open, for example as a refund.",
-  'Nominal tidak boleh minus.': 'The amount cannot be negative.',
-  'Hari itu sudah ditutup dan dikunci. Buka kuncinya dulu di Tutup hari, atau catat koreksinya di hari yang masih buka.':
-    'That day is closed and locked. Unlock it first on Day close, or record the correction on a day that is still open.',
-  'Masih ada shift yang belum ditutup kasir. Tutup semua shift dulu.': 'A shift is still open. Close every shift first.',
-  'Masih ada angka yang tidak cocok. Hari ini belum bisa ditutup; lihat pemeriksaan di halaman ini.':
-    'Some figures do not match. The day cannot close yet; see the checks on this page.',
-  'Hari itu sudah ditutup': 'That day is already closed',
-  'Hari itu belum ditutup': 'That day is not closed',
-  'QRIS masuk rekening tidak valid': 'Invalid bank QRIS amount',
   'Termasuk koreksi pengeluaran lama: {amount}': 'Includes old expense corrections: {amount}',
   'Tambah barang': 'Add item',
   Aksi: 'Actions',
@@ -1053,10 +1042,6 @@ export const EN: Dict = {
   'Tidak ada shift': 'No shift',
   'Tidak ada shift dalam 7 hari sampai {date}.': 'No shift in the 7 days up to {date}.',
   'Tidak ada shift pada tanggal ini. Dicatat di shift {date}.': 'No shift on this date. Recorded on the shift of {date}.',
-  'Shift masih buka. Kas seharusnya di aplikasi kasir ikut berubah kalau dibayar dari laci.':
-    'The shift is still open. If paid from the drawer, the expected cash in the cashier app changes too.',
-  'Shift sudah ditutup. Kalau dibayar dari laci, kas seharusnya dan selisih shift dihitung ulang.':
-    "The shift is closed. If paid from the drawer, the shift's expected cash and variance are recomputed.",
   'Simpan barang': 'Save items',
   'Barang {n}': 'Item {n}',
   Hapus: 'Remove',
@@ -1085,7 +1070,6 @@ export const EN: Dict = {
   'Pilih uang masuk atau uang keluar': 'Choose cash in or cash out',
   'Nominal harus angka bulat lebih dari 0, maksimal Rp1.000.000.000': 'The amount must be a whole number above 0, at most Rp1,000,000,000',
   'Barang tidak ditemukan atau sudah dibatalkan': 'Item not found or already cancelled',
-  'Pilih sumber uang: kas laci atau bukan dari laci.': 'Choose where the money came from: the drawer or elsewhere.',
   'Maksimal 30 barang dalam satu catatan.': 'At most 30 items in one record.',
   'Pengeluaran shift ini sudah mencapai 200 barang.': 'This shift already has 200 expense items.',
   // Form messages (lib/schemas.ts)
@@ -1107,7 +1091,6 @@ export const EN: Dict = {
   'Nomor meja maksimal 6 karakter.': 'The table number can be at most 6 characters.',
   'Pilih kategori.': 'Choose a category.',
   'Pilih satuan.': 'Choose a unit.',
-  'Pilih sumber uang.': 'Choose where the money came from.',
   // Stock (migration 074)
   'Stok|menu': 'Stock',
   'Bagian stok': 'Stock sections',

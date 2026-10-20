@@ -118,7 +118,4 @@ export const printerService = {
   async testPrint(printer: PrinterDevice) {
     return printToPrinters([printer], (adapter, device) => adapter.testPrint(device));
   },
-  getAdapter() {
-    return null;
-  },
 };
