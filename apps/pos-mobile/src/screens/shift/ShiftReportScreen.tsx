@@ -10,19 +10,18 @@ import { useNotify } from '../../hooks/NotifyProvider';
 import { SalesReport } from '../../services/report/report';
 import { readShift, ShiftData, syncShift } from '../../services/local/shiftData';
 import { printerService } from '../../services/printer/service';
-import { Expense, Refund, ShiftRecord } from '../../types/domain';
+import { Refund, ShiftRecord } from '../../types/domain';
 import { reportPrintResult } from '../../utils/printFeedback';
 import { reportText, ShiftReportData, waText } from '../../utils/shiftReport';
 import { colors } from '../../theme';
 import { fmtBusinessDate, fmtTime, money, num, t, useT } from '../../i18n';
 
-type Bundle = { report: SalesReport; refunds: Refund[]; expense: Expense | null };
+type Bundle = { report: SalesReport; refunds: Refund[] };
 
-/** Shows `ShiftReportData` on screen: sales, payment methods, refunds with reasons, expenses, and cash. */
+/** Shows `ShiftReportData` on screen: sales, payment methods, refunds with reasons, and cash. */
 export function ShiftReportBody({ d }: { d: ShiftReportData }) {
   useT();
   const r = d.report;
-  const items = d.expense?.items ?? [];
   return (
     <>
       <Card>
@@ -104,26 +103,6 @@ export function ShiftReportBody({ d }: { d: ShiftReportData }) {
         )}
       </Slip>
 
-      <Slip torn={false}>
-        <SlipRow strong left={t('PENGELUARAN')} right={items.length ? money(d.expense?.total ?? 0) : ''} />
-        <SlipRule />
-        {items.length ? (
-          items.map((i, k) => (
-            <View key={k}>
-              <SlipRow left={i.name} right={num(i.amount)} />
-              <SlipRow
-                sub
-                left={`   ${String(i.quantity).replace('.', ',')} ${i.unit} · ${i.category === 'operasional' ? t('Operasional') : t('Belanja')} · ${
-                  i.paidFrom === 'drawer' ? t('kas laci') : t('bukan dari laci')
-                }`}
-              />
-            </View>
-          ))
-        ) : (
-          <SlipRow sub left={t('Tidak ada pengeluaran.')} />
-        )}
-      </Slip>
-
       <Slip>
         <SlipRow strong left={t('KAS LACI')} right="" />
         <SlipRule />
@@ -135,7 +114,7 @@ export function ShiftReportBody({ d }: { d: ShiftReportData }) {
             <SlipRow strong left={t('Selisih')} right={money(r.variance ?? 0)} tone={(r.variance ?? 0) === 0 ? undefined : 'error'} />
           </>
         ) : null}
-        <SlipRow sub left={t('Dihitung server dari buku kas, termasuk refund tunai dan pengeluaran dari laci.')} />
+        <SlipRow sub left={t('Dihitung server dari buku kas, termasuk refund tunai.')} />
       </Slip>
     </>
   );
@@ -158,7 +137,7 @@ export function ShiftReportScreen({ shift, onBack, onQueue, onBell }: { shift: S
     if (!session) return;
     const id = ++req.current;
     setError(false);
-    const show = (s: ShiftData) => setData({ report: s.report, refunds: s.refunds, expense: s.expenses[0] ?? null });
+    const show = (s: ShiftData) => setData({ report: s.report, refunds: s.refunds });
     const local = await readShift(shift.id).catch(() => null);
     if (id !== req.current) return;
     if (local) show(local);

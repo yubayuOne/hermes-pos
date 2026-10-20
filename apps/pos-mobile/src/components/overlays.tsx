@@ -13,7 +13,7 @@ import { colors } from '../theme';
 import { fmtDate, fmtDateTime, fmtTime, money, t, useT } from '../i18n';
 
 const itemsLine = (e: QueuedCheckout) => {
-  const names = e.expense ? e.expense.items.map((i) => i.name) : e.items.map((i) => `${i.quantity}× ${i.name}`);
+  const names = e.items.map((i) => `${i.quantity}× ${i.name}`);
   return names.slice(0, 3).join(', ') + (names.length > 3 ? ` +${names.length - 3}` : '');
 };
 
@@ -41,15 +41,13 @@ const entryTitle = (e: QueuedCheckout) =>
     ? t('Bill ditahan')
     : e.kind === 'update'
       ? t('Perubahan bill ditahan')
-      : e.kind === 'expense'
-        ? t('Pengeluaran')
-        : e.kind === 'open_shift'
-          ? t('Buka shift')
-          : e.kind === 'close_shift'
-            ? t('Tutup shift')
-            : e.kind === 'temp_product'
-              ? t('Menu sementara')
-              : entryNumber(e);
+      : e.kind === 'open_shift'
+        ? t('Buka shift')
+        : e.kind === 'close_shift'
+          ? t('Tutup shift')
+          : e.kind === 'temp_product'
+            ? t('Menu sementara')
+            : entryNumber(e);
 
 const entryDetail = (e: QueuedCheckout) => {
   if (e.shiftOpen) return t('Kas awal {amount}.', { amount: money(e.shiftOpen.openingCash) });
@@ -59,15 +57,11 @@ const entryDetail = (e: QueuedCheckout) => {
     money(e.total),
     itemsLine(e),
     e.customer.table ? t('Meja {n}', { n: e.customer.table }) : null,
-    e.expense
-      ? e.expense.paidFrom === 'drawer'
-        ? t('kas laci')
-        : t('bukan dari laci')
-      : e.kind === 'hold' || e.kind === 'update'
-        ? null
-        : e.payment.method === 'qris'
-          ? t('QRIS')
-          : t('tunai'),
+    e.kind === 'hold' || e.kind === 'update'
+      ? null
+      : e.payment.method === 'qris'
+        ? t('QRIS')
+        : t('tunai'),
   ]
     .filter(Boolean)
     .join(' · ');
@@ -89,11 +83,9 @@ export function QueueSheet({ visible, onClose }: { visible: boolean; onClose: ()
       hint:
         e.kind === 'open_shift'
           ? t('Penjualan di shift ini akan ditolak server kalau pembukaannya dihapus. Hapus hanya kalau memang batal.')
-          : e.kind === 'expense'
-            ? t('Pengeluaran ini tidak akan masuk laporan. Hapus hanya kalau sudah dicatat ulang atau memang batal.')
-            : (e.kind ?? 'checkout') === 'checkout'
-              ? t('Penjualan ini tidak akan masuk laporan. Hapus hanya kalau sudah dicatat ulang atau memang batal.')
-              : t('Entri ini tidak akan sampai ke server. Hapus hanya kalau memang batal.'),
+          : (e.kind ?? 'checkout') === 'checkout'
+            ? t('Penjualan ini tidak akan masuk laporan. Hapus hanya kalau sudah dicatat ulang atau memang batal.')
+            : t('Entri ini tidak akan sampai ke server. Hapus hanya kalau memang batal.'),
       confirmLabel: t('Hapus entri'),
       destructive: true,
     });

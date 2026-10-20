@@ -11,6 +11,8 @@ pendekatan "balancing ± angka" (migrasi 071) dengan sistem yang setiap angkanya
 - Dokumen stok: stok awal, stok masuk, penyesuaian, hitung stok; form produk tidak menimpa stok (074).
 - QRIS dicocokkan saat tutup shift (POS) dan saat tutup hari (mutasi bank); tutup dan kunci hari, buka kunci dengan
   alasan; laba rugi memuat penyesuaian stok, selisih kas, dan selisih QRIS; jejak koreksi per hari di Tutup hari (075).
+- Tutup hari dan kunci hari dihapus (078): pemilik memperbaiki selisih shift dengan Uang masuk / Uang keluar kapan saja;
+  hari yang ditutup sebelumnya tetap sebagai riwayat; pengingat "hari belum ditutup" berhenti.
 - Notifikasi: void, selisih shift (≥ Rp10.000 atau > 1% omzet), pemeriksaan malam (P gagal 8 hari terakhir, hari belum
   ditutup ≥ 2 hari, shift buka > 16 jam) (076).
 
@@ -145,7 +147,7 @@ stok. Inilah pengganti fitur "ubah item" dan "koreksi omzet".
 | Dokumen | Dibuat oleh | Jurnal |
 | --- | --- | --- |
 | **Tutup shift** | Kasir: isi **uang laci yang dihitung** dan **total QRIS di aplikasi merchant** | Selisih kas = dihitung − seharusnya; Selisih QRIS = dilaporkan − seharusnya. Masing-masing dibukukan ke akunnya. |
-| **Tutup hari** | Pemilik | Memastikan semua shift tertutup; pemilik mengisi QRIS yang masuk rekening; QRIS tertunda → Bank; sisa beda → Selisih QRIS. Hari itu dikunci. |
+| **Tutup hari** (sampai 078) | Pemilik | Dihapus di 078. Hari yang ditutup sebelumnya: QRIS yang masuk rekening → Bank; sisa beda → Selisih QRIS. |
 | **Stok opname** | Pemilik atau kasir | Untuk setiap produk yang dihitung: selisih fisik − buku → Penyesuaian stok (jumlah dan nilai HPP). |
 
 ### 4.5 Stok
@@ -170,13 +172,11 @@ dokumen di atas, sehingga riwayat setiap produk bisa ditelusuri dari awal.
    seperti selisih kas.
 4. Selisih di atas ambang (bagian 9) mewajibkan catatan alasan dari kasir.
 
-### 5.2 Tutup hari (pemilik, di backoffice)
-Satu layar per outlet per tanggal bisnis:
-- semua shift tertutup (kalau belum, tidak bisa ditutup);
-- ringkasan P2–P8 untuk hari itu, semuanya harus hijau;
-- isi QRIS yang benar-benar masuk rekening (dari mutasi bank);
-- daftar selisih, koreksi, void, dan refund hari itu untuk ditinjau;
-- tombol **Tutup dan kunci hari**.
+### 5.2 Shift (pemilik, di backoffice)
+Tidak ada tutup hari dan tidak ada kunci hari sejak migrasi 078: kasir menutup shift di aplikasi, dan pemilik tidak punya
+langkah harian. Satu layar per outlet per tanggal bisnis menampilkan kas dan QRIS tiap shift, pemeriksaan P1–P7, dan
+koreksi hari itu. Selisih kas diperbaiki kapan saja dengan **Uang masuk** (laci kurang) atau **Uang keluar** (laci lebih),
+dengan alasan. Hari yang ditutup sebelum 078 tetap tercatat sebagai riwayat, termasuk baris QRIS ke Bank-nya.
 
 ### 5.3 Stok opname
 Pilih produk (semua, per kategori, atau acak), isi jumlah fisik, lalu sistem menampilkan selisih per produk sebelum disimpan.

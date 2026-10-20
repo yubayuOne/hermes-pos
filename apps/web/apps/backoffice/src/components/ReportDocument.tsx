@@ -221,10 +221,12 @@ export function ReportDocument({
                   <td>{t('Refund tunai')}</td>
                   <td className="n">{acct(-r.drawer.refunds)}</td>
                 </tr>
-                <tr>
-                  <td>{t('Pengeluaran dari laci')}</td>
-                  <td className="n">{acct(-r.drawer.expenses)}</td>
-                </tr>
+                {r.drawer.expenses !== 0 && (
+                  <tr>
+                    <td>{t('Pengeluaran dari laci')}</td>
+                    <td className="n">{acct(-r.drawer.expenses)}</td>
+                  </tr>
+                )}
                 {r.drawer.other !== 0 && (
                   <tr>
                     <td>{t('Lainnya')}</td>

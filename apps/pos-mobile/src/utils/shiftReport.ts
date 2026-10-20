@@ -1,6 +1,6 @@
 import { row } from '../services/printer/escpos';
 import { SalesReport } from '../services/report/report';
-import { Expense, Refund } from '../types/domain';
+import { Refund } from '../types/domain';
 import { fmtDay, fmtTime, money, num, t } from '../i18n';
 
 /** Everything one shift report shows. All amounts come from the server; nothing is computed here except sums for display. */
@@ -12,7 +12,6 @@ export type ShiftReportData = {
   closedAt?: string | null;
   report: SalesReport;
   refunds: Refund[];
-  expense: Expense | null;
 };
 
 const hours = (d: ShiftReportData) => `${fmtTime(d.openedAt)} - ${d.closedAt ? fmtTime(d.closedAt) : t('berjalan')}`;
@@ -57,12 +56,6 @@ export function reportText(d: ShiftReportData, w = 32) {
     }
     lines.push(rule);
   }
-  if (d.expense?.items.length) {
-    lines.push(t('PENGELUARAN'));
-    for (const i of d.expense.items)
-      lines.push(...row(`${i.name} ${qty(i.quantity)} ${i.unit}${i.paidFrom === 'other' ? ` (${t('bukan laci')})` : ''}`, num(i.amount), w));
-    lines.push(...row(t('Total pengeluaran'), money(d.expense.total), w), rule);
-  }
   lines.push(...row(t('Kas awal'), money(r.pettyCash), w), ...row(t('Kas seharusnya'), money(r.expectedCash), w));
   if (r.actualCash != null) lines.push(...row(t('Hitungan kasir'), money(r.actualCash), w), ...row(t('Selisih'), money(r.variance ?? 0), w));
   lines.push(rule);
@@ -104,13 +97,6 @@ export function waText(d: ShiftReportData) {
     x.items.forEach((i) => out.push(`   ${qty(i.quantity)}x ${i.productName}${i.amount != null ? `: -${money(i.amount)}` : ''}`));
     out.push(`   ${t('Alasan')}: ${x.reason}`);
   });
-  out.push('', `*${t('Pengeluaran')}*`);
-  const items = d.expense?.items ?? [];
-  if (!items.length) out.push(t('Tidak ada pengeluaran.'));
-  items.forEach((i, k) =>
-    out.push(`${k + 1}. ${i.name} ${qty(i.quantity)} ${i.unit}: ${money(i.amount)}${i.paidFrom === 'other' ? ` (${t('bukan dari laci')})` : ''}`),
-  );
-  if (items.length) out.push(`${t('Total pengeluaran')}: ${money(d.expense?.total ?? 0)}`);
   out.push('', `*${t('Kas')}*`, `${t('Kas awal')}: ${money(r.pettyCash)}`, `${t('Kas seharusnya')}: ${money(r.expectedCash)}`);
   if (r.actualCash != null) out.push(`${t('Hitungan kasir')}: ${money(r.actualCash)}`, `${t('Selisih')}: ${money(r.variance ?? 0)}`);
   return out.join('\n');

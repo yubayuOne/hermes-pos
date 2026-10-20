@@ -85,7 +85,7 @@ function SidebarBody({ close }: { close?: ReactNode }) {
   const items: NavItem[] = [
     { to: '/', label: 'Ringkasan' },
     { to: '/transactions', label: 'Transaksi' },
-    { to: '/closing', label: 'Tutup hari' },
+    { to: '/closing', label: 'Shift' },
     { to: '/outlets', label: 'Outlet', meta: c.outlets },
     { to: '/cashiers', label: 'Kasir', meta: c.cashiers },
     { to: '/products', label: 'Produk', meta: c.products },

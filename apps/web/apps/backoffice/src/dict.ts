@@ -975,7 +975,7 @@ export const EN: Dict = {
   'Alasan wajib diisi, minimal 3 karakter': 'A reason is required, at least 3 characters',
   'Shift tidak ditemukan': 'Shift not found',
   // Corrections and Tutup hari (migration 073)
-  'Tutup hari|menu': 'Day close',
+  'Shift|menu': 'Shifts',
   'Tidak ada shift pada {date}.': 'No shifts on {date}.',
   'Semua angka hari ini cocok: setiap bill, uang tunai, QRIS, dan produk seimbang.':
     'Every number for this day matches: each bill, the cash, QRIS, and products balance.',
@@ -1018,43 +1018,15 @@ export const EN: Dict = {
   'Pengeluaran dibatalkan': 'Expense cancelled',
   'Koreksi dan pembatalan': 'Corrections and cancellations',
   'Void {amount} pada {number} oleh {cashier}. Alasan: {reason}': 'Void {amount} on {number} by {cashier}. Reason: {reason}',
-  'Shift {n} di {outlet} ({cashier}) ditutup dengan selisih: kas {cash}, QRIS {qris}. Periksa di Tutup hari.':
-    'Shift {n} at {outlet} ({cashier}) closed with a difference: cash {cash}, QRIS {qris}. Check it on Day close.',
-  'Ada angka yang tidak cocok di {outlet}. Periksa di Tutup hari.': 'Some figures do not match at {outlet}. Check them on Day close.',
+  'Shift {n} di {outlet} ({cashier}) ditutup dengan selisih: kas {cash}, QRIS {qris}. Periksa di menu Shift.':
+    'Shift {n} at {outlet} ({cashier}) closed with a difference: cash {cash}, QRIS {qris}. Check it on Shifts.',
+  'Ada angka yang tidak cocok di {outlet}. Periksa di menu Shift.': 'Some figures do not match at {outlet}. Check them on Shifts.',
   '{n} hari di {outlet} belum ditutup, mulai {date}. Tutup di menu Tutup hari.': '{n} day(s) at {outlet} not closed yet, from {date}. Close them on Day close.',
   'Shift {n} di {outlet} ({cashier}) sudah buka lebih dari 16 jam.': 'Shift {n} at {outlet} ({cashier}) has been open for more than 16 hours.',
   'Stok {name} ({stock}) tidak sama dengan riwayat stoknya ({book}).': 'Stock of {name} ({stock}) does not match its stock history ({book}).',
-  'Status hari': 'Day status',
-  'Hari sudah ditutup dan dikunci.': 'The day is closed and locked.',
-  'Hari belum ditutup.': 'The day is not closed yet.',
   terkunci: 'locked',
   'Bill, kas, dan pengeluaran hari itu tidak bisa diubah lagi. Koreksi yang ketahuan kemudian dicatat di hari yang masih buka, misalnya lewat refund.':
     "That day's bills, cash, and expenses can no longer change. Corrections found later are recorded on a day that is still open, for example as a refund.",
-  'Tutup semua shift di aplikasi kasir dulu.': 'Close every shift in the cashier app first.',
-  'Selesaikan angka yang tidak cocok dulu.': 'Resolve the figures that do not match first.',
-  'Kalau semua sudah dicek, tutup dan kunci harinya agar laporannya tidak berubah lagi.':
-    'Once everything is checked, close and lock the day so its report no longer changes.',
-  'QRIS tercatat': 'QRIS recorded',
-  'QRIS masuk rekening': 'QRIS received in the bank',
-  'Buka kunci': 'Unlock',
-  'Tutup dan kunci hari': 'Close and lock the day',
-  'Riwayat tutup hari': 'Day close history',
-  Ditutup: 'Closed',
-  'Dibuka lagi': 'Reopened',
-  'Hari ditutup dan dikunci.': 'Day closed and locked.',
-  'Setelah dikunci, bill, kas, dan pengeluaran hari itu tidak bisa diubah. Kunci bisa dibuka lagi dengan alasan.':
-    "Once locked, that day's bills, cash, and expenses cannot change. The lock can be opened again with a reason.",
-  'Tutup dan kunci': 'Close and lock',
-  'QRIS tercatat: {amount}.': 'QRIS recorded: {amount}.',
-  'QRIS masuk rekening (Rp)': 'QRIS received in the bank (Rp)',
-  'Lihat mutasi rekening. Kosongkan kalau dananya belum masuk; selisihnya dihitung saat diisi.':
-    'Check the bank statement. Leave it empty if the money has not arrived; the difference is counted once it is filled in.',
-  'Catatan (opsional)': 'Note (optional)',
-  'Kunci hari dibuka.': 'Day unlocked.',
-  'Buka kunci hari': 'Unlock the day',
-  'Hari itu bisa diubah lagi sampai ditutup ulang. Alasannya tercatat di riwayat.':
-    'That day can change again until it is closed again. The reason is kept in the history.',
-  'Contoh: bill salah bayar baru ketahuan.': 'For example: a bill with the wrong payment was just found.',
   'Nominal tidak boleh minus.': 'The amount cannot be negative.',
   'Hari itu sudah ditutup dan dikunci. Buka kuncinya dulu di Tutup hari, atau catat koreksinya di hari yang masih buka.':
     'That day is closed and locked. Unlock it first on Day close, or record the correction on a day that is still open.',

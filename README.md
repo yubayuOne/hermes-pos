@@ -81,9 +81,9 @@ HERMES POS gives each one a rule and a trace.
 - **Stock:** stock now and its history; stock in, adjustments with a reason, and stock counts. Stock never changes from
   the product form.
 - **Expenses:** every shift's expenses by period; a wrong item is cancelled with a reason and recorded again.
-- **Day close (Tutup hari):** per outlet and business date, each shift's cash and QRIS reconciled line by line, cash
-  put into or taken out of a drawer, the day's corrections, and the automatic balance checks. The owner closes and locks
-  the day (with the QRIS that reached the bank); a locked day cannot change anywhere until it is reopened with a reason.
+- **Shifts:** per outlet and business date, each shift's cash and QRIS reconciled line by line, the day's corrections,
+  and the automatic balance checks. A short drawer is fixed with Uang masuk, an over drawer with Uang keluar, on any day.
+  There is no day close and no day lock (078).
 - **Bookkeeping:** every document (sale, void, refund, expense, shift, cash movement, stock document, day close) is
   posted to a double-entry ledger view; see [`docs/ACCOUNTING.md`](docs/ACCOUNTING.md). A nightly job and triggers
   notify the owner of voids, shift differences, failed checks, unclosed days, and shifts left open.

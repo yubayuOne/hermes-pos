@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CartItem, CheckoutResult, CustomerInfo, Discount, ExpenseItem, PaymentInput, ProductStation, Shift } from '../../types/domain';
-import { cachedOpenShift, checkout, closeShift, createTemporaryProduct, fetchOpenShift, forgetOpenShift, openShiftWithId, recordExpense } from './repository';
+import { CartItem, CheckoutResult, CustomerInfo, Discount, PaymentInput, ProductStation, Shift } from '../../types/domain';
+import { cachedOpenShift, checkout, closeShift, createTemporaryProduct, fetchOpenShift, forgetOpenShift, openShiftWithId } from './repository';
 import { fetchRemainingBillItems, saveHeldBill, updateHeldBill } from './heldBills';
 import { readHeldBill } from '../local/shiftData';
 import { describeError, isUnknownCheckoutOutcome } from '../../utils/errors';
@@ -11,7 +11,7 @@ import { lineDiscount } from '../../utils/discount';
 /**
  * Offline checkout queue.
  *
- * Used ONLY for payments (not split bills), held bills and their changes, and expenses that failed because of the network
+ * Used ONLY for payments (not split bills), held bills and their changes that failed because of the network
  * ("unknown outcome"). The cashier has already taken the money, so the payment is stored on the
  * device and resent with the SAME idempotency key: if the first request did get recorded, the
  * server returns that transaction instead of creating a new one.
@@ -26,12 +26,12 @@ import { lineDiscount } from '../../utils/discount';
 export type QueuedStatus = 'waiting' | 'conflict';
 /**
  * 'checkout' = bill payment (default, older data), also of a recalled held bill when `existingTransactionId` is set;
- * 'hold' = a held bill not sent yet; 'update' = changes saved to a recalled held bill; 'expense' = an expense entry (043);
+ * 'hold' = a held bill not sent yet; 'update' = changes saved to a recalled held bill;
  * 'open_shift' / 'close_shift' / 'temp_product' = opening or closing `shiftId`, adding a temporary menu item (050).
  * shortcut: since 18 Oct 2026 shifts open and close only online, so nothing queues 'open_shift' or 'close_shift' any more;
  * they are still sent for phones that queued them with an older version. Remove both once no phone runs one.
  */
-export type QueuedKind = 'checkout' | 'hold' | 'update' | 'expense' | 'open_shift' | 'close_shift' | 'temp_product';
+export type QueuedKind = 'checkout' | 'hold' | 'update' | 'open_shift' | 'close_shift' | 'temp_product';
 
 export interface QueuedCheckout {
   /** Same as idempotencyKey. */
@@ -59,8 +59,6 @@ export interface QueuedCheckout {
   number?: string | null;
   /** On the last split part: nothing of the parent is left to pay, so the held bill counts as paid. */
   closesParent?: boolean;
-  /** kind 'expense' only; `items`, `customer`, and `payment` stay empty for it. */
-  expense?: { paidFrom: 'drawer' | 'other'; items: ExpenseItem[] };
   /** kind 'open_shift' / 'close_shift' / 'temp_product' only, likewise with empty `items`. */
   shiftOpen?: { openingCash: number; openedAt: string };
   shiftClose?: { physicalCash: number; closedAt: string };
@@ -134,7 +132,11 @@ function ensureLoaded() {
       }
       try {
         const parsed = raw ? JSON.parse(raw) : [];
-        items = Array.isArray(parsed) ? parsed.filter((x) => x && x.idempotencyKey && x.shiftId) : [];
+        const all: any[] = Array.isArray(parsed) ? parsed.filter((x) => x && x.idempotencyKey && x.shiftId) : [];
+        // Expenses are recorded in the backoffice now (077). Unsent ones from an older version are kept aside, not sent.
+        const expenses = all.filter((x) => x.kind === 'expense');
+        if (expenses.length) await AsyncStorage.setItem(`${QUEUE_KEY}:expense`, JSON.stringify(expenses)).catch(() => undefined);
+        items = all.filter((x) => x.kind !== 'expense');
       } catch {
         // Corrupt JSON: keep the raw text so the sales can still be recovered by hand.
         await AsyncStorage.setItem(`${QUEUE_KEY}:corrupt`, raw ?? '').catch(() => undefined);
@@ -381,18 +383,6 @@ async function runSync(who: { cashierId?: string; outletId: string } | null): Pr
           createTemporaryProduct({ productId: entry.product.id, cashierId: entry.cashierId, outletId: entry.outletId, ...entry.product }),
           CHECKOUT_TIMEOUT_MS,
         );
-      } else if (entry.kind === 'expense' && entry.expense) {
-        await withTimeout(
-          recordExpense({
-            shiftId: entry.shiftId,
-            cashierId: entry.cashierId,
-            outletId: entry.outletId,
-            paidFrom: entry.expense.paidFrom,
-            items: entry.expense.items,
-            idempotencyKey: entry.idempotencyKey,
-          }),
-          CHECKOUT_TIMEOUT_MS,
-        );
       } else if (entry.kind === 'hold') {
         await withTimeout(
           saveHeldBill({
@@ -474,7 +464,7 @@ export function syncCheckoutQueue(who: { cashierId?: string; outletId: string } 
 export function applyQueuedStock<T extends { id: string; stock: number; trackStock?: boolean }>(products: T[]): T[] {
   const used = new Map<string, number>();
   for (const e of items) {
-    // Only payments reduce stock: not holds, held-bill changes, or expenses.
+    // Only payments reduce stock: not holds or held-bill changes.
     if (e.status !== 'waiting' || (e.kind && e.kind !== 'checkout')) continue;
     for (const i of e.items) used.set(i.productId, (used.get(i.productId) ?? 0) + i.quantity);
   }

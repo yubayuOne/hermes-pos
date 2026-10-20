@@ -80,7 +80,5 @@ update public.shifts set opened_at = now() - interval '17 hours' where id = curr
 update public.shifts set expected_cash = expected_cash + 1 where outlet_id = current_setting('t.o')::uuid and status = 'closed' and shift_number = 1;
 select public.watch_books();
 select public.watch_books();
-select pg_temp.ok('W2 once each: a check failed, a day not closed (1 day, 3 days ago), a shift open too long',
-  pg_temp.notes('checks_failed') = 1 and pg_temp.notes('day_not_closed') = 1 and pg_temp.notes('shift_open_long') = 1
-  and (select (params ->> 'days')::int = 1 and params ->> 'date' = (current_setting('t.d')::date - 3)::text
-       from public.notifications where business_id = current_setting('t.b')::uuid and kind = 'day_not_closed'));
+select pg_temp.ok('W2 once each: a check failed and a shift open too long; no day-not-closed reminder since 078',
+  pg_temp.notes('checks_failed') = 1 and pg_temp.notes('day_not_closed') = 0 and pg_temp.notes('shift_open_long') = 1);

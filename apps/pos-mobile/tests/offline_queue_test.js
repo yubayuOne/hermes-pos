@@ -28,8 +28,6 @@ let behave = () => ({ ok: true });
 const calls = [];
 const checkoutArgs = [];
 const updateCalls = [];
-const expenseCalls = [];
-let expenseBehave = () => ({ ok: true });
 const opCalls = [];
 let heldCache = [];
 let serverRemaining = () => Promise.reject(new Error('Network request failed'));
@@ -44,12 +42,6 @@ const repo = {
   createTemporaryProduct: async (args) => {
     opCalls.push('product:' + args.productId);
     return { id: args.productId };
-  },
-  recordExpense: async (args) => {
-    expenseCalls.push(args);
-    const r = await expenseBehave(args);
-    if (r.err) throw r.err;
-    return { id: 'e1' };
   },
   checkout: async (args) => {
     calls.push(args.idempotencyKey);
@@ -293,32 +285,14 @@ const reset = () => {
   store.set(Q.QUEUE_KEY, '{corrupt');
   await Q.loadQueue();
   ok(Q.getQueueSnapshot().length === 0 && store.get(Q.QUEUE_KEY + ':corrupt') === '{corrupt', 'corrupt JSON: raw copy saved');
-  // 16 expense entries (migration 043): sent with the same key, never as a checkout, never twice
+  // 16 an expense entry left on the device by an older version is kept aside and never sent (077)
   reset();
-  const expense = { paidFrom: 'drawer', items: [{ name: 'Es batu', category: 'belanja', quantity: 3, unit: 'pack', amount: 15000 }] };
-  await Q.enqueueCheckout(mk('expense:1', { kind: 'expense', items: [], total: 15000, expense }));
-  await Q.enqueueCheckout(mk('expense:1', { kind: 'expense', items: [], total: 15000, expense }));
-  ok(Q.getQueueSnapshot().length === 1 && Q.hasQueuedForShift('s1'), 'expense queued once per key and blocks closing the shift');
-  ok(Q.applyQueuedStock([{ id: 'p', stock: 9 }])[0].stock === 9, 'expense entry does not touch stock');
-  expenseBehave = netErr;
-  r = await Q.syncCheckoutQueue();
-  ok(r.offline && Q.getQueueSnapshot()[0].status === 'waiting' && Q.getQueueSnapshot()[0].attempts === 1, 'expense offline: stays waiting');
-  expenseBehave = () => ({ ok: true });
-  const before = calls.length;
-  r = await Q.syncCheckoutQueue();
+  const leftover = { id: 'x', kind: 'expense', idempotencyKey: 'expense:1', shiftId: 's1', status: 'waiting' };
+  store.set(Q.QUEUE_KEY, JSON.stringify([leftover]));
+  await Q.loadQueue();
   ok(
-    r.synced === 1 &&
-      Q.getQueueSnapshot().length === 0 &&
-      calls.length === before &&
-      expenseCalls.every((a) => a.idempotencyKey === 'expense:1' && a.paidFrom === 'drawer' && a.items[0].amount === 15000),
-    'expense sent through recordExpense with the same key each time, then removed',
-  );
-  await Q.enqueueCheckout(mk('expense:2', { kind: 'expense', items: [], total: 15000, expense }));
-  expenseBehave = () => ({ err: { message: 'Shift aktif tidak ditemukan' } });
-  r = await Q.syncCheckoutQueue();
-  ok(
-    r.conflicts === 1 && Q.getQueueSnapshot()[0].status === 'conflict' && Q.getQueueSnapshot()[0].lastError === 'Shift ini sudah tidak aktif.',
-    'expense refused: conflict with the server reason, kept',
+    Q.getQueueSnapshot().length === 0 && !Q.hasQueuedForShift('s1') && JSON.parse(store.get(Q.QUEUE_KEY + ':expense'))[0].id === 'x',
+    'old expense entry: off the queue, copy kept, closing the shift not blocked',
   );
   // 17 recalled held bill offline: its changes, then its payment, in order, against the same bill
   reset();

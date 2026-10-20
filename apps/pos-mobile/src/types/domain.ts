@@ -131,27 +131,10 @@ export type PinResult =
   | { ok: false; reason: 'wrong'; attemptsLeft: number }
   | { ok: false; reason: 'locked'; lockedUntil: string }
   | { ok: false; reason: 'no_pin' | 'not_found' };
-/** Expenses of one shift (migrations 040, 041, 043): every entry adds items to it and counts at once. The owner can edit it on the web. */
-export type ExpenseCategory = 'operasional' | 'belanja';
-export interface ExpenseItem {
-  name: string;
-  category: ExpenseCategory;
-  quantity: number;
-  unit: string;
-  amount: number;
-}
-export interface Expense {
-  id: string;
-  createdAt: string;
-  total: number;
-  drawerTotal: number;
-  items: Array<ExpenseItem & { paidFrom: 'drawer' | 'other' }>;
-}
 /** A shift in the outlet's history (list_outlet_shifts, migration 043). sales is net of refunds, from the server. */
 export interface ShiftRecord extends Shift {
   cashierName: string;
   sales: number;
-  expenses: number;
 }
 /** One refund with its reason (list_shift_refunds, list_bill_refunds, migration 043). */
 export interface Refund {
