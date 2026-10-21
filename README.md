@@ -181,6 +181,12 @@ would reset them. Release builds use R8 (`android.enableMinifyInReleaseBuilds` a
 printer module in `android/app/proguard-rules.pro`; the APK is about 47 MB for ARM 32 and 64 bit. After changing
 either file, test printing on a release build.
 
+**Publishing.** Pushing a tag such as `v1.1.0` builds, signs, and publishes `hermes-pos.apk` as a GitHub release
+(`.github/workflows/release-apk.yml`). The tag must match `version` in `app.json` and `versionName` in
+`android/app/build.gradle`. Set these repository secrets once: `HERMES_KEYSTORE_BASE64` (`base64 -w0 hermes-pos-release.keystore`),
+`HERMES_UPLOAD_STORE_PASSWORD`, `HERMES_UPLOAD_KEY_ALIAS`, `HERMES_UPLOAD_KEY_PASSWORD`, `EXPO_PUBLIC_SUPABASE_URL`,
+`EXPO_PUBLIC_SUPABASE_ANON_KEY`. Without the key the job stops instead of shipping a debug-signed APK.
+
 **Release key.** Every update of the app must be signed with the same key, so make it once and keep two backups
 outside this repository (losing it means users must uninstall to update). Create it with the JDK's `keytool`:
 
