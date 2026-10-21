@@ -1,9 +1,9 @@
 import './global.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, AppState, BackHandler, Image, Platform, useWindowDimensions, View } from 'react-native';
+import { AppState, BackHandler, Platform, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 // One import per weight, so only these eight font files end up in the app.
 import { BricolageGrotesque_800ExtraBold } from '@expo-google-fonts/bricolage-grotesque/800ExtraBold';
@@ -43,8 +43,7 @@ import { confirmSignOut } from './src/utils/logout';
 import { AppSession, CartItem, CustomerInfo } from './src/types/domain';
 import { isOnline } from './src/services/network/network';
 import { canResumeOffline } from './src/utils/resume';
-import { BRAND, BRAND_MARK } from './src/brand';
-import { colors } from './src/theme';
+import { HermesSplash } from './src/components/HermesSplash';
 
 type SplitState = { parentId: string; number: string | null; part: number };
 type SplitPay = { items: CartItem[]; customer: CustomerInfo; meta: string };
@@ -341,33 +340,7 @@ function Shell({ onSignedOut }: { onSignedOut: () => void }) {
   );
 }
 
-const SPLASH_BG = '#2B1810'; // same value as splashscreen_background in android colors.xml
-const BOOT_STEPS = 4; // fonts, cached subscription, account, session + shift
-
-/** Matches the native splash (same background, same artwork), plus a bar driven by real boot steps. */
-function Splash({ done }: { done: number }) {
-  const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
-  const fill = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.timing(fill, { toValue: done / BOOT_STEPS, duration: 250, useNativeDriver: false }).start();
-  }, [done, fill]);
-  const art = Math.min(width * 0.7, height * 0.5, 420);
-  return (
-    <View style={{ flex: 1, backgroundColor: SPLASH_BG, paddingTop: insets.top, paddingBottom: insets.bottom + 40, paddingHorizontal: 40 }}>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Image source={BRAND_MARK} accessibilityLabel={BRAND.appName} resizeMode="contain" style={{ width: art, height: art }} />
-      </View>
-      <View
-        accessibilityRole="progressbar"
-        accessibilityLabel="Loading"
-        style={{ alignSelf: 'center', width: '100%', maxWidth: 320, height: 6, borderRadius: 3, backgroundColor: '#4A2E22', overflow: 'hidden' }}
-      >
-        <Animated.View style={{ height: 6, backgroundColor: colors.fire, width: fill.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }} />
-      </View>
-    </View>
-  );
-}
+const BOOT_STEPS = 4; // fonts, cached subscription, account, session
 
 function Root() {
   const notify = useNotify();
@@ -376,6 +349,7 @@ function Root() {
   const [boot, setBoot] = useState(true);
   const [bootDone, setBootDone] = useState(0);
   const [timedOut, setTimedOut] = useState(false);
+  const [splashGone, setSplashGone] = useState(false);
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
   // The cashier still signed in when the app opened: their PIN is asked again before the shell (offlinePin.ts).
   const [resume, setResume] = useState<AppSession | null>(null);
@@ -451,45 +425,46 @@ function Root() {
     return () => clearTimeout(id);
   }, []);
 
-  if (!timedOut && (boot || (!fontsLoaded && !fontError))) {
-    return (
-      <>
-        <StatusBar style="light" />
-        <Splash done={bootDone + (fontsLoaded || fontError ? 1 : 0)} />
-      </>
-    );
-  }
+  const fontsReady = fontsLoaded || !!fontError;
+  const booting = !timedOut && (boot || !fontsReady);
+  const steps = [fontsReady, bootDone >= 1, bootDone >= 2, bootDone >= 3];
+  const done = steps.filter(Boolean).length;
+  const labels = [t('Memuat huruf'), t('Memuat langganan'), t('Memeriksa akun'), t('Memeriksa sesi'), t('Siap')];
+  // The splash sits on top of the app and fades out, so it also covers the first frames of the screen under it.
+  const splash = splashGone ? null : (
+    <HermesSplash
+      ready={!booting}
+      step={labels[done]}
+      progress={done / BOOT_STEPS}
+      onDone={() => setSplashGone(true)}
+    />
+  );
 
-  if (!accountEmail) {
-    return (
-      <>
-        <StatusBar style="dark" />
-        <LoginScreen onSignedIn={async () => setAccountEmail(await getAccountEmail())} />
-      </>
-    );
-  }
-  if (!session) {
-    return (
-      <>
-        <StatusBar style="dark" />
-        <CashierPickerScreen
-          accountEmail={accountEmail}
-          resumeCashierId={resume?.cashierId}
-          onSelected={enter}
-          onSignedOut={() => {
-            setResume(null);
-            resetAll();
-            void clearSubscription();
-            setAccountEmail(null);
-          }}
-        />
-      </>
+  let screen = null;
+  if (!booting) {
+    screen = !accountEmail ? (
+      <LoginScreen onSignedIn={async () => setAccountEmail(await getAccountEmail())} />
+    ) : !session ? (
+      <CashierPickerScreen
+        accountEmail={accountEmail}
+        resumeCashierId={resume?.cashierId}
+        onSelected={enter}
+        onSignedOut={() => {
+          setResume(null);
+          resetAll();
+          void clearSubscription();
+          setAccountEmail(null);
+        }}
+      />
+    ) : (
+      <Shell onSignedOut={() => setAccountEmail(null)} />
     );
   }
   return (
     <>
       <StatusBar style="dark" />
-      <Shell onSignedOut={() => setAccountEmail(null)} />
+      {screen}
+      {splash}
     </>
   );
 }
