@@ -171,8 +171,8 @@ cd apps/pos-mobile
 # In the cloud (needs an Expo account and EXPO_PUBLIC_SUPABASE_* set as EAS environment variables)
 npx eas-cli build --platform android --profile preview
 
-# On this machine (needs JDK 17 and the Android SDK)
-cd android && ./gradlew assembleRelease     # android/app/build/outputs/apk/release/app-release.apk
+# On this machine (needs JDK 17 and the Android SDK): typecheck, tests, build, then dist/hermes-pos.apk
+npm run build:apk                           # add -- --skip-checks to skip typecheck and tests
 ```
 
 The `android/` folder is kept in the repository with changes of its own, so do not run `expo prebuild --clean`: it
