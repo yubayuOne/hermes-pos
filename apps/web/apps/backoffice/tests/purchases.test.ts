@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { countSchema, ingredientSchema, purchaseCancelSchema, purchaseListSchema, purchaseSchema } from '../src/lib/schemas.ts';
+import { stockText } from '../src/lib/units.ts';
 
 const outletId = '00000000-0000-4000-8000-000000000001';
 const i1 = '00000000-0000-4000-8000-000000000002';
@@ -68,4 +69,30 @@ const NEW_TEXTS = [
 test('every message the new schemas can show is translated', async () => {
   const { EN } = await import('../src/dict.ts');
   assert.deepEqual(NEW_TEXTS.filter((k) => !(k in EN)), []);
+});
+
+const TASK5_TEXTS = [
+  'Hitung stok', 'Stok', 'Harga rata-rata', 'Terakhir dihitung', 'belum pernah', 'Belum dihitung', 'kemasan', 'Nama kemasan (opsional)',
+  'Contoh: kaleng, dus, botol.', 'Mengikuti catatan belanja. Catat belanja untuk mengubahnya.',
+  'Hitung bahan di rak lalu isi jumlahnya. Kosongkan bahan yang tidak dihitung.', 'Stok sistem {n}',
+  'Belum dihitung: ini jadi stok awal', 'Jumlah hitung', 'Satuan hitung', 'Simpan hitungan', 'Hasil hitung stok', 'Selesai',
+  'stok awal {n}', 'kurang {n}, {v}', 'lebih {n}, {v}', 'sama dengan stok sistem', '{name} dihitung.',
+  'Belum ada bahan untuk dihitung.', 'Isi jumlah minimal satu bahan.',
+];
+test('every Task 5 text is translated', async () => {
+  const { EN } = await import('../src/dict.ts');
+  assert.deepEqual(TASK5_TEXTS.filter((k) => !(k in EN)), []);
+});
+
+test('stockText: readable stock with the base unit', () => {
+  assert.equal(stockText(12000, 'ml'), '12 l');
+  assert.equal(stockText(740, 'g'), '740 g');
+  assert.equal(stockText(-300, 'ml'), '-300 ml');
+  assert.equal(stockText(2.5, 'pcs'), '2,5 pcs');
+  assert.equal(stockText(1500, 'g'), '1,5 kg');
+  assert.equal(stockText(-2500, 'g'), '-2,5 kg');
+  assert.equal(stockText(999, 'g'), '999 g');
+  assert.equal(stockText(0, 'ml'), '0 ml');
+  assert.equal(stockText(3000, 'pcs'), '3.000 pcs');
+  assert.equal(stockText(1500, 'g', 'en'), '1.5 kg');
 });

@@ -34,7 +34,9 @@ export function IngredientDialog({
     price: ingredient ? String(ingredient.price) : '',
     packQty: ingredient ? String(ingredient.packQty) : '',
     packUnit: (ingredient?.packUnit ?? 'g') as Unit,
+    packLabel: ingredient?.packLabel ?? '',
   });
+  const priceLocked = ingredient?.stockStarted === true;
   // A used ingredient keeps its unit family: the recipes that use it are written in that family.
   const units = ingredient && ingredient.usedBy > 0 ? sameFamilyUnits(ingredient.packUnit) : [...UNITS];
 
@@ -45,9 +47,10 @@ export function IngredientDialog({
       id: ingredient?.id ?? null,
       outletId,
       name: v.name,
-      price: v.price === '' ? Number.NaN : Number(v.price),
+      price: priceLocked ? ingredient.price : v.price === '' ? Number.NaN : Number(v.price),
       packQty: toNumber(v.packQty),
       packUnit: v.packUnit,
+      packLabel: v.packLabel,
     });
     if (!data) return;
     const changed = ingredient && (data.price !== ingredient.price || data.packQty !== ingredient.packQty || data.packUnit !== ingredient.packUnit);
@@ -109,8 +112,18 @@ export function IngredientDialog({
             <Field label={t('Nama bahan')} error={f.errors.name && t(f.errors.name)}>
               <Input autoFocus value={f.values.name} onChange={(e) => f.set('name', e.target.value)} />
             </Field>
-            <Field label={t('Harga beli (Rp)')} error={f.errors.price && t(f.errors.price)} help={t('Harga satu kemasan, seperti yang Anda bayar ke pemasok.')}>
-              <Input inputMode="numeric" className="font-mono" value={f.values.price} onChange={(e) => f.set('price', e.target.value.replace(/\D/g, ''))} />
+            <Field
+              label={t('Harga beli (Rp)')}
+              error={f.errors.price && t(f.errors.price)}
+              help={priceLocked ? t('Mengikuti catatan belanja. Catat belanja untuk mengubahnya.') : t('Harga satu kemasan, seperti yang Anda bayar ke pemasok.')}
+            >
+              <Input
+                inputMode="numeric"
+                className="font-mono"
+                readOnly={priceLocked}
+                value={f.values.price}
+                onChange={(e) => f.set('price', e.target.value.replace(/\D/g, ''))}
+              />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t('Isi kemasan')} error={f.errors.packQty && t(f.errors.packQty)}>
@@ -131,6 +144,9 @@ export function IngredientDialog({
                 </Select>
               </Field>
             </div>
+            <Field label={t('Nama kemasan (opsional)')} error={f.errors.packLabel && t(f.errors.packLabel)} help={t('Contoh: kaleng, dus, botol.')}>
+              <Input value={f.values.packLabel} maxLength={20} onChange={(e) => f.set('packLabel', e.target.value)} />
+            </Field>
           </>
         )}
         <FormAlert>{act.error && t(act.error)}</FormAlert>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, Chip, Dialog, Empty, FormAlert, Tag, decimal, money, useI18n } from '@hermes-pos/ui';
+import { Button, Chip, Dialog, Empty, FormAlert, Tag, dateShort, decimal, money, useI18n } from '@hermes-pos/ui';
+import { CountDialog } from '../../components/CountDialog';
 import { IngredientDialog } from '../../components/IngredientDialog';
 import { OutletField } from '../../components/Filters';
 import { Page } from '../../components/Page';
@@ -9,7 +10,7 @@ import { RecipeEditor } from '../../components/RecipeEditor';
 import { useLock } from '../../lib/app';
 import { recipeSaveSchema } from '../../lib/schemas';
 import type { Ingredient, Product, RecipeCost, RecipeLineInput } from '../../lib/types';
-import { UNIT_LABEL } from '../../lib/units';
+import { stockText } from '../../lib/units';
 import { useAction } from '../../lib/useAction';
 import { deleteIngredient, getRecipe, listIngredients, saveRecipe } from '../../server/ingredients';
 import { listCatalog } from '../../server/manage';
@@ -89,13 +90,19 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
   const lock = useLock();
   const [editing, setEditing] = useState<Ingredient | 'new' | null>(null);
   const [removing, setRemoving] = useState<Ingredient | null>(null);
+  const [counting, setCounting] = useState(false);
   return (
     <>
       {outletId && (
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap gap-2">
           <Button variant="fire" onClick={() => setEditing('new')} {...lock.props}>
             {lock.label(t('Tambah bahan'))}
           </Button>
+          {items.length > 0 && (
+            <Button onClick={() => setCounting(true)} {...lock.props}>
+              {t('Hitung stok')}
+            </Button>
+          )}
         </div>
       )}
       {items.length === 0 ? (
@@ -109,12 +116,12 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
               <tr>
                 <th scope="col">{t('Bahan')}</th>
                 <th scope="col" className="num">
-                  {t('Harga beli')}
+                  {t('Stok')}
                 </th>
-                <th scope="col">{t('Isi kemasan')}</th>
                 <th scope="col" className="num">
-                  {t('Harga per satuan')}
+                  {t('Harga rata-rata')}
                 </th>
+                <th scope="col">{t('Terakhir dihitung')}</th>
                 <th scope="col" className="num">
                   {t('Dipakai di')}
                 </th>
@@ -129,14 +136,19 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
                   <td data-l={t('Bahan')} className="font-semibold">
                     {i.name}
                   </td>
-                  <td data-l={t('Harga beli')} className="num">
-                    {money(i.price)}
+                  <td data-l={t('Stok')} className="num">
+                    {i.stockStarted ? (
+                      <span className={i.stock < 0 ? 'font-semibold text-error' : undefined}>{stockText(i.stock, i.baseUnit, lang)}</span>
+                    ) : (
+                      <span className="text-mute">{t('Belum dihitung')}</span>
+                    )}
                   </td>
-                  <td data-l={t('Isi kemasan')}>
-                    {decimal(i.packQty, lang, i.packQty % 1 === 0 ? 0 : 3)} {UNIT_LABEL[i.packUnit]}
+                  <td data-l={t('Harga rata-rata')} className="num">
+                    {money(i.price)} / {i.packLabel || t('kemasan')}
+                    <span className="block text-[14px] text-mute">{unitCostText(i, lang)}</span>
                   </td>
-                  <td data-l={t('Harga per satuan')} className="num">
-                    {unitCostText(i, lang)}
+                  <td data-l={t('Terakhir dihitung')}>
+                    {i.lastCountedAt ? dateShort(i.lastCountedAt, lang) : <span className="text-mute">{t('belum pernah')}</span>}
                   </td>
                   <td data-l={t('Dipakai di')} className="num">
                     {i.usedBy === 0 ? <span className="text-mute">{t('belum dipakai')}</span> : t('{n} menu', { n: i.usedBy })}
@@ -158,6 +170,7 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
         </div>
       )}
       {editing && outletId && <IngredientDialog outletId={outletId} ingredient={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
+      {counting && outletId && <CountDialog outletId={outletId} items={items} onClose={() => setCounting(false)} />}
       {removing && <RemoveIngredientDialog ingredient={removing} onClose={() => setRemoving(null)} />}
     </>
   );
