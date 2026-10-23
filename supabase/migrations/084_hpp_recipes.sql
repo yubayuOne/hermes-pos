@@ -230,3 +230,119 @@ grant execute on function public.owner_list_ingredients(uuid) to authenticated;
 grant execute on function public.owner_save_ingredient(uuid, uuid, text, numeric, numeric, text) to authenticated;
 grant execute on function public.owner_preview_ingredient(uuid, numeric, numeric, text) to authenticated;
 grant execute on function public.owner_delete_ingredient(uuid) to authenticated;
+
+-- ================================================================ recipes and the product form
+-- Replaces a product's recipe. [] removes it: the product turns manual and keeps its last HPP. Anything invalid
+-- raises and the caller's transaction rolls back whole.
+create or replace function public.apply_recipe(p_product_id uuid, p_lines jsonb)
+returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  pr public.products%rowtype;
+  uuid_re constant text := '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
+  qty_re constant text := '^[0-9]{1,6}(\.[0-9]{1,3})?$';
+begin
+  select * into pr from public.products where id = p_product_id for update;
+  if not found then raise exception 'Produk tidak ditemukan'; end if;
+  if jsonb_typeof(p_lines) is distinct from 'array' then raise exception 'Data resep tidak valid'; end if;
+  if jsonb_array_length(p_lines) > 40 then raise exception 'Resep maksimal 40 bahan'; end if;
+  if exists (select 1 from jsonb_array_elements(p_lines) e
+             where jsonb_typeof(e) <> 'object' or coalesce(e ->> 'ingredientId', '') !~* uuid_re or coalesce(e ->> 'unit', '') not in ('g', 'kg', 'ml', 'l', 'pcs')) then
+    raise exception 'Data resep tidak valid';
+  end if;
+  if exists (select 1 from jsonb_array_elements(p_lines) e
+             where case when coalesce(e ->> 'qty', '') ~ qty_re then (e ->> 'qty')::numeric <= 0 else true end) then
+    raise exception 'Jumlah bahan tidak valid';
+  end if;
+  if (select count(*) <> count(distinct e ->> 'ingredientId') from jsonb_array_elements(p_lines) e) then
+    raise exception 'Satu bahan hanya boleh sekali di resep';
+  end if;
+
+  if jsonb_array_length(p_lines) = 0 then
+    delete from public.recipe_lines where product_id = p_product_id;
+    update public.products set hpp_source = 'manual' where id = p_product_id;
+    return;
+  end if;
+  perform public.recipe_cost(pr.outlet_id, p_lines); -- ingredients of this outlet, units of the right family
+  delete from public.recipe_lines where product_id = p_product_id;
+  insert into public.recipe_lines(product_id, ingredient_id, qty, unit)
+  select p_product_id, (e ->> 'ingredientId')::uuid, (e ->> 'qty')::numeric, e ->> 'unit' from jsonb_array_elements(p_lines) e;
+  update public.products set hpp_source = 'recipe' where id = p_product_id;
+  perform public.recompute_hpp(p_product_id);
+end $$;
+revoke all on function public.apply_recipe(uuid, jsonb) from public, anon, authenticated;
+
+create or replace function public.owner_preview_recipe(p_outlet_id uuid, p_lines jsonb)
+returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+begin
+  perform public.assert_catalog_access(p_outlet_id);
+  return public.recipe_cost(p_outlet_id, p_lines);
+end $$;
+
+-- The stored recipe with its cost; a product without one returns source "manual" and no lines.
+create or replace function public.owner_get_recipe(p_product_id uuid)
+returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare pr public.products%rowtype;
+begin
+  select * into pr from public.products where id = p_product_id;
+  if not found then raise exception 'Produk tidak ditemukan'; end if;
+  perform public.assert_catalog_access(pr.outlet_id);
+  return jsonb_build_object('source', pr.hpp_source) || public.recipe_cost(pr.outlet_id, coalesce((
+    select jsonb_agg(jsonb_build_object('ingredientId', r.ingredient_id, 'qty', r.qty, 'unit', r.unit) order by lower(i.name))
+    from public.recipe_lines r join public.ingredients i on i.id = r.ingredient_id where r.product_id = p_product_id), '[]'::jsonb));
+end $$;
+
+-- The product form's one save: create or update, and the recipe in the same transaction. p_recipe null leaves the recipe alone.
+create or replace function public.owner_save_product(p_product_id uuid, p_outlet_id uuid, p_category_id uuid, p_name text, p_hpp numeric,
+  p_selling_price numeric, p_stock numeric, p_station public.product_station, p_track_stock boolean, p_recipe jsonb)
+returns uuid
+language plpgsql security definer set search_path = public as $$
+declare pid uuid;
+begin
+  perform public.assert_catalog_access(p_outlet_id);
+  if p_product_id is null then
+    pid := public.create_product(p_outlet_id, p_category_id, p_name, p_hpp, p_selling_price, p_stock, p_station, p_track_stock);
+  else
+    pid := public.update_product(p_product_id, p_outlet_id, p_category_id, p_name, p_hpp, p_selling_price, p_stock, p_station, p_track_stock);
+  end if;
+  if p_recipe is not null and p_recipe <> 'null'::jsonb then perform public.apply_recipe(pid, p_recipe); end if;
+  return pid;
+end $$;
+
+-- Same as 074 except the HPP: a product with a recipe keeps the HPP its recipe computed.
+create or replace function public.update_product(p_product_id uuid, p_outlet_id uuid, p_category_id uuid, p_name text, p_hpp numeric,
+  p_selling_price numeric, p_stock numeric, p_station public.product_station, p_track_stock boolean default true)
+returns uuid
+language plpgsql security definer set search_path = public as $$
+declare pid uuid; cur public.products%rowtype;
+begin
+  perform public.assert_catalog_access(p_outlet_id);
+  if nullif(trim(p_name), '') is null then raise exception 'Nama produk wajib diisi'; end if;
+  if p_hpp < 0 or p_selling_price < 0 or p_stock < 0 then raise exception 'HPP, harga jual, dan stok tidak boleh negatif'; end if;
+  if p_category_id is not null and not exists (
+    select 1 from public.categories where id = p_category_id and outlet_id = p_outlet_id and is_active = true
+  ) then
+    raise exception 'Kategori tidak ditemukan';
+  end if;
+  select * into cur from public.products where id = p_product_id and outlet_id = p_outlet_id and is_active = true for update;
+  if not found then raise exception 'Produk tidak ditemukan'; end if;
+
+  update public.products
+  set category_id = p_category_id, name = trim(p_name),
+      hpp = case when cur.hpp_source = 'recipe' then cur.hpp else p_hpp end,
+      selling_price = p_selling_price,
+      stock = case when not p_track_stock then 0 when cur.track_stock then cur.stock else p_stock end,
+      track_stock = p_track_stock, station = p_station
+  where id = p_product_id
+  returning id into pid;
+  return pid;
+end $$;
+
+revoke all on function public.owner_preview_recipe(uuid, jsonb) from public, anon;
+revoke all on function public.owner_get_recipe(uuid) from public, anon;
+revoke all on function public.owner_save_product(uuid, uuid, uuid, text, numeric, numeric, numeric, public.product_station, boolean, jsonb) from public, anon;
+grant execute on function public.owner_preview_recipe(uuid, jsonb) to authenticated;
+grant execute on function public.owner_get_recipe(uuid) to authenticated;
+grant execute on function public.owner_save_product(uuid, uuid, uuid, text, numeric, numeric, numeric, public.product_station, boolean, jsonb) to authenticated;

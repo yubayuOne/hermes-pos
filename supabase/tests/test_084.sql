@@ -142,3 +142,106 @@ select pg_temp.fails('X1c delete', format('select public.owner_delete_ingredient
 select pg_temp.fails('X1d preview', format('select public.owner_preview_ingredient(%L, 1, 1, %L)', pg_temp.ing('Gelas'), 'pcs'), 'Sesi kasir tidak valid');
 reset role;
 select pg_temp.ok('X2 the ingredient is unchanged', (select price from public.ingredients where id = pg_temp.ing('Gelas')::uuid) = 1200);
+
+-- ================================================================ recipe RPCs and product save
+select pg_temp.ok('R1 owners may call the recipe functions, anon may not',
+  has_function_privilege('authenticated', 'public.owner_preview_recipe(uuid, jsonb)', 'execute')
+  and has_function_privilege('authenticated', 'public.owner_get_recipe(uuid)', 'execute')
+  and has_function_privilege('authenticated', 'public.owner_save_product(uuid, uuid, uuid, text, numeric, numeric, numeric, public.product_station, boolean, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.owner_save_product(uuid, uuid, uuid, text, numeric, numeric, numeric, public.product_station, boolean, jsonb)', 'execute')
+  and not has_function_privilege('authenticated', 'public.apply_recipe(uuid, jsonb)', 'execute'));
+
+select set_config('request.jwt.claim.sub', 'e8400000-0000-0000-0000-000000000001', false);
+set role authenticated;
+select set_config('t.latte', public.owner_save_product(null, current_setting('t.o')::uuid, null, 'Es latte', 0, 25000, 0, 'bar', false, pg_temp.kopi_lines())::text, false);
+reset role;
+select pg_temp.ok('R2 a new product with a recipe takes the recipe HPP (Susu is Rp 20.000 now)',
+  (select hpp from public.products where id = current_setting('t.latte')::uuid) = 6810
+  and (select hpp_source from public.products where id = current_setting('t.latte')::uuid) = 'recipe'
+  and (select count(*) from public.recipe_lines where product_id = current_setting('t.latte')::uuid) = 4);
+
+-- Review focus 4: a sale made now keeps its hpp_unit when the ingredient is repriced later.
+set role authenticated;
+select public.owner_create_cashier(current_setting('t.o')::uuid, 'Resep', '123456');
+select set_config('t.c', (select cashier_id::text from public.owner_list_cashiers() where cashier_name = 'Resep'), false);
+select set_config('t.sh', public.open_shift(current_setting('t.c')::uuid, current_setting('t.o')::uuid, 0)::text, false);
+select set_config('t.tx', (public.complete_checkout(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
+  jsonb_build_object('items', jsonb_build_array(jsonb_build_object('product_id', current_setting('t.latte'), 'quantity', 1))),
+  'cash', 1000000, null, 'r-sale-1', null, null) ->> 'transactionId'), false);
+select public.owner_save_ingredient(current_setting('t.o')::uuid, pg_temp.ing('Susu cair')::uuid, 'Susu cair', 21000, 1, 'l');
+reset role;
+select pg_temp.ok('R5a repricing moved the product to 6960', (select hpp from public.products where id = current_setting('t.latte')::uuid) = 6960);
+select pg_temp.ok('R5b the past sale still holds hpp_unit 6810', (select hpp_unit from public.transaction_items where transaction_id = current_setting('t.tx')::uuid) = 6810);
+
+-- Review focus 2: a recipe product's HPP cannot be overwritten.
+set role authenticated;
+select public.owner_save_product(current_setting('t.latte')::uuid, current_setting('t.o')::uuid, null, 'Es latte', 1, 26000, 0, 'bar', false, null);
+reset role;
+select pg_temp.ok('R3a owner_save_product with another HPP leaves it (price still saved)',
+  (select hpp from public.products where id = current_setting('t.latte')::uuid) = 6960
+  and (select selling_price from public.products where id = current_setting('t.latte')::uuid) = 26000);
+set role authenticated;
+select public.update_product(current_setting('t.latte')::uuid, current_setting('t.o')::uuid, null, 'Es latte', 2, 26000, 0, 'bar', false);
+reset role;
+select pg_temp.ok('R3b update_product cannot overwrite it either', (select hpp from public.products where id = current_setting('t.latte')::uuid) = 6960);
+
+set role authenticated;
+select pg_temp.ok('R6 get recipe: source, four lines, total, not incomplete',
+  public.owner_get_recipe(current_setting('t.latte')::uuid) ->> 'source' = 'recipe'
+  and jsonb_array_length(public.owner_get_recipe(current_setting('t.latte')::uuid) -> 'lines') = 4
+  and (public.owner_get_recipe(current_setting('t.latte')::uuid) ->> 'hpp')::numeric = 6960
+  and (public.owner_get_recipe(current_setting('t.latte')::uuid) ->> 'incomplete')::boolean = false);
+select pg_temp.ok('R6b preview matches the cost math', (public.owner_preview_recipe(current_setting('t.o')::uuid, pg_temp.kopi_lines()) ->> 'hpp')::numeric = 6960);
+
+-- Validation: nothing half-saved, and a new product is not created either.
+select pg_temp.fails('R7a same ingredient twice', format('select public.owner_save_product(null, %L, null, %L, 0, 1000, 0, %L, false, %L::jsonb)', current_setting('t.o'), 'Gagal', 'bar',
+  jsonb_build_array(jsonb_build_object('ingredientId', pg_temp.ing('Gelas'), 'qty', 1, 'unit', 'pcs'), jsonb_build_object('ingredientId', pg_temp.ing('Gelas'), 'qty', 2, 'unit', 'pcs'))::text), 'hanya boleh sekali');
+select pg_temp.fails('R7b qty 0', format('select public.owner_save_product(null, %L, null, %L, 0, 1000, 0, %L, false, %L::jsonb)', current_setting('t.o'), 'Gagal', 'bar',
+  jsonb_build_array(jsonb_build_object('ingredientId', pg_temp.ing('Gelas'), 'qty', 0, 'unit', 'pcs'))::text), 'Jumlah bahan tidak valid');
+select pg_temp.fails('R7c qty with 4 decimals', format('select public.owner_save_product(null, %L, null, %L, 0, 1000, 0, %L, false, %L::jsonb)', current_setting('t.o'), 'Gagal', 'bar',
+  jsonb_build_array(jsonb_build_object('ingredientId', pg_temp.ing('Gelas'), 'qty', 1.2345, 'unit', 'pcs'))::text), 'Jumlah bahan tidak valid');
+select pg_temp.fails('R7d 41 lines', format('select public.owner_save_product(null, %L, null, %L, 0, 1000, 0, %L, false, %L::jsonb)', current_setting('t.o'), 'Gagal', 'bar',
+  (select jsonb_agg(jsonb_build_object('ingredientId', pg_temp.ing('Gelas'), 'qty', 1, 'unit', 'pcs')) from generate_series(1, 41))::text), 'maksimal 40');
+select pg_temp.fails('R7e unit of another family', format('select public.owner_save_product(null, %L, null, %L, 0, 1000, 0, %L, false, %L::jsonb)', current_setting('t.o'), 'Gagal', 'bar',
+  jsonb_build_array(jsonb_build_object('ingredientId', pg_temp.ing('Gelas'), 'qty', 1, 'unit', 'g'))::text), 'Satuan tidak cocok');
+select pg_temp.fails('R7f unknown ingredient', format('select public.owner_save_product(null, %L, null, %L, 0, 1000, 0, %L, false, %L::jsonb)', current_setting('t.o'), 'Gagal', 'bar',
+  jsonb_build_array(jsonb_build_object('ingredientId', gen_random_uuid(), 'qty', 1, 'unit', 'pcs'))::text), 'tidak ditemukan');
+reset role;
+select pg_temp.ok('R7g no product "Gagal" was created by the failed saves', not exists (select 1 from public.products where name = 'Gagal'));
+
+-- A Rp 0 ingredient still gives a recipe product, flagged as an estimate.
+set role authenticated;
+select set_config('t.free', public.owner_save_product(null, current_setting('t.o')::uuid, null, 'Air putih', 0, 3000, 0, 'bar', false,
+  jsonb_build_array(jsonb_build_object('ingredientId', pg_temp.ing('Gratis'), 'qty', 5, 'unit', 'g')))::text, false);
+select pg_temp.ok('R8 Rp 0 ingredient: recipe source, incomplete, HPP 0',
+  public.owner_get_recipe(current_setting('t.free')::uuid) ->> 'source' = 'recipe'
+  and (public.owner_get_recipe(current_setting('t.free')::uuid) ->> 'incomplete')::boolean
+  and (public.owner_get_recipe(current_setting('t.free')::uuid) ->> 'hpp')::numeric = 0);
+
+-- A manual product is saved as before.
+select public.owner_save_product(current_setting('t.p2')::uuid, current_setting('t.o')::uuid, null, 'Roti bakar', 5500, 15000, 100, 'kitchen', true, null);
+reset role;
+select pg_temp.ok('R9 manual product: p_hpp applies, recipe null leaves it manual',
+  (select hpp from public.products where id = current_setting('t.p2')::uuid) = 5500
+  and (select hpp_source from public.products where id = current_setting('t.p2')::uuid) = 'manual');
+
+-- Review focus 3: removing the recipe keeps the last HPP and hands the field back to the owner.
+set role authenticated;
+select public.owner_save_product(current_setting('t.latte')::uuid, current_setting('t.o')::uuid, null, 'Es latte', 1, 26000, 0, 'bar', false, '[]'::jsonb);
+reset role;
+select pg_temp.ok('R4a recipe removed: manual, last HPP kept, no lines',
+  (select hpp from public.products where id = current_setting('t.latte')::uuid) = 6960
+  and (select hpp_source from public.products where id = current_setting('t.latte')::uuid) = 'manual'
+  and not exists (select 1 from public.recipe_lines where product_id = current_setting('t.latte')::uuid));
+set role authenticated;
+select public.owner_save_product(current_setting('t.latte')::uuid, current_setting('t.o')::uuid, null, 'Es latte', 7000, 26000, 0, 'bar', false, null);
+reset role;
+select pg_temp.ok('R4b after that, a typed HPP applies again', (select hpp from public.products where id = current_setting('t.latte')::uuid) = 7000);
+
+-- Another business cannot read or preview a recipe.
+select set_config('request.jwt.claim.sub', 'e8400000-0000-0000-0000-000000000002', false);
+set role authenticated;
+select pg_temp.fails('X3a get recipe', format('select public.owner_get_recipe(%L)', current_setting('t.free')), 'Sesi kasir tidak valid');
+select pg_temp.fails('X3b preview recipe', format('select public.owner_preview_recipe(%L, %L::jsonb)', current_setting('t.o'), '[]'), 'Sesi kasir tidak valid');
+select pg_temp.fails('X3c save product with a recipe', format('select public.owner_save_product(%L, %L, null, %L, 0, 1000, 0, %L, false, %L::jsonb)', current_setting('t.free'), current_setting('t.o'), 'Air putih', 'bar', '[]'), 'Sesi kasir tidak valid');
+reset role;
