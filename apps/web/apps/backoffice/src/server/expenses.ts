@@ -30,11 +30,11 @@ export const cancelExpenseItem = createServerFn({ method: 'POST' })
     return res.ok ? { ok: true } : res;
   });
 
-/** Adds items to a shift's expenses (073). Never from the drawer (077). */
+/** Adds items to a shift's expenses (073), from the drawer or not; the shift's cash follows. */
 export const addExpenseItems = createServerFn({ method: 'POST' })
   .validator(parser(expenseAddSchema))
   .handler(async ({ data }): Promise<ActionResult> => {
     const { callRpc } = await import('./supabase.server');
-    const res = await callRpc('owner_add_expense_items', { p_shift_id: data.shiftId, p_paid_from: 'other', p_items: data.items });
+    const res = await callRpc('owner_add_expense_items', { p_shift_id: data.shiftId, p_paid_from: data.paidFrom, p_items: data.items });
     return res.ok ? { ok: true } : res;
   });

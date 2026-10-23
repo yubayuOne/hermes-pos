@@ -294,7 +294,7 @@ const blank = (): Draft => ({ name: '', category: 'belanja', quantity: '1', unit
 /**
  * New items for a shift. With `shift` (Tambah barang on a shift's card) that shift; without it (Catat pengeluaran) the owner
  * picks an outlet, a date, and one of that day's shifts, the latest by default: every expense belongs to a shift.
- * Expenses never come out of the drawer (077); the database recomputes the total.
+ * The owner says whether the money came from the drawer: from the drawer it leaves that shift's cash (087). The database recomputes the total.
  */
 function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; number: number }; outletId?: string | null; today?: string; onClose: () => void }) {
   const { t, lang } = useI18n();
@@ -306,6 +306,7 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
   // The day the shifts come from: the chosen date, or the nearest earlier day with a shift (a purchase on a closed day).
   const [shiftDay, setShiftDay] = useState('');
   const [shiftId, setShiftId] = useState('');
+  const [paidFrom, setPaidFrom] = useState<'drawer' | 'other'>('other');
   useEffect(() => {
     if (shift || !outlet || !date) return;
     let live = true;
@@ -342,7 +343,7 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
     setErrors(errs);
     if (errs.some(Boolean) || !target) return;
     const items = checks.map((c) => (c.success ? c.data : null)).filter((x) => x !== null);
-    const res = await act.run(() => addExpenseItems({ data: { shiftId: target.id, items } }), {
+    const res = await act.run(() => addExpenseItems({ data: { shiftId: target.id, paidFrom, items } }), {
       success: t('Pengeluaran shift {n} ditambah.', { n: target.number }),
     });
     if (res) onClose();
@@ -353,7 +354,7 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
       wide
       onOpenChange={(o) => !o && onClose()}
       title={shift ? t('Tambah barang ke shift {n}', { n: shift.number }) : t('Catat pengeluaran')}
-      description={t('Pengeluaran dicatat di laporan shift dan tidak mengubah kas laci.')}
+      description={t('Kalau dibayar dari laci, kas seharusnya shift itu berkurang dan selisihnya dihitung ulang.')}
       footer={
         <>
           <Button onClick={onClose} disabled={act.busy}>
@@ -395,6 +396,12 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
             )}
           </div>
         )}
+        <Field label={t('Uang dari')}>
+          <Select value={paidFrom} onChange={(ev) => setPaidFrom(ev.target.value === 'drawer' ? 'drawer' : 'other')}>
+            <option value="other">{t('Bukan dari laci')}</option>
+            <option value="drawer">{t('Kas laci')}</option>
+          </Select>
+        </Field>
         {rows.map((r, k) => (
           <fieldset key={k} className="grid grid-cols-2 gap-3 rounded border-[1.5px] border-ink bg-slip p-4 sm:grid-cols-6">
             <legend className="sr-only">{t('Barang {n}', { n: k + 1 })}</legend>

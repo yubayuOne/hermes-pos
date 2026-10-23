@@ -201,6 +201,7 @@ export const expenseItemSchema = z.object({
 });
 export const expenseAddSchema = z.object({
   shiftId: uuid,
+  paidFrom: z.enum(['drawer', 'other'], { error: 'Pilih sumber uang.' }),
   items: z.array(expenseItemSchema).min(1, 'Isi minimal satu barang.').max(30, 'Maksimal 30 barang sekali simpan.'),
 });
 export const expenseCancelSchema = z.object({

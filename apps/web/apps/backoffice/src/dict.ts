@@ -1242,4 +1242,7 @@ export const EN: Dict = {
   'HPP terakhir tetap dipakai sebagai HPP ketikan. Ubah di halaman Produk.': 'The last HPP stays as the typed HPP. Change it on the Products page.',
   'Menu tidak ditemukan.': 'Menu item not found.',
   'HPP dari resep. Ubah lewat tab Resep.': 'HPP comes from the recipe. Change it on the Recipes tab.',
+  // Expense source (087)
+  'Pilih sumber uang.': 'Choose where the money came from.',
+  'Kalau dibayar dari laci, kas seharusnya shift itu berkurang dan selisihnya dihitung ulang.': "If it is paid from the drawer, that shift's expected cash goes down and its difference is recalculated.",
 };

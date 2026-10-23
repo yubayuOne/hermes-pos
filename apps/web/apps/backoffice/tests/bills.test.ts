@@ -58,16 +58,17 @@ test('cash in or out: a positive whole amount and a reason', () => {
   assert.ok(!cashMovementSchema.safeParse({ ...base, direction: 'keluar' }).success);
 });
 
-test('expenses: items a reason to cancel', () => {
+test('expenses: items like the POS, a reason to cancel', () => {
   const item = { name: ' Gula ', category: 'belanja', quantity: 1.5, unit: 'kg', amount: 36000 };
-  const r = expenseAddSchema.safeParse({ shiftId: id, items: [item] });
+  const r = expenseAddSchema.safeParse({ shiftId: id, paidFrom: 'drawer', items: [item] });
   assert.ok(r.success);
   assert.equal(r.data.items[0].name, 'Gula');
-  const bad = (patch: object) => first(expenseAddSchema.safeParse({ shiftId: id, items: [{ ...item, ...patch }] }));
+  const bad = (patch: object) => first(expenseAddSchema.safeParse({ shiftId: id, paidFrom: 'drawer', items: [{ ...item, ...patch }] }));
   assert.equal(bad({ unit: 'ton' }), 'Pilih satuan.');
   assert.equal(bad({ amount: 0 }), 'Harga total harus lebih dari Rp0.');
   assert.equal(bad({ quantity: 1.2345 }), 'Jumlah maksimal 3 angka di belakang koma.');
-  assert.equal(first(expenseAddSchema.safeParse({ shiftId: id, items: [] })), 'Isi minimal satu barang.');
+  assert.equal(first(expenseAddSchema.safeParse({ shiftId: id, paidFrom: 'drawer', items: [] })), 'Isi minimal satu barang.');
+  assert.equal(first(expenseAddSchema.safeParse({ shiftId: id, paidFrom: 'bank', items: [item] })), 'Pilih sumber uang.');
   assert.equal(first(expenseCancelSchema.safeParse({ itemId: id, reason: ' x ' })), 'Tulis alasan, minimal 3 huruf.');
   assert.ok(expenseCancelSchema.safeParse({ itemId: id, reason: 'Dicatat dua kali' }).success);
 });
