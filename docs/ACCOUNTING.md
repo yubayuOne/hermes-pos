@@ -99,6 +99,8 @@ HPP menu. Supaya HPP tidak meleset tanpa ketahuan, laporan bulanan menampilkan:
 Kalau angka ini terus besar, HPP menu perlu disesuaikan. Pilihan yang lebih akurat (stok bahan baku + resep per menu, HPP dari
 harga beli) bisa ditambahkan kemudian tanpa mengubah prinsip apa pun di dokumen ini (bagian 13).
 
+Belanja dari laci dicatat sekali sebagai pengeluaran (efek kas tetap di sana) lalu ditautkan ke stok (089): stok, harga rata-rata, dan HPP berubah, kas tidak. Belanja yang dibayar pemilik dicatat di Belanja tanpa efek kas.
+
 **Sudah ada: HPP dari resep (084 sampai 086).** Pemilik mengisi bahan (harga kemasan dan isinya) dan resep per menu di halaman
 Bahan & Resep; HPP menu dihitung otomatis dan disimpan di `products.hpp`, kolom yang sama yang dibaca kasir, transaksi, nilai
 stok, dan laporan. Aturannya:
