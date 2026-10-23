@@ -390,3 +390,97 @@ select pg_temp.ok('S10 a failing consumption never blocks the sale',
   and pg_temp.sales(current_setting('t.s10')) = 0
   and pg_temp.sales(current_setting('t.s10b')) = 3
   and pg_temp.st('Susu') = split_part(split_part(current_setting('t.snap'), 'Susu=', 2), ',', 1)::numeric - 200);
+
+-- ================================================================ count ingredient stock (Task 3)
+create or replace function pg_temp.cl(n text, q numeric, u text) returns jsonb language sql as $$
+  select jsonb_build_object('ingredientId', pg_temp.ing(n), 'qty', q, 'unit', u)
+$$;
+create or replace function pg_temp.cline(r jsonb, n text) returns jsonb language sql as $$
+  select e from jsonb_array_elements(r -> 'lines') e where e ->> 'name' = n
+$$;
+create or replace function pg_temp.moves(n text, k text) returns bigint language sql security definer as $$
+  select count(*) from public.ingredient_moves where ingredient_id = pg_temp.ing(n)::uuid and kind = k
+$$;
+
+-- C1: Gula aren is not running (it was repacked to 500 g); its first count starts it at the counted amount, no loss.
+update public.ingredients set stock = 123 where id = pg_temp.ing('Gula aren')::uuid;
+set role authenticated;
+select set_config('t.k1c', public.owner_count_ingredients(current_setting('t.o')::uuid, jsonb_build_array(pg_temp.cl('Gula aren', 5, 'kg')))::text, false);
+reset role;
+select pg_temp.ok('C1 first count is an opening',
+  pg_temp.st('Gula aren') = 5000 and pg_temp.icol('Gula aren', 'stock_started') = 'true'
+  and pg_temp.cline(current_setting('t.k1c')::jsonb, 'Gula aren') = jsonb_build_object('ingredientId', pg_temp.ing('Gula aren'), 'name', 'Gula aren',
+      'kind', 'opening', 'before', 123, 'after', 5000, 'diff', 5000, 'value', 0)
+  and pg_temp.moves('Gula aren', 'opening') = 1 and pg_temp.moves('Gula aren', 'count') = 0
+  and (select qty = 5000 and counted = 5000 from public.ingredient_moves where ingredient_id = pg_temp.ing('Gula aren')::uuid and kind = 'opening'));
+
+-- C2: Susu on hand 11700 ml at 17.000 a liter; counting 11000 ml is -700 ml worth -700 x 17 = -11.900.
+update public.ingredients set stock = 11700, price = 17000 where id = pg_temp.ing('Susu')::uuid;
+set role authenticated;
+select set_config('t.k2c', public.owner_count_ingredients(current_setting('t.o')::uuid, jsonb_build_array(pg_temp.cl('Susu', 11000, 'ml')))::text, false);
+reset role;
+select pg_temp.ok('C2 later count books the difference',
+  pg_temp.st('Susu') = 11000
+  and pg_temp.cline(current_setting('t.k2c')::jsonb, 'Susu') = jsonb_build_object('ingredientId', pg_temp.ing('Susu'), 'name', 'Susu',
+      'kind', 'count', 'before', 11700, 'after', 11000, 'diff', -700, 'value', -11900)
+  and (select qty = -700 and counted = 11000 from public.ingredient_moves where ingredient_id = pg_temp.ing('Susu')::uuid and kind = 'count'));
+select pg_temp.ok('C3 average unchanged by a count', pg_temp.icol('Susu', 'price')::numeric = 17000 and pg_temp.icol('Gula aren', 'price')::numeric = 17000);
+
+-- C4: counted in the pack's own family, converted to base units.
+select set_config('t.h0', pg_temp.hpp()::text, false);
+set role authenticated;
+select set_config('t.k4', public.owner_count_ingredients(current_setting('t.o')::uuid,
+  jsonb_build_array(pg_temp.cl('Susu', 10.5, 'l'), pg_temp.cl('Kopi', 0.75, 'kg'), pg_temp.cl('Gelas', 4, 'pcs')))::text, false);
+select pg_temp.fails('C4a wrong family', format('select public.owner_count_ingredients(%L, %L)', current_setting('t.o'), jsonb_build_array(pg_temp.cl('Susu', 1, 'kg'))), 'jenis');
+select pg_temp.fails('C4b unknown unit', format('select public.owner_count_ingredients(%L, %L)', current_setting('t.o'), jsonb_build_array(pg_temp.cl('Susu', 1, 'sdm'))), 'Satuan');
+reset role;
+select pg_temp.ok('C4 units', pg_temp.st('Susu') = 10500 and pg_temp.st('Kopi') = 750 and pg_temp.st('Gelas') = 4
+  and (current_setting('t.k4')::jsonb -> 'lines' ->> 1 is not null) and jsonb_array_length(current_setting('t.k4')::jsonb -> 'lines') = 3
+  and (select count(distinct doc_id) from public.ingredient_moves where kind = 'count' and at = (select max(at) from public.ingredient_moves where kind = 'count')) = 1
+  and pg_temp.hpp() = current_setting('t.h0')::numeric);
+
+-- C5 limits: nothing is saved by a refused count.
+select set_config('t.snap', (select count(*)::text || '/' || sum(stock)::text from public.ingredients where outlet_id = current_setting('t.o')::uuid), false);
+set role authenticated;
+select pg_temp.fails('C5a negative', format('select public.owner_count_ingredients(%L, %L)', current_setting('t.o'), jsonb_build_array(pg_temp.cl('Susu', -1, 'ml'))), 'Jumlah hitung');
+select pg_temp.fails('C5b 4 decimals', format('select public.owner_count_ingredients(%L, %L)', current_setting('t.o'), jsonb_build_array(pg_temp.cl('Susu', 1.2345, 'ml'))), 'Jumlah hitung');
+select pg_temp.fails('C5c 1e9', format('select public.owner_count_ingredients(%L, %L)', current_setting('t.o'), jsonb_build_array(pg_temp.cl('Susu', 1000000000, 'ml'))), 'Jumlah hitung');
+select pg_temp.fails('C5d twice', format('select public.owner_count_ingredients(%L, %L)', current_setting('t.o'), jsonb_build_array(pg_temp.cl('Susu', 1, 'ml'), pg_temp.cl('Susu', 2, 'ml'))), 'sekali');
+select pg_temp.fails('C5e other outlet', format('select public.owner_count_ingredients(%L, %L)', current_setting('t.o'),
+  jsonb_build_array(pg_temp.cl('Susu', 1, 'ml'), jsonb_build_object('ingredientId', gen_random_uuid(), 'qty', 1, 'unit', 'ml'))), 'tidak ditemukan');
+select pg_temp.fails('C5f 201 lines', format('select public.owner_count_ingredients(%L, %L)', current_setting('t.o'),
+  (select jsonb_agg(jsonb_build_object('ingredientId', gen_random_uuid(), 'qty', 1, 'unit', 'ml')) from generate_series(1, 201))), 'maksimal 200');
+select pg_temp.fails('C5g no lines', format('select public.owner_count_ingredients(%L, %L)', current_setting('t.o'), '[]'), 'minimal satu');
+reset role;
+select pg_temp.ok('C5 limits leave nothing saved',
+  (select count(*)::text || '/' || sum(stock)::text from public.ingredients where outlet_id = current_setting('t.o')::uuid) = current_setting('t.snap'));
+
+-- C6: a negative stock is fixed by the count.
+update public.ingredients set stock = -300 where id = pg_temp.ing('Gelas')::uuid;
+set role authenticated;
+select set_config('t.k6', public.owner_count_ingredients(current_setting('t.o')::uuid, jsonb_build_array(pg_temp.cl('Gelas', 1000, 'pcs')))::text, false);
+reset role;
+select pg_temp.ok('C6 negative stock fixed', pg_temp.st('Gelas') = 1000
+  and (pg_temp.cline(current_setting('t.k6')::jsonb, 'Gelas') ->> 'diff')::numeric = 1300
+  and pg_temp.cline(current_setting('t.k6')::jsonb, 'Gelas') ->> 'kind' = 'count');
+
+-- C7
+set role authenticated;
+select pg_temp.ok('C7 last counted',
+  exists (select 1 from jsonb_array_elements(public.owner_list_ingredients(current_setting('t.o')::uuid)) e
+          where e ->> 'name' = 'Susu' and e ->> 'lastCountedAt' is not null)
+  and exists (select 1 from jsonb_array_elements(public.owner_list_ingredients(current_setting('t.o')::uuid)) e
+          where e ->> 'name' = 'Gula aren' and e ->> 'lastCountedAt' is not null)
+  and exists (select 1 from jsonb_array_elements(public.owner_list_ingredients(current_setting('t.o')::uuid)) e
+          where e ->> 'name' = 'SKM' and e -> 'lastCountedAt' = 'null'::jsonb));
+reset role;
+select pg_temp.ok('C9 grants',
+  has_function_privilege('authenticated', 'public.owner_count_ingredients(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.owner_count_ingredients(uuid, jsonb)', 'execute'));
+
+-- C8
+select set_config('request.jwt.claim.sub', 'e8800000-0000-0000-0000-000000000002', false);
+set role authenticated;
+select pg_temp.fails('C8 another business', format('select public.owner_count_ingredients(%L, %L)', current_setting('t.o'), jsonb_build_array(pg_temp.cl('Susu', 1, 'ml'))), 'Sesi kasir tidak valid');
+reset role;
+select pg_temp.ok('C8b nothing changed', pg_temp.st('Susu') = 10500);

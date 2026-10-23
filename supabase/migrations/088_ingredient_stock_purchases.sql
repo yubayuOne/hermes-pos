@@ -514,3 +514,67 @@ begin
 end $$;
 revoke all on function public.owner_correct_bill(uuid, jsonb, public.payment_method, text, text, text) from public, anon;
 grant execute on function public.owner_correct_bill(uuid, jsonb, public.payment_method, text, text, text) to authenticated;
+
+-- ================================================================ count ingredient stock (Task 3)
+-- p_lines: [{"ingredientId", "qty", "unit"}]. The count replaces the stock. An ingredient that is not running yet starts
+-- here ('opening': no loss); otherwise the difference is the loss or gain ('count', valued at the average). The price
+-- never changes, and nothing is posted to the ledger (release B2).
+create or replace function public.owner_count_ingredients(p_outlet_id uuid, p_lines jsonb)
+returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  b uuid := public.assert_outlet_owner(p_outlet_id);
+  uuid_re constant text := '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
+  v_doc uuid := gen_random_uuid();
+  ids uuid[];
+  x record;
+  v_after numeric;
+  v_diff numeric;
+  v_kind text;
+  v_value numeric;
+  v_out jsonb := '[]'::jsonb;
+begin
+  if not public.subscription_active(b) then perform public.raise_expired('menghitung stok'); end if;
+  if jsonb_typeof(p_lines) is distinct from 'array' or jsonb_array_length(p_lines) = 0 then raise exception 'Isi minimal satu bahan'; end if;
+  if jsonb_array_length(p_lines) > 200 then raise exception 'Hitung stok maksimal 200 bahan'; end if;
+  if exists (select 1 from jsonb_array_elements(p_lines) e where jsonb_typeof(e) <> 'object' or coalesce(e ->> 'ingredientId', '') !~* uuid_re) then
+    raise exception 'Data hitung stok tidak valid';
+  end if;
+  -- At most 9 whole digits keeps the count under 1.000.000.000.
+  if exists (select 1 from jsonb_array_elements(p_lines) e where coalesce(e ->> 'qty', '') !~ '^[0-9]{1,9}(\.[0-9]{1,3})?$') then
+    raise exception 'Jumlah hitung harus 0 atau lebih, sampai 3 desimal, di bawah 1.000.000.000';
+  end if;
+  if (select count(*) <> count(distinct lower(e ->> 'ingredientId')) from jsonb_array_elements(p_lines) e) then
+    raise exception 'Satu bahan hanya boleh sekali per hitung stok';
+  end if;
+  ids := array(select distinct (e ->> 'ingredientId')::uuid from jsonb_array_elements(p_lines) e);
+
+  perform 1 from public.ingredients where id = any(ids) and outlet_id = p_outlet_id order by id for update;
+  if (select count(*) from public.ingredients where id = any(ids) and outlet_id = p_outlet_id) <> cardinality(ids) then
+    raise exception 'Bahan tidak ditemukan di outlet ini';
+  end if;
+
+  for x in
+    select i.*, e ->> 'unit' as unit, (e ->> 'qty')::numeric as qty, i.pack_qty * public.unit_factor(i.pack_unit) as per_pack
+    from jsonb_array_elements(p_lines) e join public.ingredients i on i.id = (e ->> 'ingredientId')::uuid
+    order by i.id
+  loop
+    if public.unit_family(x.unit) <> public.unit_family(x.pack_unit) then
+      raise exception 'Satuan % harus sejenis dengan satuan kemasan %', x.name, x.pack_unit;
+    end if;
+    v_after := round(x.qty * public.unit_factor(x.unit), 3);
+    if x.stock_started then
+      v_kind := 'count'; v_diff := v_after - x.stock; v_value := round(v_diff * x.price / x.per_pack, 2);
+    else
+      v_kind := 'opening'; v_diff := v_after; v_value := 0;
+    end if;
+    update public.ingredients set stock = v_after, stock_started = true, updated_at = now() where id = x.id;
+    insert into public.ingredient_moves(ingredient_id, outlet_id, kind, qty, counted, doc_id, created_by)
+    values (x.id, p_outlet_id, v_kind, v_diff, v_after, v_doc, auth.uid());
+    v_out := v_out || jsonb_build_object('ingredientId', x.id, 'name', x.name, 'kind', v_kind, 'before', x.stock,
+      'after', v_after, 'diff', v_diff, 'value', v_value);
+  end loop;
+  return jsonb_build_object('lines', v_out);
+end $$;
+revoke all on function public.owner_count_ingredients(uuid, jsonb) from public, anon;
+grant execute on function public.owner_count_ingredients(uuid, jsonb) to authenticated;
