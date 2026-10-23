@@ -245,3 +245,17 @@ select pg_temp.fails('X3a get recipe', format('select public.owner_get_recipe(%L
 select pg_temp.fails('X3b preview recipe', format('select public.owner_preview_recipe(%L, %L::jsonb)', current_setting('t.o'), '[]'), 'Sesi kasir tidak valid');
 select pg_temp.fails('X3c save product with a recipe', format('select public.owner_save_product(%L, %L, null, %L, 0, 1000, 0, %L, false, %L::jsonb)', current_setting('t.free'), current_setting('t.o'), 'Air putih', 'bar', '[]'), 'Sesi kasir tidak valid');
 reset role;
+
+-- ================================================================ the stock book stays consistent (P7) when a recipe product's HPP moves
+create or replace function pg_temp.p7() returns jsonb language sql security definer as $$
+  select coalesce(jsonb_agg(f), '[]'::jsonb) from jsonb_array_elements(
+    public.owner_day_close(current_setting('t.o')::uuid, (now() at time zone 'Asia/Jakarta')::date) -> 'checks') f
+  where f ->> 'rule' = 'P7'
+$$;
+select set_config('request.jwt.claim.sub', 'e8400000-0000-0000-0000-000000000001', false);
+set role authenticated;
+select public.owner_save_product(current_setting('t.p')::uuid, current_setting('t.o')::uuid, null, 'Es kopi susu', 0, 22000, 100, 'kitchen', true, pg_temp.kopi_lines());
+select public.owner_save_ingredient(current_setting('t.o')::uuid, pg_temp.ing('Susu cair')::uuid, 'Susu cair', 25000, 1, 'l');
+reset role;
+select pg_temp.ok('P7a a tracked recipe product moved with the ingredient price (18000 -> 25000 per liter adds 1050)', pg_temp.hpp() = 7560);
+select pg_temp.ok('P7b the stock book has no P7 failure', pg_temp.p7() = '[]'::jsonb);
