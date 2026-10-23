@@ -83,11 +83,11 @@ select pg_temp.ok('G1 clients have no direct access to the new tables',
 -- ================================================================ ingredient RPCs
 select pg_temp.ok('I1 owners may call the ingredient functions, anon may not',
   has_function_privilege('authenticated', 'public.owner_list_ingredients(uuid)', 'execute')
-  and has_function_privilege('authenticated', 'public.owner_save_ingredient(uuid, uuid, text, numeric, numeric, text)', 'execute')
+  and has_function_privilege('authenticated', 'public.owner_save_ingredient(uuid, uuid, text, numeric, numeric, text, text)', 'execute')
   and has_function_privilege('authenticated', 'public.owner_preview_ingredient(uuid, numeric, numeric, text)', 'execute')
   and has_function_privilege('authenticated', 'public.owner_delete_ingredient(uuid)', 'execute')
   and not has_function_privilege('anon', 'public.owner_list_ingredients(uuid)', 'execute')
-  and not has_function_privilege('anon', 'public.owner_save_ingredient(uuid, uuid, text, numeric, numeric, text)', 'execute'));
+  and not has_function_privilege('anon', 'public.owner_save_ingredient(uuid, uuid, text, numeric, numeric, text, text)', 'execute'));
 
 select set_config('request.jwt.claim.sub', 'e8400000-0000-0000-0000-000000000001', false);
 set role authenticated;
