@@ -257,6 +257,7 @@ function ProductDialog({
       trackStock: v.trackStock,
       stock: Number(v.stock || 0),
       station: v.station,
+      recipe: null, // Task 6 replaces this with the recipe editor's lines
     });
     if (!data) return;
     const res = await act.run(() => saveProduct({ data }), {

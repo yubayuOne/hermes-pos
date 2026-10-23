@@ -1,3 +1,6 @@
+import type { Unit } from './units';
+
+export type { Unit };
 export type ActionResult<T = undefined> = { ok: true; data?: T; message?: string } | { ok: false; error: string; field?: string };
 
 export type Session = { email: string; userId: string; businessId: string | null; username: string | null };
@@ -312,7 +315,26 @@ export type Product = {
   station: 'kitchen' | 'bar';
   isActive: boolean;
   imageUrl: string | null;
+  /** 'recipe': hpp is computed from the product's recipe and cannot be typed (084). */
+  hppSource: 'manual' | 'recipe';
 };
+
+// ---------- Ingredients and recipes (084) ----------
+export type Ingredient = {
+  id: string;
+  name: string;
+  price: number;
+  packQty: number;
+  packUnit: Unit;
+  /** Price per base unit, as the database computes it. */
+  unitCost: number;
+  baseUnit: 'g' | 'ml' | 'pcs';
+  usedBy: number;
+};
+export type RecipeLineInput = { ingredientId: string; qty: number; unit: Unit };
+export type RecipeCostLine = RecipeLineInput & { name: string; cost: number; incomplete: boolean };
+export type RecipeCost = { source: 'manual' | 'recipe'; lines: RecipeCostLine[]; hpp: number; incomplete: boolean };
+export type IngredientImpact = { productId: string; name: string; oldHpp: number; newHpp: number };
 
 export type VoucherStatus = 'active' | 'expired' | 'used_up' | 'inactive';
 export type Voucher = {

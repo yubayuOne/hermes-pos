@@ -1,5 +1,9 @@
 import { DEFAULT_TZ, dayDiff, isoDay } from '@hermes-pos/ui';
+import { UNITS, type Unit } from '../lib/units';
 import type {
+  Ingredient,
+  IngredientImpact,
+  RecipeCost,
   StockDocument,
   StockDocumentList,
   StockItem,
@@ -465,4 +469,42 @@ export function toStockDocument(r: Row): StockDocument {
 export function toStockDocumentList(raw: unknown): StockDocumentList {
   const r = (raw ?? {}) as Row;
   return { total: num(r.total), rows: rows(r.rows).map(toStockDocument) };
+}
+
+// ---------- Ingredients and recipes (084) ----------
+const unitOf = (v: unknown): Unit => (UNITS.includes(v as Unit) ? (v as Unit) : 'g');
+
+export function toIngredient(r: Row): Ingredient {
+  const base = str(r.baseUnit);
+  return {
+    id: str(r.id),
+    name: str(r.name),
+    price: num(r.price),
+    packQty: num(r.packQty),
+    packUnit: unitOf(r.packUnit),
+    unitCost: num(r.unitCost),
+    baseUnit: base === 'ml' || base === 'pcs' ? base : 'g',
+    usedBy: num(r.usedBy),
+  };
+}
+
+export function toRecipeCost(r: Row | null): RecipeCost {
+  const lines = Array.isArray(r?.lines) ? (r.lines as Row[]) : [];
+  return {
+    source: r?.source === 'recipe' ? 'recipe' : 'manual',
+    lines: lines.map((l) => ({
+      ingredientId: str(l.ingredientId),
+      name: str(l.name),
+      qty: num(l.qty),
+      unit: unitOf(l.unit),
+      cost: num(l.cost),
+      incomplete: l.incomplete === true,
+    })),
+    hpp: num(r?.hpp),
+    incomplete: r?.incomplete === true,
+  };
+}
+
+export function toImpact(r: Row): IngredientImpact {
+  return { productId: str(r.productId), name: str(r.name), oldHpp: num(r.oldHpp), newHpp: num(r.newHpp) };
 }

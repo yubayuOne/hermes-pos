@@ -93,7 +93,7 @@ export const listCatalog = createServerFn({ method: 'GET' })
       supabase.from('categories').select('id,name').eq('outlet_id', data.outletId).eq('is_active', true).order('sort_order').order('name'),
       supabase
         .from('products')
-        .select('id,category_id,name,hpp,selling_price,stock,track_stock,station,is_active,image_url')
+        .select('id,category_id,name,hpp,hpp_source,selling_price,stock,track_stock,station,is_active,image_url')
         .eq('outlet_id', data.outletId)
         .eq('is_temporary', false)
         .order('name'),
@@ -113,6 +113,7 @@ export const listCatalog = createServerFn({ method: 'GET' })
         station: (r.station ?? 'kitchen') as 'kitchen' | 'bar',
         isActive: r.is_active,
         imageUrl: r.image_url ?? null,
+        hppSource: r.hpp_source === 'recipe' ? ('recipe' as const) : ('manual' as const),
       })),
     };
   });
@@ -128,6 +129,8 @@ export const createCategory = createServerFn({ method: 'POST' })
   });
 
 const productArgs = (p: ReturnType<typeof productSchema.parse>) => ({
+  p_product_id: p.id ?? null,
+  p_recipe: p.recipe,
   p_outlet_id: p.outletId,
   p_category_id: p.categoryId,
   p_name: p.name,
@@ -142,9 +145,7 @@ export const saveProduct = createServerFn({ method: 'POST' })
   .validator(parser(productSchema))
   .handler(async ({ data }): Promise<ActionResult> => {
     const { callRpc } = await import('./supabase.server');
-    return result(
-      data.id ? await callRpc('update_product', { p_product_id: data.id, ...productArgs(data) }) : await callRpc('create_product', productArgs(data)),
-    );
+    return result(await callRpc('owner_save_product', productArgs(data)));
   });
 
 /** Active switch. Switching on counts against the per-outlet product limit (migration 031). */

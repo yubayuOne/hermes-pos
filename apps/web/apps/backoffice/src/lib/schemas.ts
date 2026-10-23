@@ -112,6 +112,33 @@ export const cashierActiveSchema = z.object({ cashierId: uuid, active: z.boolean
 export const outletRefSchema = z.object({ outletId: uuid });
 export const productImageRefSchema = outletRefSchema.extend({ productId: uuid });
 export const categorySchema = z.object({ outletId: uuid, name: req('Isi nama kategori.', 20, 'Nama kategori maksimal 20 huruf.') });
+// ---------- Ingredients and recipes (084) ----------
+const unit = z.enum(['g', 'kg', 'ml', 'l', 'pcs'], { error: 'Pilih satuan.' });
+/** Up to 3 decimals, above 0, below a million: the same limits as the database (apply_recipe, ingredients.pack_qty). */
+const amount3 = (label: string) =>
+  z
+    .number({ error: `${label} harus angka.` })
+    .refine((v) => !Number.isFinite(v) || Math.abs(v * 1000 - Math.round(v * 1000)) < 1e-6, `${label} maksimal 3 angka di belakang koma.`)
+    .refine((v) => !Number.isFinite(v) || v > 0, `${label} harus lebih dari 0.`)
+    .refine((v) => !Number.isFinite(v) || v < 1_000_000, `${label} terlalu besar.`);
+export const ingredientSchema = z.object({
+  id: uuid.nullish(),
+  outletId: uuid,
+  name: req('Nama bahan wajib diisi.', 60),
+  price: rupiah('Harga beli harus angka, boleh Rp0.'),
+  packQty: amount3('Isi kemasan'),
+  packUnit: unit,
+});
+export const ingredientPreviewSchema = z.object({ id: uuid, price: rupiah('Harga beli harus angka, boleh Rp0.'), packQty: amount3('Isi kemasan'), packUnit: unit });
+export const ingredientRefSchema = z.object({ id: uuid });
+export const recipeLineSchema = z.object({ ingredientId: uuid, qty: amount3('Jumlah'), unit });
+const recipeLines = z
+  .array(recipeLineSchema)
+  .max(40, 'Resep maksimal 40 bahan.')
+  .refine((ls) => new Set(ls.map((l) => l.ingredientId)).size === ls.length, 'Satu bahan hanya boleh sekali di resep.');
+export const recipePreviewSchema = z.object({ outletId: uuid, lines: recipeLines });
+export const productRefSchema = z.object({ productId: uuid });
+
 export const productSchema = z.object({
   id: uuid.nullish(),
   outletId: uuid,
@@ -122,6 +149,8 @@ export const productSchema = z.object({
   trackStock: z.boolean(),
   stock: rupiah('Stok awal harus angka, boleh 0.'),
   station: z.enum(['kitchen', 'bar']),
+  /** null leaves the recipe as it is, [] removes it, lines replace it (owner_save_product). */
+  recipe: recipeLines.nullable(),
 });
 export const productActiveSchema = z.object({ id: uuid, active: z.boolean() });
 
