@@ -734,7 +734,7 @@ Tiga tab chip di bawah header: **Profil**, **Bisnis dan struk**, **Langganan**.
 
 - Isian Outlet (satu outlet) dan Tanggal (maksimal hari ini).
 - **Pemeriksaan:** satu kotak pine-soft "Semua angka hari ini cocok…" atau kotak fire-soft berisi setiap aturan yang gagal dalam kalimat biasa (P1 sampai P5, P7).
-- **Satu kartu per shift:** Shift n · kasir, jam buka sampai tutup, jumlah bill, omzet. Dua kolom: **Kas laci** (Kas awal, Penjualan tunai, Refund tunai, Uang masuk, Uang keluar, Kas seharusnya, Kas dihitung kasir, lalu Cocok / Kurang / Lebih) dan **QRIS** (Penjualan QRIS, Refund QRIS, QRIS seharusnya masuk, QRIS di aplikasi merchant, lalu Cocok / Kurang / Lebih). Catatan uang laci di bawahnya. Tombol kecil **Uang masuk** (uang laci kurang) dan **Uang keluar** (uang laci lebih), selalu ada.
+- **Satu kartu per shift:** Shift n · kasir, jam buka sampai tutup, jumlah bill, omzet. Dua kolom: **Kas laci** (Kas awal, Penjualan tunai, Refund tunai, Pengeluaran dari laci (bila ada), Uang masuk, Uang keluar, Kas seharusnya, Kas dihitung kasir, lalu Cocok / Kurang / Lebih) dan **QRIS** (Penjualan QRIS, Refund QRIS, QRIS seharusnya masuk, QRIS di aplikasi merchant, lalu Cocok / Kurang / Lebih). Catatan uang laci di bawahnya. Tombol kecil **Uang masuk** (uang laci kurang) dan **Uang keluar** (uang laci lebih), selalu ada.
 - **Koreksi dan pembatalan:** void, koreksi bill, refund, pengeluaran dibatalkan, penyesuaian dan hitung stok hari itu, dengan nominal, alasan, dan jam.
 
 ## D15. Stok

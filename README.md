@@ -36,8 +36,9 @@ HERMES POS gives each one a rule and a trace.
 - **The owner holds the key.** A cashier cannot void or refund a paid bill alone. The owner sets a 6-digit approval
   code in the backoffice, and a reason is required. Item refunds work only on bills up to 24 hours old.
 - **The drawer adds up.** The cashier counts the drawer at shift close and the difference shows at once. The owner fixes
-  it in the backoffice with money in or money out and a reason, and the shift is recalculated. Expenses are recorded by
-  the owner in the backoffice and never come out of the drawer.
+  it in the backoffice with money in or money out and a reason, and the shift is recalculated. A cashier records an
+  expense in the app (Catat pengeluaran) and, when it is paid from the drawer, the expected cash goes down by that amount;
+  the owner can add one in the backoffice too, from the drawer or not.
 - **It works offline.** Bills wait in a queue on the device with a provisional number and are sent exactly once when the
   internet returns. The same key on every resend means the server rejects duplicates.
 - **The report reaches the owner.** At the end of a shift the cashier taps *Kirim ke WA*; WhatsApp opens with the
@@ -79,7 +80,7 @@ HERMES POS gives each one a rule and a trace.
   replacement is made, both linked).
 - **Stock:** stock now and its history; stock in, adjustments with a reason, and stock counts. Stock never changes from
   the product form.
-- **Expenses:** recorded by the owner per shift (Catat pengeluaran), by period; a wrong item is cancelled with a reason and recorded again.
+- **Expenses:** recorded per shift by the cashier in the app or by the owner in the backoffice (Catat pengeluaran), from the drawer or not, by period; a wrong item is cancelled with a reason and recorded again.
 - **Shifts:** per outlet and business date, each shift's cash and QRIS reconciled line by line, the day's corrections,
   and the automatic balance checks. A short drawer is fixed with Uang masuk, an over drawer with Uang keluar, on any day.
   There is no day close and no day lock (078).
@@ -217,7 +218,8 @@ All schema changes live in [`supabase/migrations`](supabase/migrations), numbere
   sidebar), 063 (Laporan), 066 to 068 (Transaksi; the Produk page reads the `owner_product_sales` shape from 066), and 071, then 072 to 076 in order (ledger, bill correction, cash movements, stock, day close and lock, notifications;
   073 replaces 071's Balancing page); the POS build that reads the business time zone needs 064, and the POS build
   that sends the QRIS total at shift close needs 075, and the Bahan & Resep page and the product form need 084 to 086 in order
-  (ingredients and recipes; 084 replaces `update_product`, so apply it to a test project first). Apply 059 only after every
+  (ingredients and recipes; 084 replaces `update_product`, so apply it to a test project first), and 087 for the cashier's
+  expenses to work again (apply 087 before the POS build that has the Catat pengeluaran button). Apply 059 only after every
   phone runs a build that no longer reads PIN hashes.
 - SQL tests apply every migration to a fresh Postgres database and print `PASS` or `FAIL` per check:
 

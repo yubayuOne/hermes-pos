@@ -13,6 +13,8 @@ pendekatan "balancing ± angka" (migrasi 071) dengan sistem yang setiap angkanya
   alasan; laba rugi memuat penyesuaian stok, selisih kas, dan selisih QRIS; jejak koreksi per hari di Tutup hari (075).
 - Tutup hari dan kunci hari dihapus (078): pemilik memperbaiki selisih shift dengan Uang masuk / Uang keluar kapan saja;
   hari yang ditutup sebelumnya tetap sebagai riwayat; pengingat "hari belum ditutup" berhenti.
+- Pengeluaran kasir kembali (087, 23 Oktober 2026): kasir mencatat pengeluaran di aplikasi, dari kas laci atau bukan. Dari laci mengurangi
+  Kas seharusnya shift itu; bukan dari laci tidak. Pemilik juga bisa menambahkannya di backoffice. Data lama tidak berubah.
 - Notifikasi: void, selisih shift (≥ Rp10.000 atau > 1% omzet), pemeriksaan malam (P gagal 8 hari terakhir, hari belum
   ditutup ≥ 2 hari, shift buka > 16 jam) (076).
 
