@@ -17,14 +17,14 @@ Pada 21 Oktober 2026 pemilik memutuskan aplikasi kasir hanya untuk penjualan: pe
 ## Bukan tujuan
 
 - Menghidupkan lagi tutup hari (dicabut di 078 dan tetap dicabut).
-- Mengubah **Kas keluar** manual: tetap ada untuk uang laci yang keluar bukan untuk belanja (mis. setor ke pemilik). Aturan pemakaian: pengeluaran untuk membeli barang, Kas keluar untuk selain itu.
+- Mengubah uang masuk/keluar laci manual milik pemilik di BackOffice (`owner_add_cash_movement`): tetap ada untuk uang laci yang berpindah bukan karena belanja (mis. setor). Aplikasi POS tidak punya lembar kas manual dan tidak ditambah satu.
 - Menghubungkan pengeluaran ke bahan atau stok bahan (itu proyek B).
 - Mengubah data pengeluaran yang sudah ada. Baris buku kas lama tidak disentuh.
 - Alur persetujuan pengeluaran yang tidak ada sebelum 077 (kembali persis seperti perilaku sebelum 077).
 
 ## Anti-tujuan
 
-- Uang yang sama terpotong dua kali (sebagai pengeluaran dan sebagai Kas keluar).
+- Uang yang sama terpotong dua kali (mis. pengeluaran kasir di POS dan lagi oleh pemilik di BackOffice).
 - Cek keseimbangan buku kas (P5, `ledger_checks`) menjadi tidak bersih.
 - HP kasir dengan APK lama rusak setelah migrasi diterapkan.
 
@@ -32,7 +32,7 @@ Pada 21 Oktober 2026 pemilik memutuskan aplikasi kasir hanya untuk penjualan: pe
 
 1. Pengeluaran kembali di POS, seperti sebelum 077.
 2. Sumber uang: kas laci atau bukan dari laci. Kasir memilihnya saat mencatat.
-3. Kas keluar manual dipertahankan.
+3. Kas masuk/keluar manual pemilik di BackOffice dipertahankan.
 4. Tutup hari tetap dihilangkan.
 
 ## Perilaku
@@ -69,11 +69,9 @@ Berkas yang disentuh commit itu untuk pengeluaran (acuan, bukan daftar paksaan):
 
 ## Pilihan pembangun (hasil tinjauan, bukan keputusan pemilik)
 
-0. **Dua jalur uang keluar harus tidak membingungkan kasir.** Judul lembar "Catat pengeluaran" memuat satu kalimat: "Untuk membeli barang. Uang keluar lain (mis. setor ke pemilik) pakai Kas keluar." dan sebaliknya di lembar Kas keluar: "Untuk uang laci yang keluar bukan untuk membeli barang." Isian lembar pengeluaran dibuat sesedikit mungkin: jumlah bawaan 1, satuan bawaan pcs, sumber uang bawaan kas laci; hanya nama dan total yang wajib diketik (periksa dulu isian lembar lama dan pertahankan bila sudah begitu).
-
+0. **Isian lembar pengeluaran.** Pertahankan isian lembar lama yang sudah ringan: jumlah bawaan 1, satuan bawaan pcs, kategori bawaan belanja, sumber uang bawaan kas laci; hanya nama dan total yang wajib diketik. Tidak ada kalimat tambahan tentang "Kas keluar", karena POS tidak punya lembar itu.
 1. **Siapa dan shift mana:** kembali ke perilaku sebelum 077 (kasir pemilik shift yang sedang buka mencatat; pemilik di BackOffice boleh menambah ke shift buka maupun tutup lewat `owner_add_expense_items`).
 2. **Halaman Shift BackOffice:** `closing.tsx` dan `server/closing.ts` sudah diubah 078 menjadi halaman Shift. Hanya baris "Pengeluaran dari laci" dan angka terkait yang dikembalikan; halaman hasil 078 dipertahankan.
-3. **Untuk proyek B:** `record_expense` dan `owner_add_expense_items` mengembalikan id butir pengeluaran (`expense_items.id`) agar belanja bahan bisa menghubungkannya. Periksa bahwa bentuk `expense_json` sudah memuat id butir; bila belum, tambahkan tanpa mengubah bentuk lain.
 
 ## Pengujian
 
