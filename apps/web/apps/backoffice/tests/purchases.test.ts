@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { countSchema, ingredientSchema, purchaseCancelSchema, purchaseListSchema, purchaseSchema } from '../src/lib/schemas.ts';
 import { stockText } from '../src/lib/units.ts';
-import { pairFromTotal, pairFromUnit } from '../src/lib/purchase.ts';
+import { pairFromTotal, pairFromUnit, parseRupiah } from '../src/lib/purchase.ts';
 
 const outletId = '00000000-0000-4000-8000-000000000001';
 const i1 = '00000000-0000-4000-8000-000000000002';
@@ -115,10 +115,24 @@ const TASK6_TEXTS = [
   'Total belanja', 'Total bayar (Rp)', 'Harga per {pack} (Rp)', '+ Bahan baru', 'Hapus baris', 'Alasan pembatalan', 'Batalkan belanja',
   'Belanja dicatat.', 'Belanja dibatalkan.', 'Sudah ada belanja setelahnya; batalkan yang terbaru dulu.',
   'Tanggal tidak boleh lebih dari hari ini.', 'Tanggal paling lama 90 hari ke belakang.', 'Jumlah {pack}', 'Pilih bahan',
-  'Isi {n} {u} per {pack}', 'Membatalkan...', 'Isi bahan di setiap baris.', 'Tutup', 'Belanja', 'Tanggal', 'Lihat',
+  'Isi {n} {u} per {pack}', 'Isi tanggal belanja.', 'Membatalkan...', 'Isi bahan di setiap baris.', 'Tutup', 'Belanja', 'Tanggal', 'Lihat',
 ];
 test('every Task 6 text is translated', async () => {
   const { EN } = await import('../src/dict.ts');
   const { UI_EN: UI } = await import('../../../packages/ui/src/dict.ts');
   assert.deepEqual(TASK6_TEXTS.filter((k) => !(k in EN) && !(k in UI)), []);
+});
+
+test('parseRupiah: whole rupiah with dots as thousands, decimals only for the unit price', () => {
+  assert.equal(parseRupiah('18.000'), 18000);
+  assert.equal(parseRupiah('18000'), 18000);
+  assert.equal(parseRupiah('1.250.000'), 1250000);
+  assert.equal(parseRupiah(''), null);
+  assert.equal(parseRupiah('1,5'), null);
+  assert.equal(parseRupiah('18,5'), null);
+  assert.equal(parseRupiah('12,50', true), 12.5);
+  assert.equal(parseRupiah('12.50', true), 12.5);
+  assert.equal(parseRupiah('18.000', true), 18000);
+  assert.equal(parseRupiah('1.234,5', true), 1234.5);
+  assert.equal(parseRupiah('abc', true), null);
 });

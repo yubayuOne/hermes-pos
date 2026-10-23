@@ -1295,4 +1295,5 @@ export const EN: Dict = {
   'Tanggal paling lama 90 hari ke belakang.': 'The date can go back 90 days at most.',
   'Isi bahan di setiap baris.': 'Choose an ingredient on every row.',
   'Jumlah dalam nama kemasan bahan. Isi total bayar atau harga per kemasan, yang lain terhitung sendiri.': 'Amounts are in each ingredient\'s pack name. Fill the total paid or the price per pack; the other is worked out.',
+  'Isi tanggal belanja.': 'Enter the purchase date.',
 };

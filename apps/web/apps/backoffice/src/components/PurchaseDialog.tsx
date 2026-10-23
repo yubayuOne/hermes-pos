@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, Dialog, Field, FormAlert, Input, Select, isoDay, money, useI18n } from '@hermes-pos/ui';
 import { useApp } from '../lib/app';
-import { pairFromTotal, pairFromUnit } from '../lib/purchase';
+import { pairFromTotal, pairFromUnit, parseRupiah } from '../lib/purchase';
 import { purchaseSchema } from '../lib/schemas';
 import type { Ingredient } from '../lib/types';
 import { useAction } from '../lib/useAction';
@@ -10,6 +10,7 @@ import { IngredientDialog } from './IngredientDialog';
 
 const toNumber = (s: string) => (s.trim() === '' ? Number.NaN : Number(s.trim().replace(',', '.')));
 const digits = (s: string, max: number) => s.replace(/[^\d.,]/g, '').slice(0, max);
+const nan = (n: number | null) => n ?? Number.NaN;
 
 type Row = { key: number; ingredientId: string; packs: string; total: string; unit: string; src: 'total' | 'unit' };
 let nextKey = 1;
@@ -34,22 +35,24 @@ export function PurchaseDialog({ outletId, ingredients, onClose }: { outletId: s
   const edit = (r: Row, change: Partial<Row>) => {
     const n = { ...r, ...change };
     const packs = toNumber(n.packs);
-    const pair = n.src === 'total' ? pairFromTotal(toNumber(n.total), packs) : pairFromUnit(toNumber(n.unit), packs);
-    if (pair) (n.src === 'total' ? (n.unit = String(pair.unit)) : (n.total = String(pair.total)));
+    const pair = n.src === 'total' ? pairFromTotal(nan(parseRupiah(n.total)), packs) : pairFromUnit(nan(parseRupiah(n.unit, true)), packs);
+    if (n.src === 'total') n.unit = pair ? String(pair.unit) : '';
+    else n.total = pair ? String(pair.total) : '';
     patch(r.key, n);
   };
-  const sum = rows.reduce((s, r) => s + (toNumber(r.total) || 0), 0);
+  const sum = rows.reduce((s, r) => s + (parseRupiah(r.total) ?? 0), 0);
   const packName = (id: string) => ingredients.find((i) => i.id === id)?.packLabel || t('kemasan');
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    if (!boughtOn) return act.setError('Isi tanggal belanja.');
     if (boughtOn > today) return act.setError('Tanggal tidak boleh lebih dari hari ini.');
     if (boughtOn < oldest) return act.setError('Tanggal paling lama 90 hari ke belakang.');
     if (rows.some((r) => !r.ingredientId)) return act.setError('Isi bahan di setiap baris.');
     const check = purchaseSchema.safeParse({
       outletId,
       boughtOn,
-      lines: rows.map((r) => ({ ingredientId: r.ingredientId, packs: toNumber(r.packs), total: toNumber(r.total) })),
+      lines: rows.map((r) => ({ ingredientId: r.ingredientId, packs: toNumber(r.packs), total: nan(parseRupiah(r.total)) })),
     });
     if (!check.success) return act.setError(check.error.issues[0]?.message ?? 'Data tidak valid.');
     const res = await act.run(() => savePurchase({ data: check.data }), { success: t('Belanja dicatat.') });
@@ -104,7 +107,7 @@ export function PurchaseDialog({ outletId, ingredients, onClose }: { outletId: s
                       <Input inputMode="decimal" className="font-mono" value={r.packs} onChange={(e) => edit(r, { packs: digits(e.target.value, 10) })} />
                     </Field>
                     <Field label={t('Total bayar (Rp)')}>
-                      <Input inputMode="numeric" className="font-mono" value={r.total} onChange={(e) => edit(r, { total: digits(e.target.value, 13), src: 'total' })} />
+                      <Input inputMode="numeric" className="font-mono" value={r.total} onChange={(e) => edit(r, { total: e.target.value.replace(/[^\d.]/g, '').slice(0, 13), src: 'total' })} />
                     </Field>
                     <Field label={t('Harga per {pack} (Rp)', { pack })}>
                       <Input inputMode="decimal" className="font-mono" value={r.unit} onChange={(e) => edit(r, { unit: digits(e.target.value, 13), src: 'unit' })} />
