@@ -113,6 +113,12 @@ export const outletRefSchema = z.object({ outletId: uuid });
 export const productImageRefSchema = outletRefSchema.extend({ productId: uuid });
 export const categorySchema = z.object({ outletId: uuid, name: req('Isi nama kategori.', 20, 'Nama kategori maksimal 20 huruf.') });
 // ---------- Ingredients and recipes (084) ----------
+/** Ingredient prices keep cents: a moving average (088) is stored with 2 decimals and the dialog sends it back. */
+const ingredientPrice = z
+  .number({ error: 'Harga beli harus angka, boleh Rp0.' })
+  .min(0, 'Harga beli harus angka, boleh Rp0.')
+  .max(1_000_000_000, 'Harga beli harus angka, boleh Rp0.')
+  .refine((v) => Math.abs(v * 100 - Math.round(v * 100)) < 1e-6, 'Harga beli harus angka, boleh Rp0.');
 const unit = z.enum(['g', 'kg', 'ml', 'l', 'pcs'], { error: 'Pilih satuan.' });
 /** Up to 3 decimals, above 0, below a million: the same limits as the database (apply_recipe, ingredients.pack_qty). */
 const amount3 = (label: string) =>
@@ -125,12 +131,12 @@ export const ingredientSchema = z.object({
   id: uuid.nullish(),
   outletId: uuid,
   name: req('Nama bahan wajib diisi.', 60),
-  price: rupiah('Harga beli harus angka, boleh Rp0.'),
+  price: ingredientPrice,
   packQty: amount3('Isi kemasan'),
   packUnit: unit,
   packLabel: z.string().trim().max(20, 'Maksimal 20 karakter.').default(''),
 });
-export const ingredientPreviewSchema = z.object({ id: uuid, price: rupiah('Harga beli harus angka, boleh Rp0.'), packQty: amount3('Isi kemasan'), packUnit: unit });
+export const ingredientPreviewSchema = z.object({ id: uuid, price: ingredientPrice, packQty: amount3('Isi kemasan'), packUnit: unit });
 export const ingredientRefSchema = z.object({ id: uuid });
 export const recipeLineSchema = z.object({ ingredientId: uuid, qty: amount3('Jumlah'), unit });
 const recipeLines = z

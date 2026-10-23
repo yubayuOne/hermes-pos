@@ -18,7 +18,7 @@ test('ingredient: a name, a price that may be Rp 0, a pack size above 0 with up 
   assert.ok(ing({ packQty: 0.5, packUnit: 'kg' }).success);
   assert.equal(first(ing({ name: '   ' })), 'Nama bahan wajib diisi.');
   assert.equal(first(ing({ price: -1 })), 'Harga beli harus angka, boleh Rp0.');
-  assert.equal(first(ing({ price: 1.5 })), 'Harga beli harus angka, boleh Rp0.');
+  assert.equal(first(ing({ price: 1.005 })), 'Harga beli harus angka, boleh Rp0.');
   assert.equal(first(ing({ packQty: 0 })), 'Isi kemasan harus lebih dari 0.');
   assert.equal(first(ing({ packQty: 1.2345 })), 'Isi kemasan maksimal 3 angka di belakang koma.');
   assert.equal(first(ing({ packQty: Number.NaN })), 'Isi kemasan harus angka.');

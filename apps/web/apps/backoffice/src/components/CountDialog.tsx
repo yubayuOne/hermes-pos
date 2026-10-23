@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Button, Dialog, FormAlert, Input, Select, money, useI18n } from '@hermes-pos/ui';
+import { parseCount } from '../lib/purchase';
 import { countSchema } from '../lib/schemas';
 import type { CountResultLine, Ingredient } from '../lib/types';
 import { UNIT_LABEL, type Unit, sameFamilyUnits, stockText } from '../lib/units';
 import { useAction } from '../lib/useAction';
 import { countIngredients } from '../server/ingredients';
-
-const toNumber = (s: string) => Number(s.trim().replace(',', '.'));
 
 /**
  * Count the stock on the shelf (088). Only the rows that were filled are saved; an ingredient never counted before
@@ -23,7 +22,7 @@ export function CountDialog({ outletId, items, onClose }: { outletId: string; it
     e.preventDefault();
     const lines = items
       .filter((i) => (values[i.id] ?? '').trim() !== '')
-      .map((i) => ({ ingredientId: i.id, qty: toNumber(values[i.id]), unit: units[i.id] ?? i.baseUnit }));
+      .map((i) => ({ ingredientId: i.id, qty: parseCount(values[i.id]) ?? Number.NaN, unit: units[i.id] ?? i.baseUnit }));
     if (lines.length === 0) return act.setError('Isi jumlah minimal satu bahan.');
     const check = countSchema.safeParse({ outletId, lines });
     if (!check.success) return act.setError(check.error.issues[0]?.message ?? 'Data tidak valid.');

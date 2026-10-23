@@ -18,3 +18,9 @@ export function parseRupiah(s: string, decimals = false): number | null {
   const n = v.replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.');
   return /^\d+(\.\d+)?$/.test(n) ? Number(n) : null;
 }
+
+/** Reads a counted amount like a price per pack ("1.500" is 1500, "1,5" and "2.5" are 1.5 and 2.5), with at most 3 decimals. Otherwise null. */
+export function parseCount(s: string): number | null {
+  const n = parseRupiah(s, true);
+  return n !== null && Math.round(n * 1000) / 1000 === n ? n : null;
+}

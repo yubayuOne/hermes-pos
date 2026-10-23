@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { countSchema, ingredientSchema, purchaseCancelSchema, purchaseListSchema, purchaseSchema } from '../src/lib/schemas.ts';
+import { countSchema, ingredientPreviewSchema, ingredientSchema, purchaseCancelSchema, purchaseListSchema, purchaseSchema } from '../src/lib/schemas.ts';
+import { parseCount } from '../src/lib/purchase.ts';
 import { stockText } from '../src/lib/units.ts';
 import { pairFromTotal, pairFromUnit, parseRupiah } from '../src/lib/purchase.ts';
 
@@ -143,4 +144,23 @@ test('parseRupiah: a dot in whole rupiah must be a real thousands separator', ()
   assert.equal(parseRupiah('18.000'), 18000);
   assert.equal(parseRupiah('1.000.000'), 1000000);
   assert.equal(parseRupiah('18000'), 18000);
+});
+
+test('ingredient price keeps cents from the moving average, up to 2 decimals', () => {
+  const ing = (price: number) => ingredientSchema.safeParse({ outletId, name: 'Susu', price, packQty: 1, packUnit: 'l' });
+  assert.ok(ing(19333.33).success);
+  assert.ok(ing(18000).success);
+  assert.equal(first(ing(18000.005)), 'Harga beli harus angka, boleh Rp0.');
+  assert.equal(first(ing(-1)), 'Harga beli harus angka, boleh Rp0.');
+  assert.ok(ingredientPreviewSchema.safeParse({ id: i1, price: 19333.33, packQty: 1, packUnit: 'l' }).success);
+});
+
+test('parseCount: Indonesian notation for a counted amount', () => {
+  assert.equal(parseCount('1.500'), 1500);
+  assert.equal(parseCount('1,5'), 1.5);
+  assert.equal(parseCount('2.5'), 2.5);
+  assert.equal(parseCount('0'), 0);
+  assert.equal(parseCount(''), null);
+  assert.equal(parseCount('12.3456'), null);
+  assert.equal(parseCount('abc'), null);
 });
