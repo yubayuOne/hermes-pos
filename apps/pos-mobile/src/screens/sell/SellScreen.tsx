@@ -326,7 +326,7 @@ export function SellScreen({
   // ---------------------------------------------------------------- banners (DESIGN I5.4)
   const waiting = queue.filter((e) => e.status === 'waiting');
   const rejected = queue.filter((e) => e.status === 'conflict');
-  // Payments only: a queued held bill has not been paid.
+  // Payments only: a queued held bill has not been paid, and an expense is money out.
   const waitingPaid = waiting.reduce((n, e) => n + ((e.kind ?? 'checkout') === 'checkout' ? e.total : 0), 0);
   const networkBanner = pending ? (
     <Banner

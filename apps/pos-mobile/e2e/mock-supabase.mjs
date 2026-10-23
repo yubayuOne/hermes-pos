@@ -157,7 +157,37 @@ const items = (bill) =>
         { productId: products[6].id, productName: 'Roti bakar', station: 'kitchen', quantity: 1, unitPrice: 18000, subtotal: 18000, discount: 0, note: null },
       ];
 
+// Expenses (migrations 040, 041): the shift's one record; record_expense adds items to it.
+const expense = {
+  id: 'ex-1',
+  createdAt: at(9, 10),
+  outletId: O1,
+  outletName: 'Outlet Utama',
+  shiftId: shift.id,
+  businessDate: shift.business_date,
+  shiftNumber: shift.shift_number,
+  shiftOpen: true,
+  cashierName: 'Sari',
+  status: 'pending',
+  total: 56000,
+  drawerTotal: 56000,
+  reviewedAt: null,
+  rejectReason: null,
+  items: [
+    { id: 'exi-1', name: 'Gula pasir', category: 'belanja', quantity: 2, unit: 'kg', amount: 36000, paidFrom: 'drawer' },
+    { id: 'exi-2', name: 'Galon', category: 'operasional', quantity: 1, unit: 'pcs', amount: 20000, paidFrom: 'drawer' },
+  ],
+};
+
 const RPC = {
+  record_expense: (b) => {
+    const added = b.p_items.reduce((n, i) => n + i.amount, 0);
+    expense.items.push(...b.p_items.map((i, k) => ({ id: `exi-n${expense.items.length + k}`, ...i, paidFrom: b.p_paid_from })));
+    expense.total += added;
+    if (b.p_paid_from === 'drawer') expense.drawerTotal += added;
+    return { ok: true, replayed: false, ...expense };
+  },
+  list_shift_expenses: () => (scenario.shift === 'open' ? [expense] : []),
   list_device_cashiers: (b) => (b?.p_outlet_id ? cashiers.filter((c) => c.outlet_id === b.p_outlet_id) : cashiers),
   verify_cashier_pin: (b) => (b.p_pin === '123456' ? { ok: true } : { ok: false, reason: 'wrong', attempts_left: 3 }),
   get_subscription_status: () => status(),

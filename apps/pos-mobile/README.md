@@ -1,6 +1,6 @@
 # HERMES POS — cashier app
 
-Android app for selling: open a shift, sell, take cash or QRIS, print, refund, close the shift.
+Android app for selling: open a shift, sell, take cash or QRIS, print, refund, record expenses, close the shift.
 The owner manages the business in the backoffice ([`apps/web`](../web)). Product, design, and database docs are
 global: see the [root README](../../README.md).
 
@@ -46,7 +46,7 @@ src/screens/            one folder per tab or flow (sell, pay, bills, shift, mor
 src/components/         shared UI (Text, Button, Field, Sheet, Slip, chrome, overlays, ReceiptView, ...)
 src/hooks/              AppStore and NotifyProvider contexts, useBill, useLayout
 src/services/           Supabase calls, offline queue, printer, cache, subscription
-src/utils/              pure logic: discount, voucher, refund, receipt, errors, stock
+src/utils/              pure logic: discount, voucher, refund, receipt, expense, errors, stock
 src/i18n/               t(), formats, English dictionary (en.ts)
 tests/                  unit tests for src/utils and src/services (plain Node, no test runner)
 scripts/i18n-check.js   finds Indonesian keys without an English entry
@@ -57,7 +57,7 @@ e2e/mock-supabase.mjs   mock server for the web preview
 
 ```bash
 npm run typecheck       # TypeScript strict, also reports unused code
-npm run test:js         # discount, voucher, payment chips, refund, receipts, notes, logo, offline queue
+npm run test:js         # discount, voucher, payment chips, refund, receipts, notes, logo, expenses, offline queue
 npm run i18n:check      # Indonesian text without an English entry fails the check
 ```
 
@@ -67,7 +67,7 @@ SQL tests for the database: see the root README.
 
 - Checkout, hold, void, refund, and shift close are server RPCs in one transaction. Each carries an idempotency
   key, so a retry never records twice.
-- Without internet, sales (cash or QRIS), held bills, temporary menu items, and opening or closing a shift
+- Without internet, sales (cash or QRIS), held bills, expenses, temporary menu items, and opening or closing a shift
   go to an offline queue and sync later. A bill already carries its final number from the phone
   (`#HPOS-YYYYMMDD-<terminal>-NNNN`, migration 054); only entries made before 054 have a temporary `TUNDA-XXXXXX`.
   A shift cannot close while its queue has entries. Picking a cashier (the server checks the PIN), split payments,

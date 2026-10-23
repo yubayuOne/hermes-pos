@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { Display, Mono, Text } from '../../components/Text';
 import { Button, ButtonRow } from '../../components/Button';
@@ -19,6 +19,7 @@ import { forgetPin } from '../../services/supabase/offlinePin';
 import {
   closeShift,
   DashboardSummary,
+  fetchShiftExpenses,
   fetchShiftRefunds,
   fetchTodayShifts,
   forgetOpenShift,
@@ -29,10 +30,11 @@ import { deviceId, onOtherDevice } from '../../services/device';
 import { haptic } from '../../utils/haptics';
 import { randomUUID } from 'expo-crypto';
 import { readShift, ShiftData, syncShift } from '../../services/local/shiftData';
+import { ExpenseSheet } from './ExpenseSheet';
 import { SalesReport } from '../../services/report/report';
 import { isLocked, refreshSubscription, useSubscription } from '../../services/subscription/subscription';
 import { printerService } from '../../services/printer/service';
-import { Shift } from '../../types/domain';
+import { Expense, Shift } from '../../types/domain';
 import { describeError, isExpiredError, isNetworkError } from '../../utils/errors';
 import { reportPrintResult } from '../../utils/printFeedback';
 import { reportText } from '../../utils/shiftReport';
@@ -139,7 +141,7 @@ function MoneyPad({ label, value, onChange, presets, second }: PadField & { pres
  * What the tab last showed per cashier and shift, in memory only, so switching tabs shows it at once. The data itself is
  * the local copy of the shift (055, 057), which also covers a restart without internet.
  */
-type ShiftSnap = { report: SalesReport | null; cash: Cash | null; dash: DashboardSummary | null; today: Shift[] };
+type ShiftSnap = { report: SalesReport | null; cash: Cash | null; dash: DashboardSummary | null; today: Shift[]; expenses: Expense[] };
 const shiftCache = new Map<string, ShiftSnap>();
 
 export function ShiftScreen({
@@ -166,6 +168,7 @@ export function ShiftScreen({
   const waitingHolds = ofShift.filter((e) => e.status === 'waiting' && e.kind === 'hold').length;
   const waitingHeldPaid = ofShift.filter((e) => settlesHeldBill(e)).length;
   const held = Math.max(0, heldCount + waitingHolds - waitingHeldPaid);
+  const queuedExpenses = shift ? queue.filter((e) => e.shiftId === shift.id && e.kind === 'expense') : [];
   const pendingSales = ofShift.filter((e) => e.status === 'waiting' && (e.kind ?? 'checkout') === 'checkout');
   const pendingQris = pendingSales.reduce((n, e) => n + (e.payment.method === 'qris' ? e.total : 0), 0);
   const pendingCash = pendingSales.reduce((n, e) => n + (e.payment.method === 'qris' ? 0 : e.total), 0);
@@ -175,6 +178,9 @@ export function ShiftScreen({
   const [cash, setCash] = useState<Cash | null>(snap?.cash ?? null);
   const [dash, setDash] = useState<DashboardSummary | null>(snap?.dash ?? null);
   const [today, setToday] = useState<Shift[]>(snap?.today ?? []);
+  const [expenses, setExpenses] = useState<Expense[]>(snap?.expenses ?? []);
+  const expense = expenses[0];
+  const [expenseSheet, setExpenseSheet] = useState(false);
   const [loading, setLoading] = useState(!snap);
   const [offline, setOffline] = useState(false);
   const [openSheet, setOpenSheet] = useState(false);
@@ -194,12 +200,13 @@ export function ShiftScreen({
     if (!session) return;
     if (!shiftCache.has(cacheKey)) setLoading(true);
     const apply = (s: ShiftData | null, list: Shift[]) => {
-      const next = { report: s?.report ?? null, cash: s?.cash ?? null, dash: s?.dashboard ?? null, today: list };
+      const next = { report: s?.report ?? null, cash: s?.cash ?? null, dash: s?.dashboard ?? null, today: list, expenses: s?.expenses ?? [] };
       shiftCache.set(cacheKey, next);
       setReport(next.report);
       setCash(next.cash);
       setDash(next.dash);
       setToday(next.today);
+      setExpenses(next.expenses);
     };
     // The local copy first (also offline), then one sync; a failed load never shows zero (PRD B, rules).
     const local = shift ? await readShift(shift.id).catch(() => null) : null;
@@ -225,6 +232,13 @@ export function ShiftScreen({
   useEffect(() => {
     void load();
   }, [load]);
+  // A queued expense reached the server: reload so the report and the expected cash include it.
+  const queuedExpenseCount = queuedExpenses.length;
+  const prevQueued = useRef(queuedExpenseCount);
+  useEffect(() => {
+    if (queuedExpenseCount < prevQueued.current) void load();
+    prevQueued.current = queuedExpenseCount;
+  }, [queuedExpenseCount]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!shift && session)
       resolveOpenShift(session.cashierId)
@@ -235,7 +249,7 @@ export function ShiftScreen({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Opening and closing a shift need internet (owner's choice, 18 Oct 2026): the server numbers the shift and counts the
-  // drawer. Only what happens inside an open shift (sales, held bills) works offline.
+  // drawer. Only what happens inside an open shift (sales, held bills, expenses) works offline.
   const needsInternet = (title: string) =>
     void notify.warning(title, t('Buka dan tutup shift butuh internet. Penjualan yang sudah tercatat tetap aman di HP.'));
 
@@ -347,12 +361,12 @@ export function ShiftScreen({
     if (!r || !session || !shiftId) return;
     setPrinting(true);
     try {
-      // Refunds are read now, so the paper matches the server even right after closing. Offline: the local copy of the
-      // shift (055).
-      const refunds = await fetchShiftRefunds(shiftId).catch(async (e) => {
+      // Refunds and expenses are read now, so the paper matches the server even right after closing. Offline: the
+      // local copy of the shift (055).
+      const [refunds, ex] = await Promise.all([fetchShiftRefunds(shiftId), fetchShiftExpenses(shiftId)]).catch(async (e) => {
         const local = isNetworkError(e) ? await readShift(shiftId).catch(() => null) : null;
         if (!local) throw e;
-        return local.refunds;
+        return [local.refunds, local.expenses] as const;
       });
       const text = reportText({
         shiftNumber: closedInfo?.shiftNumber ?? shift?.shiftNumber ?? 0,
@@ -362,6 +376,7 @@ export function ShiftScreen({
         closedAt: closedInfo?.closedAt ?? null,
         report: closedInfo ? { ...r, expectedCash: closedInfo.expected, actualCash: closedInfo.counted, variance: closedInfo.variance } : r,
         refunds,
+        expense: ex[0] ?? null,
       });
       const results = await printerService.printReportText(text);
       reportPrintResult(notify, results, {
@@ -393,13 +408,14 @@ export function ShiftScreen({
   const openingCash = shift?.openingCash ?? 0;
   const cashSales = cash ? Math.max(0, cash.cashIn - openingCash) : (report?.cashRevenue ?? 0);
   const expectedCash = cash?.expectedCash ?? report?.expectedCash ?? 0;
-  // Still on this phone (not in the ledger yet): cash sales in. Shown as an estimate.
-  const pendingDrawer = pendingCash;
+  // Still on this phone (not in the ledger yet): cash sales in, drawer expenses out. Shown as an estimate.
+  const pendingDrawerOut = queuedExpenses.reduce((n, e) => n + (e.status === 'waiting' && e.expense?.paidFrom === 'drawer' ? e.total : 0), 0);
+  const pendingDrawer = pendingCash - pendingDrawerOut;
   const drawerRows = (
     <>
       <SlipRow left={t('Kas awal (modal)')} right={money(openingCash)} />
       <SlipRow left={t('Penjualan tunai')} right={money(cashSales)} />
-      <SlipRow left={t('Kas keluar (refund)')} right={`-${money(cash?.cashOut ?? 0)}`} />
+      <SlipRow left={t('Kas keluar (refund, pengeluaran)')} right={`-${money(cash?.cashOut ?? 0)}`} />
       <SlipBand tone="pineSoft" left={t('Total cash')} right={money(expectedCash)} />
       {pendingDrawer !== 0 ? (
         <>
@@ -501,6 +517,7 @@ export function ShiftScreen({
           }}
         />
       </ButtonRow>
+      <Button label={locked ? t('Terkunci: langganan berakhir') : t('Catat pengeluaran')} disabled={locked} onPress={() => setExpenseSheet(true)} />
       {blockers.length ? (
         <View className="rounded-k border-k border-ink bg-fireSoft px-3.5 py-3">
           <Text className="font-body-700 text-[15px]">{t('Shift belum bisa ditutup')}</Text>
@@ -558,6 +575,51 @@ export function ShiftScreen({
         {drawerRows}
         <SlipRow sub left={t('Dihitung server dari buku kas. Tidak ada input kas manual.')} />
       </Slip>
+      <Card>
+        <Display size={22}>{t('Pengeluaran shift ini')}</Display>
+        {queuedExpenses.map((q) =>
+          q.expense?.items.map((x, i) => (
+            <View key={`${q.id}:${i}`} className="flex-row items-start justify-between gap-2 border-b border-rule py-2.5">
+              <View className="min-w-0 flex-1 gap-1">
+                <Text numberOfLines={2} className="font-body-600 text-[15px]">
+                  {x.name}
+                </Text>
+                <Tag tone={q.status === 'conflict' ? 'error' : 'fire'} label={q.status === 'conflict' ? t('ditolak server') : t('belum terkirim')} />
+              </View>
+              <Mono className="font-mono-600 text-[15px]">{money(x.amount)}</Mono>
+            </View>
+          )),
+        )}
+        {expense ? (
+          <>
+            {expense.items.map((x, i) => (
+              <View key={i} className={`gap-1 py-2.5 ${i ? 'border-t border-rule' : ''}`}>
+                <View className="flex-row items-start justify-between gap-2">
+                  <Text numberOfLines={2} className="min-w-0 flex-1 font-body-600 text-[15px]">
+                    {x.name}
+                  </Text>
+                  <Mono className="font-mono-600 text-[15px]">{money(x.amount)}</Mono>
+                </View>
+                <View className="flex-row flex-wrap items-center gap-2">
+                  <Mono className="text-[13px] text-mute">
+                    {String(x.quantity).replace('.', ',')} {x.unit}
+                  </Mono>
+                  <Tag label={x.paidFrom === 'drawer' ? t('kas laci') : t('bukan dari laci')} />
+                </View>
+              </View>
+            ))}
+            <View className="flex-row justify-between gap-2 border-t-k border-ink pt-2.5">
+              <Text className="font-body-700 text-[15px]">{t('Total pengeluaran')}</Text>
+              <Mono className="font-mono-600 text-[15px]">{money(expense.total)}</Mono>
+            </View>
+          </>
+        ) : queuedExpenses.length ? null : (
+          <Text className="mt-2 text-[14px] text-mute">{t('Belum ada pengeluaran di shift ini.')}</Text>
+        )}
+        {queuedExpenses.length ? (
+          <Text className="mt-2 text-[13px] text-mute">{t('Yang belum terkirim masuk laporan dan kas setelah internet kembali.')}</Text>
+        ) : null}
+      </Card>
       <Card>
         <Display size={22}>{t('Menu terlaris shift ini')}</Display>
         {top.length ? (
@@ -632,6 +694,15 @@ export function ShiftScreen({
           </>
         )}
       </ScrollView>
+
+      <ExpenseSheet
+        visible={expenseSheet}
+        onClose={() => setExpenseSheet(false)}
+        onSaved={() => {
+          setExpenseSheet(false);
+          void load();
+        }}
+      />
 
       <Sheet
         visible={openSheet}
