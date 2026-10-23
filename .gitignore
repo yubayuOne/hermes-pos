@@ -65,3 +65,6 @@ design-system/
 *.iml
 .DS_Store
 Thumbs.db
+
+# Local scratch from the superpowers skills (brainstorm mockups, plan ledgers)
+.superpowers/
