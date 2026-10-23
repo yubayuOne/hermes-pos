@@ -44,7 +44,9 @@ Harga bahan tidak satu angka: belanja rutin di pasar murah, belanja darurat di w
 ## Tahap rilis (dua rilis, supaya pemilik tidak menerima semuanya sekaligus)
 
 - **B1, inti:** tab Belanja (catat dan batalkan yang terbaru), stok bahan berjalan (belanja, penjualan), harga rata-rata dan HPP mengikuti, Hitung stok dasar (stok awal dan opname), nama kemasan, status "Belum dihitung". Dengan ini keluhan utama pemilik, harga beda tempat belanja dan sisa bahan, sudah terjawab.
-- **B2, pelengkap:** batas stok menipis dan penyaring "Tinggal sedikit", jenis dokumen penyesuaian dengan alasan, riwayat dokumen stok bahan.
+- **B2, pelengkap:** batas stok menipis dan penyaring "Tinggal sedikit", jenis dokumen penyesuaian dengan alasan, riwayat dokumen stok bahan, serta **selisih hitung dan penyesuaian bahan masuk Penyesuaian stok di buku besar dan laba rugi, dan cek P7 mencakup bahan**.
+
+Catatan (rencana B1, 23 Oktober 2026): buku besar (`ledger`) adalah tampilan turunan dengan pembukuan ganda dan `report_pnl` membacanya, jadi menambah selisih bahan ke sana butuh akun dan pemeriksaan tersendiri. Itu sebabnya di B1 selisih Hitung stok bahan hanya **disimpan dan ditampilkan dengan nilainya**, belum diposting ke buku besar atau laba rugi, dan P7 untuk bahan belum ada. Pemilik tidak kehilangan apa pun: stok dan harga rata-rata sudah benar; hanya laporan laba rugi belum memuat selisih bahan sampai B2.
 
 ## Perilaku
 
