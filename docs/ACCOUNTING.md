@@ -109,7 +109,8 @@ stok, dan laporan. Aturannya:
   Cek P7 menghitung jumlah, jadi tidak terpengaruh.
 - Menu ber-resep tidak bisa dikunci HPP-nya dari form produk. Menghapus resep mengembalikan menu ke HPP ketikan dengan angka
   terakhir.
-- Belum ada stok bahan baku: penjualan tidak mengurangi bahan, dan pembelian bahan tetap dicatat seperti di atas.
+- **Stok bahan (088, rilis B1):** pembelian bahan di tab Belanja menambah stok bahan dan memperbarui harga rata-rata; HPP menu ber-resep kini mengikuti harga rata-rata dari stok itu. Penjualan memakai bahan resep saat commit lewat trigger tertunda; pada tabrakan langka dengan pembelian, pemakaian bahan satu penjualan bisa terlewat dengan peringatan di server, dan Hitung stok yang meluruskannya. Bahan yang sudah terpakai tidak kembali: void, refund, dan koreksi tidak mengembalikan bahan, dan koreksi hanya memakai selisih jumlah yang ditambahkan.
+- **Belum masuk buku besar:** pembelian bahan, selisih hitung bahan, dan penyesuaian bahan disimpan dan tampil di halaman, tetapi belum diposting ke buku besar atau laba rugi dan belum dicek P7; itu rilis B2. Sampai B2, selisih hitung bahan tidak memengaruhi laba rugi.
 
 ---
 
