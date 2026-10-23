@@ -97,6 +97,18 @@ HPP menu. Supaya HPP tidak meleset tanpa ketahuan, laporan bulanan menampilkan:
 Kalau angka ini terus besar, HPP menu perlu disesuaikan. Pilihan yang lebih akurat (stok bahan baku + resep per menu, HPP dari
 harga beli) bisa ditambahkan kemudian tanpa mengubah prinsip apa pun di dokumen ini (bagian 13).
 
+**Sudah ada: HPP dari resep (084 sampai 086).** Pemilik mengisi bahan (harga kemasan dan isinya) dan resep per menu di halaman
+Bahan & Resep; HPP menu dihitung otomatis dan disimpan di `products.hpp`, kolom yang sama yang dibaca kasir, transaksi, nilai
+stok, dan laporan. Aturannya:
+
+- Penjualan yang sudah terjadi menyimpan `hpp_unit` saat dijual. Mengubah harga bahan menggeser HPP **ke depan**, tidak
+  mengubah laporan lama.
+- Nilai persediaan (jumlah × HPP) memakai HPP yang berlaku, seperti ketika HPP diubah tangan; tidak ada pencatatan revaluasi.
+  Cek P7 menghitung jumlah, jadi tidak terpengaruh.
+- Menu ber-resep tidak bisa dikunci HPP-nya dari form produk. Menghapus resep mengembalikan menu ke HPP ketikan dengan angka
+  terakhir.
+- Belum ada stok bahan baku: penjualan tidak mengurangi bahan, dan pembelian bahan tetap dicatat seperti di atas.
+
 ---
 
 ## 4. Dokumen dan jurnalnya
