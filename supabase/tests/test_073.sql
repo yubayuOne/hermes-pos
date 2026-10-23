@@ -124,17 +124,10 @@ select public.owner_add_cash_movement(current_setting('t.sh')::uuid, 'out', 2000
 select public.owner_add_cash_movement(current_setting('t.sh')::uuid, 'in', 5000, 'Uang kecil');
 select pg_temp.ok('M3 cash 116.000 - 20.000 + 5.000 = 101.000', pg_temp.cash() = 101000);
 
--- ===== expenses: an old drawer expense (from before 077, the cashier can no longer record one) is cancelled by the owner,
--- who then adds 50.000 paid outside
-reset role;
-insert into public.expenses(business_id, outlet_id, shift_id, cashier_id, total, entry_keys)
-values (current_setting('t.b')::uuid, current_setting('t.o')::uuid, current_setting('t.sh')::uuid, current_setting('t.c')::uuid, 0, '{}');
-insert into public.expense_items(expense_id, position, name, category, quantity, unit, amount, paid_from)
-select id, 0, 'Gula', 'belanja', 1, 'kg', 30000, 'drawer' from public.expenses where shift_id = current_setting('t.sh')::uuid;
-select public._073_sync_expense((select id from public.expenses where shift_id = current_setting('t.sh')::uuid));
-select set_config('t.ex', public.expense_json((select id from public.expenses where shift_id = current_setting('t.sh')::uuid))::text, false);
-set role authenticated;
-select pg_temp.ok('E1 cash 71.000 with the old drawer expense', pg_temp.cash() = 71000);
+-- ===== expenses: the cashier records 30.000 from the drawer; the owner cancels it and adds 50.000 paid outside
+select set_config('t.ex', public.record_expense(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid, 'drawer',
+  jsonb_build_array(jsonb_build_object('name', 'Gula', 'category', 'belanja', 'quantity', 1, 'unit', 'kg', 'amount', 30000)), 'x-1')::text, false);
+select pg_temp.ok('E1 cash 71.000 after the expense', pg_temp.cash() = 71000);
 select pg_temp.fails('E2 cancel needs a reason', format('select public.owner_cancel_expense_item(%L, %L)', current_setting('t.ex')::jsonb -> 'items' -> 0 ->> 'id', 'x'), 'Alasan');
 select set_config('t.ex', public.owner_cancel_expense_item((current_setting('t.ex')::jsonb -> 'items' -> 0 ->> 'id')::uuid, 'Belanja dobel dicatat')::text, false);
 select pg_temp.ok('E3 cancelled: total 0, kept with its reason, cash back to 101.000',

@@ -1,4 +1,4 @@
--- Tests for 043 (expenses count at once, owner edits, shift history and refund lists for the POS) on top of 001 to 077 (expenses are recorded by the owner, never from the drawer).
+-- Tests for 043 (expenses count at once, owner edits, shift history and refund lists for the POS) on top of 001 to 043.
 -- Every line of output must start with PASS.
 \set ON_ERROR_STOP on
 set client_min_messages = notice;
@@ -22,7 +22,8 @@ create or replace function pg_temp.it(name text, amount int, paid text default n
     || case when paid is null then '{}'::jsonb else jsonb_build_object('paidFrom', paid) end
 $$;
 create or replace function pg_temp.rec(k text) returns jsonb language sql as $$
-  select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(pg_temp.it('Gula pasir', 30000)))
+  select public.record_expense(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid, 'drawer',
+    jsonb_build_array(pg_temp.it('Gula pasir', 30000)), k)
 $$;
 create or replace function pg_temp.cash() returns numeric language sql as $$
   select (public.get_shift_cash_summary(current_setting('t.sh')::uuid) ->> 'expected_cash')::numeric
@@ -46,14 +47,14 @@ select set_config('t.kopi', public.create_product(current_setting('t.o')::uuid, 
 select public.owner_set_void_code('271828');
 select set_config('t.sh', public.open_shift(current_setting('t.c')::uuid, current_setting('t.o')::uuid, 100000)::text, false);
 
--- A: 2 kopi 44.000. B: 1 kopi 22.000, refunded in cash. Expense: gula 30.000, not from the drawer.
+-- A: 2 kopi 44.000. B: 1 kopi 22.000, refunded in cash. Expense: gula 30.000 from the drawer.
 select pg_temp.pay(2, 'p-a');
 select set_config('t.bb', pg_temp.pay(1, 'p-b')::text, false);
 select public.refund_items_approved(current_setting('t.bb')::uuid, current_setting('t.sh')::uuid, current_setting('t.c')::uuid,
   jsonb_build_array(jsonb_build_object('item_id', (select id from public.transaction_items where transaction_id = current_setting('t.bb')::uuid), 'quantity', 1, 'restock', false)),
   'cash', 'Salah pesan', '271828', 'r-1');
 select set_config('t.ex', pg_temp.rec('k-1') ->> 'id', false);
-select pg_temp.ok('E1 expected cash: 100.000 + 66.000 - 22.000 = 144.000, the expense does not count', pg_temp.cash() = 144000);
+select pg_temp.ok('E1 expected cash: 100.000 + 66.000 - 22.000 - 30.000 = 114.000', pg_temp.cash() = 114000);
 
 select set_config('t.l', pg_temp.shifts()::text, false);
 select pg_temp.ok('L1 shift history: 1 open shift, cashier Tia, sales net of refunds 44.000, expenses 30.000',
@@ -76,13 +77,16 @@ select pg_temp.ok('O1 owner sees the expense at once, no status, totals 30.000',
   and (current_setting('t.list')::jsonb -> 'totals' ->> 'total')::numeric = 30000 and (current_setting('t.list')::jsonb -> 'totals' ->> 'belanja')::numeric = 30000);
 
 -- The owner's expense edit (043) was replaced by balancing in 071; see test_071.
-select set_config('t.k2', pg_temp.rec('k-2')::text, false);
-select pg_temp.ok('K1 a new entry adds to the shift''s record: total 60.000, nothing from the drawer, expected cash 144.000',
-  (current_setting('t.k2')::jsonb ->> 'total')::numeric = 60000 and (current_setting('t.k2')::jsonb ->> 'drawerTotal')::numeric = 0 and pg_temp.cash() = 144000);
-select pg_temp.ok('C1 close: counted 144.000, variance 0', (public.close_shift(current_setting('t.sh')::uuid, 144000) ->> 'variance')::numeric = 0);
+select pg_temp.ok('K1 replay of an entry: not recorded twice',
+  (pg_temp.rec('k-1') ->> 'replayed')::boolean and (pg_temp.rec('k-1') ->> 'total')::numeric = 30000 and pg_temp.cash() = 114000);
+select pg_temp.ok('K2 a new entry adds to the shift''s record: drawer 60.000, expected cash 84.000',
+  (pg_temp.rec('k-2') ->> 'drawerTotal')::numeric = 60000 and pg_temp.cash() = 84000);
+
+select pg_temp.ok('C1 close: counted 84.000, variance 0', (public.close_shift(current_setting('t.sh')::uuid, 84000) ->> 'variance')::numeric = 0);
 reset role;
-select pg_temp.ok('C3 no cash book row for the expenses',
-  (select count(*) from public.cash_ledger where source_type = 'expense' and shift_id = current_setting('t.sh')::uuid) = 0);
+select pg_temp.ok('C3 one cash book row for the expense, 60.000',
+  (select count(*) from public.cash_ledger where source_type = 'expense' and shift_id = current_setting('t.sh')::uuid) = 1
+  and (select amount from public.cash_ledger where source_type = 'expense' and shift_id = current_setting('t.sh')::uuid) = 60000);
 update public.shifts set opened_at = opened_at - interval '1 hour' where id = current_setting('t.sh')::uuid;
 set role authenticated;
 

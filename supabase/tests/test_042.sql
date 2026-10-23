@@ -1,4 +1,4 @@
--- Tests for 042 (owner report) on top of 001 to 077. Expenses are recorded by the owner and never come out of the drawer. Every line of output must start with PASS.
+-- Tests for 042 (owner report) on top of 001 to 042. Every line of output must start with PASS.
 \set ON_ERROR_STOP on
 set client_min_messages = notice;
 
@@ -55,11 +55,11 @@ select set_config('t.cv', pg_temp.pay(jsonb_build_object('items', jsonb_build_ar
 select public.void_transaction_approved(current_setting('t.cv')::uuid, 'salah input', '271828');
 -- D: 1 kopi with a 10% bill discount: 22.000 -> 19.800, manual discount 2.200.
 select pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1)), 'bill_discount_type', 'percent', 'bill_discount_value', 10), 'p-d');
--- Expenses: gula 36.000 and listrik 50.000, neither from the drawer.
-select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(pg_temp.it('Gula pasir', 'belanja', 36000)));
-select set_config('t.ex', (public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(pg_temp.it('Listrik', 'operasional', 50000))) ->> 'id'), false);
--- Expected 100.000 + 84.000 + 19.800 - 22.000 = 181.800 (expenses do not count); counted 175.800.
-select pg_temp.ok('S1 shift closes 6.000 short', (public.close_shift(current_setting('t.sh')::uuid, 175800) ->> 'variance')::numeric = -6000);
+-- Expenses: gula 36.000 from the drawer, listrik 50.000 not from the drawer.
+select public.record_expense(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid, 'drawer', jsonb_build_array(pg_temp.it('Gula pasir', 'belanja', 36000)), 'x-1');
+select set_config('t.ex', (public.record_expense(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid, 'other', jsonb_build_array(pg_temp.it('Listrik', 'operasional', 50000)), 'x-2') ->> 'id'), false);
+-- Expected 100.000 + 84.000 + 19.800 - 22.000 - 36.000 = 145.800; counted 139.800.
+select pg_temp.ok('S1 shift closes 6.000 short', (public.close_shift(current_setting('t.sh')::uuid, 139800) ->> 'variance')::numeric = -6000);
 
 select set_config('t.r', pg_temp.rep()::text, false);
 select pg_temp.ok('P1 expenses count at once (043): operating 50.000',
@@ -72,7 +72,7 @@ update public.shifts set opened_at = opened_at - interval '1 hour' where id = cu
 set role authenticated;
 -- Second shift, still open, with an expense that counts at once.
 select set_config('t.sh', public.open_shift(current_setting('t.c')::uuid, current_setting('t.o')::uuid, 0)::text, false);
-select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(pg_temp.it('Sabun', 'operasional', 10000)));
+select public.record_expense(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid, 'other', jsonb_build_array(pg_temp.it('Sabun', 'operasional', 10000)), 'x-3');
 
 select set_config('t.r', pg_temp.rep()::text, false);
 select pg_temp.ok('P2 gross 106.000 - discount 2.200 - refund 22.000 = net 81.800; HPP 30.000; gross profit 51.800',
@@ -84,11 +84,11 @@ select pg_temp.ok('P3 only operasional is an operating expense: 50.000 + 10.000;
   (current_setting('t.r')::jsonb -> 'pnl' ->> 'operatingExpenses')::numeric = 60000 and (current_setting('t.r')::jsonb -> 'pnl' ->> 'inventoryPurchases')::numeric = 36000
   and (current_setting('t.r')::jsonb -> 'pnl' ->> 'cashDifference')::numeric = -6000
   and (current_setting('t.r')::jsonb -> 'pnl' ->> 'operatingProfit')::numeric = -14200);
-select pg_temp.ok('D1 drawer of closed shifts: 100.000 + 103.800 - 22.000 = 181.800, counted 175.800',
+select pg_temp.ok('D1 drawer of closed shifts: 100.000 + 103.800 - 22.000 - 36.000 = 145.800, counted 139.800',
   (current_setting('t.r')::jsonb -> 'drawer' ->> 'opening')::numeric = 100000 and (current_setting('t.r')::jsonb -> 'drawer' ->> 'cashSales')::numeric = 103800
-  and (current_setting('t.r')::jsonb -> 'drawer' ->> 'refunds')::numeric = 22000 and (current_setting('t.r')::jsonb -> 'drawer' ->> 'expenses')::numeric = 0
+  and (current_setting('t.r')::jsonb -> 'drawer' ->> 'refunds')::numeric = 22000 and (current_setting('t.r')::jsonb -> 'drawer' ->> 'expenses')::numeric = 36000
   and (current_setting('t.r')::jsonb -> 'drawer' ->> 'other')::numeric = 0
-  and (current_setting('t.r')::jsonb -> 'drawer' ->> 'expected')::numeric = 181800 and (current_setting('t.r')::jsonb -> 'drawer' ->> 'counted')::numeric = 175800);
+  and (current_setting('t.r')::jsonb -> 'drawer' ->> 'expected')::numeric = 145800 and (current_setting('t.r')::jsonb -> 'drawer' ->> 'counted')::numeric = 139800);
 select pg_temp.ok('V2 voids by cashier: Rina 1 bill 16.200; manual discount 1 bill 2.200',
   current_setting('t.r')::jsonb -> 'voidsByCashier' -> 0 ->> 'name' = 'Rina' and (current_setting('t.r')::jsonb -> 'voidsByCashier' -> 0 ->> 'total')::numeric = 16200
   and current_setting('t.r')::jsonb -> 'discounts' -> 0 ->> 'voucher' is null and (current_setting('t.r')::jsonb -> 'discounts' -> 0 ->> 'amount')::numeric = 2200
@@ -101,13 +101,13 @@ select pg_temp.ok('C1 cash: 1 closed, 1 open, 6.000 short',
   and (current_setting('t.r')::jsonb -> 'cash' ->> 'variance')::numeric = -6000 and (current_setting('t.r')::jsonb -> 'cash' ->> 'shortCount')::int = 1);
 select pg_temp.ok('C2 shift rows in order with expected and counted cash',
   jsonb_array_length(current_setting('t.r')::jsonb -> 'shifts') = 2
-  and (current_setting('t.r')::jsonb -> 'shifts' -> 0 ->> 'expectedCash')::numeric = 181800
-  and (current_setting('t.r')::jsonb -> 'shifts' -> 0 ->> 'closingCash')::numeric = 175800
+  and (current_setting('t.r')::jsonb -> 'shifts' -> 0 ->> 'expectedCash')::numeric = 145800
+  and (current_setting('t.r')::jsonb -> 'shifts' -> 0 ->> 'closingCash')::numeric = 139800
   and (current_setting('t.r')::jsonb -> 'shifts' -> 1 ->> 'open')::boolean
   and current_setting('t.r')::jsonb -> 'shifts' -> 0 ->> 'cashierName' = 'Rina');
-select pg_temp.ok('E1 expenses incl. the open shift: belanja 36.000, operasional 60.000, none from the drawer',
+select pg_temp.ok('E1 expenses incl. the open shift: belanja 36.000, operasional 60.000, drawer 36.000',
   (current_setting('t.r')::jsonb -> 'expenses' ->> 'total')::numeric = 96000 and (current_setting('t.r')::jsonb -> 'expenses' ->> 'belanja')::numeric = 36000
-  and (current_setting('t.r')::jsonb -> 'expenses' ->> 'operasional')::numeric = 60000 and (current_setting('t.r')::jsonb -> 'expenses' ->> 'drawer')::numeric = 0);
+  and (current_setting('t.r')::jsonb -> 'expenses' ->> 'operasional')::numeric = 60000 and (current_setting('t.r')::jsonb -> 'expenses' ->> 'drawer')::numeric = 36000);
 select pg_temp.ok('E2 largest expense first, one day', current_setting('t.r')::jsonb -> 'expenses' -> 'top' -> 0 ->> 'name' = 'Listrik'
   and jsonb_array_length(current_setting('t.r')::jsonb -> 'expenses' -> 'daily') = 1);
 -- Since 072 a line's sales are net of its share of the bill discount: D's 2.200 comes off the kopi.

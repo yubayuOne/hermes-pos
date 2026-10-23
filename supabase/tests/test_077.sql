@@ -1,5 +1,7 @@
 -- Tests for 077 (cashier without expenses; owner expenses never touch the drawer) on top of 001 to 077.
--- Every line of output must start with PASS.
+-- 087 reversed the decision on 23 Oct 2026: the cashier records expenses again and the owner may take them from the drawer
+-- (test_087). What stays true from 077 is kept here: an expense paid outside the drawer leaves the cash alone, and old
+-- drawer expenses keep their cash book rows and can still be cancelled. Every line of output must start with PASS.
 \set ON_ERROR_STOP on
 set client_min_messages = notice;
 
@@ -19,10 +21,9 @@ create or replace function pg_temp.items(amount int) returns jsonb language sql 
   select jsonb_build_array(jsonb_build_object('name', 'Listrik', 'category', 'operasional', 'quantity', 1, 'unit', 'pcs', 'amount', amount))
 $$;
 
-select pg_temp.ok('S1 the cashier can no longer call record_expense; the owner path stays',
-  not has_function_privilege('authenticated', 'public.record_expense(uuid, uuid, uuid, text, jsonb, text)', 'execute')
-  and not has_function_privilege('anon', 'public.record_expense(uuid, uuid, uuid, text, jsonb, text)', 'execute')
-  and has_function_privilege('authenticated', 'public.owner_add_expense_items(uuid, text, jsonb)', 'execute'));
+select pg_temp.ok('S1 the owner path is granted to signed-in users and not to anonymous clients',
+  has_function_privilege('authenticated', 'public.owner_add_expense_items(uuid, text, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.owner_add_expense_items(uuid, text, jsonb)', 'execute'));
 
 insert into auth.users(id, email) values ('e7700000-0000-0000-0000-000000000001', 'sari@kopi.id');
 select set_config('request.jwt.claim.sub', 'e7700000-0000-0000-0000-000000000001', false);
@@ -37,15 +38,8 @@ select public.owner_create_cashier(current_setting('t.o')::uuid, 'Sari', '123456
 select set_config('t.c', (select cashier_id::text from public.owner_list_cashiers() where cashier_name = 'Sari'), false);
 select set_config('t.sh', public.open_shift(current_setting('t.c')::uuid, current_setting('t.o')::uuid, 100000)::text, false);
 
-select pg_temp.fails('R1 cashier record_expense is refused', format('select public.record_expense(%L, %L, %L, %L, %L, %L)',
-  current_setting('t.sh'), current_setting('t.c'), current_setting('t.o'), 'other', pg_temp.items(5000), 'k1'), 'permission denied');
-
-select pg_temp.fails('A1 the owner cannot take an expense from the drawer', format('select public.owner_add_expense_items(%L, %L, %L)',
-  current_setting('t.sh'), 'drawer', pg_temp.items(5000)), 'tidak diambil dari kas laci');
-select pg_temp.ok('A2 refused: the drawer is still the opening cash', pg_temp.cash() = 100000);
-
 select set_config('t.ex', public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', pg_temp.items(50000))::text, false);
-select pg_temp.ok('A3 an owner expense is recorded and the expected cash stays 100.000',
+select pg_temp.ok('A3 an owner expense paid outside the drawer is recorded and the expected cash stays 100.000',
   (current_setting('t.ex')::jsonb ->> 'total')::numeric = 50000 and pg_temp.cash() = 100000);
 
 select public.close_shift(current_setting('t.sh')::uuid, 100000);
