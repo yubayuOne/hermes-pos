@@ -136,3 +136,11 @@ test('parseRupiah: whole rupiah with dots as thousands, decimals only for the un
   assert.equal(parseRupiah('1.234,5', true), 1234.5);
   assert.equal(parseRupiah('abc', true), null);
 });
+
+test('parseRupiah: a dot in whole rupiah must be a real thousands separator', () => {
+  for (const bad of ['1.5', '18.5', '1.50', '1000.000', '.5', '1.']) assert.equal(parseRupiah(bad), null, bad);
+  assert.equal(parseRupiah('1.000'), 1000);
+  assert.equal(parseRupiah('18.000'), 18000);
+  assert.equal(parseRupiah('1.000.000'), 1000000);
+  assert.equal(parseRupiah('18000'), 18000);
+});

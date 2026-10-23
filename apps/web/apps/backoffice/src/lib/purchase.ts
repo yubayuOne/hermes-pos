@@ -8,13 +8,13 @@ export const pairFromTotal = (total: number, packs: number): Pair => (valid(tota
 export const pairFromUnit = (unit: number, packs: number): Pair => (valid(unit, packs) ? { total: Math.round(unit * packs), unit } : null);
 
 /**
- * Reads a typed amount. Whole rupiah (default): dots are thousands separators, a comma is rejected ("1,5" is not Rp1).
+ * Reads a typed amount. Whole rupiah (default): dots must be real thousands separators (1.000), a comma is rejected ("1,5" is not Rp1).
  * With `decimals` (price per pack): a dot followed by exactly three digits is a thousands separator, "," or "." is the decimal mark.
  * Empty or unreadable input gives null.
  */
 export function parseRupiah(s: string, decimals = false): number | null {
   const v = s.trim();
-  if (!decimals) return /^\d[\d.]*$/.test(v) ? Number(v.replace(/\./g, '')) : null;
+  if (!decimals) return /^(\d+|\d{1,3}(\.\d{3})+)$/.test(v) ? Number(v.replace(/\./g, '')) : null;
   const n = v.replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.');
   return /^\d+(\.\d+)?$/.test(n) ? Number(n) : null;
 }
