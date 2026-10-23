@@ -128,6 +128,7 @@ export const ingredientSchema = z.object({
   price: rupiah('Harga beli harus angka, boleh Rp0.'),
   packQty: amount3('Isi kemasan'),
   packUnit: unit,
+  packLabel: z.string().trim().max(20, 'Maksimal 20 karakter.').default(''),
 });
 export const ingredientPreviewSchema = z.object({ id: uuid, price: rupiah('Harga beli harus angka, boleh Rp0.'), packQty: amount3('Isi kemasan'), packUnit: unit });
 export const ingredientRefSchema = z.object({ id: uuid });
@@ -344,6 +345,35 @@ export const stockDocumentSchema = z
 export const stockDocumentListSchema = z
   .object({ outletId: uuid, from: day, to: day, tz: z.enum(timezones), page: z.number().int().min(1).max(10_000) })
   .refine(...rangeCheck);
+
+// ---------- Ingredient purchases and counts (088) ----------
+const oncePerIngredient = (ls: { ingredientId: string }[]) => new Set(ls.map((l) => l.ingredientId)).size === ls.length;
+export const purchaseSchema = z.object({
+  outletId: uuid,
+  boughtOn: day,
+  lines: z
+    .array(z.object({ ingredientId: uuid, packs: amount3('Jumlah'), total: rupiah('Total bayar harus angka, boleh Rp0.') }))
+    .min(1, 'Isi minimal satu bahan.')
+    .max(50, 'Belanja maksimal 50 bahan.')
+    .refine(oncePerIngredient, 'Satu bahan hanya boleh sekali.'),
+});
+export const purchaseCancelSchema = z.object({ id: uuid, reason: z.string().trim().min(3, 'Tulis alasan, minimal 3 huruf.').max(200, 'Maksimal 200 karakter.') });
+export const purchaseListSchema = z.object({ outletId: uuid, page: z.number().int().min(1).max(10_000) });
+/** A count may be 0 (the shelf is empty); same limits as owner_count_ingredients. */
+export const countSchema = z.object({
+  outletId: uuid,
+  lines: z
+    .array(
+      z.object({
+        ingredientId: uuid,
+        qty: stockQty.refine((v) => !Number.isFinite(v) || v >= 0, 'Hasil hitung tidak boleh minus.'),
+        unit,
+      }),
+    )
+    .min(1, 'Isi minimal satu bahan.')
+    .max(200, 'Hitung stok maksimal 200 bahan.')
+    .refine(oncePerIngredient, 'Satu bahan hanya boleh sekali.'),
+});
 
 // ---------- Billing ----------
 export const paymentSchema = z.object({

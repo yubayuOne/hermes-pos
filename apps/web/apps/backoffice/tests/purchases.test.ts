@@ -1,0 +1,71 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { countSchema, ingredientSchema, purchaseCancelSchema, purchaseListSchema, purchaseSchema } from '../src/lib/schemas.ts';
+
+const outletId = '00000000-0000-4000-8000-000000000001';
+const i1 = '00000000-0000-4000-8000-000000000002';
+const i2 = '00000000-0000-4000-8000-000000000003';
+const first = (r: { success: boolean; error?: { issues: { message: string }[] } }) => r.error?.issues[0]?.message;
+const buy = (lines: unknown, over: Record<string, unknown> = {}) => purchaseSchema.safeParse({ outletId, boughtOn: '2026-10-23', lines, ...over });
+const bl = (ingredientId: string, packs: number, total: number) => ({ ingredientId, packs, total });
+const count = (lines: unknown) => countSchema.safeParse({ outletId, lines });
+const cl = (ingredientId: string, qty: number, unit = 'g') => ({ ingredientId, qty, unit });
+const ids = (n: number) => Array.from({ length: n }, (_, k) => `00000000-0000-4000-8000-${String(k).padStart(12, '0')}`);
+
+test('purchase: a valid note, SKM 2 packs for 36000', () => {
+  assert.ok(buy([bl(i1, 2, 36000)]).success);
+  assert.ok(buy([bl(i1, 0.5, 0), bl(i2, 999999.999, 1_000_000_000)]).success);
+  assert.ok(buy(ids(50).map((id) => bl(id, 1, 1000))).success);
+});
+
+test('purchase: lines, packs, total, duplicates and date are checked like the database', () => {
+  assert.equal(first(buy([])), 'Isi minimal satu bahan.');
+  assert.equal(first(buy(ids(51).map((id) => bl(id, 1, 1000)))), 'Belanja maksimal 50 bahan.');
+  assert.equal(first(buy([bl(i1, 0, 1000)])), 'Jumlah harus lebih dari 0.');
+  assert.equal(first(buy([bl(i1, 1.2345, 1000)])), 'Jumlah maksimal 3 angka di belakang koma.');
+  assert.equal(first(buy([bl(i1, 1_000_000, 1000)])), 'Jumlah terlalu besar.');
+  assert.equal(first(buy([bl(i1, Number.NaN, 1000)])), 'Jumlah harus angka.');
+  assert.equal(first(buy([bl(i1, 1, -1)])), 'Total bayar harus angka, boleh Rp0.');
+  assert.equal(first(buy([bl(i1, 1, Number.NaN)])), 'Total bayar harus angka, boleh Rp0.');
+  assert.equal(first(buy([bl(i1, 1, 1_000_000_001)])), 'Total bayar harus angka, boleh Rp0.');
+  assert.equal(first(buy([bl(i1, 1, 1000), bl(i1, 2, 2000)])), 'Satu bahan hanya boleh sekali.');
+  assert.equal(first(buy([bl(i1, 1, 1000)], { boughtOn: '23-10-2026' })), 'Pilih tanggal.');
+  assert.equal(first(buy([bl('x', 1, 1000)])), 'Data tidak valid.');
+});
+
+test('purchase cancel and list', () => {
+  assert.ok(purchaseCancelSchema.safeParse({ id: i1, reason: 'Salah catat' }).success);
+  assert.equal(first(purchaseCancelSchema.safeParse({ id: i1, reason: 'ab' })), 'Tulis alasan, minimal 3 huruf.');
+  assert.equal(first(purchaseCancelSchema.safeParse({ id: i1, reason: 'x'.repeat(201) })), 'Maksimal 200 karakter.');
+  assert.ok(purchaseListSchema.safeParse({ outletId, page: 1 }).success);
+  assert.ok(!purchaseListSchema.safeParse({ outletId, page: 0 }).success);
+});
+
+test('count: 0 is a valid count, negatives, 4 decimals and a bad unit are not', () => {
+  assert.ok(count([cl(i1, 0), cl(i2, 1.5, 'kg')]).success);
+  assert.equal(first(count([])), 'Isi minimal satu bahan.');
+  assert.equal(first(count([cl(i1, -1)])), 'Hasil hitung tidak boleh minus.');
+  assert.equal(first(count([cl(i1, 1.2345)])), 'Jumlah maksimal 3 angka di belakang koma.');
+  assert.equal(first(count([cl(i1, 1, 'sdm')])), 'Pilih satuan.');
+  assert.equal(first(count([cl(i1, 1_000_000)])), 'Jumlah terlalu besar.');
+  assert.equal(first(count([cl(i1, 1), cl(i1, 2)])), 'Satu bahan hanya boleh sekali.');
+  assert.equal(first(count(ids(201).map((id) => cl(id, 1)))), 'Hitung stok maksimal 200 bahan.');
+});
+
+test('ingredient: pack label is optional and at most 20 characters', () => {
+  const ing = (packLabel: unknown) => ingredientSchema.safeParse({ outletId, name: 'SKM', price: 18000, packQty: 1, packUnit: 'kg', packLabel });
+  assert.ok(ing('').success);
+  assert.ok(ing('kaleng').success);
+  assert.equal(first(ing('x'.repeat(21))), 'Maksimal 20 karakter.');
+});
+
+const NEW_TEXTS = [
+  'Isi minimal satu bahan.', 'Belanja maksimal 50 bahan.', 'Hitung stok maksimal 200 bahan.', 'Total bayar harus angka, boleh Rp0.',
+  'Satu bahan hanya boleh sekali.', 'Maksimal 20 karakter.', 'Jumlah harus angka.', 'Jumlah maksimal 3 angka di belakang koma.',
+  'Jumlah terlalu besar.', 'Jumlah harus lebih dari 0.', 'Hasil hitung tidak boleh minus.', 'Pilih satuan.', 'Pilih tanggal.',
+  'Tulis alasan, minimal 3 huruf.', 'Maksimal 200 karakter.', 'Data tidak valid.',
+];
+test('every message the new schemas can show is translated', async () => {
+  const { EN } = await import('../src/dict.ts');
+  assert.deepEqual(NEW_TEXTS.filter((k) => !(k in EN)), []);
+});

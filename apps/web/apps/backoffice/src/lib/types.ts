@@ -330,7 +330,17 @@ export type Ingredient = {
   unitCost: number;
   baseUnit: 'g' | 'ml' | 'pcs';
   usedBy: number;
+  stock: number;
+  /** False until the first purchase or count; sales leave the stock alone until then (088). */
+  stockStarted: boolean;
+  /** What a pack is called ("kaleng"); the database falls back to "kemasan". */
+  packLabel: string;
+  lastCountedAt: string | null;
 };
+export type PurchaseLine = { ingredientId: string; name: string; packLabel: string; packs: number; total: number; priceBefore: number; priceAfter: number };
+export type Purchase = { id: string; boughtOn: string; total: number; cancelledAt: string | null; lines: PurchaseLine[] };
+export type PurchaseList = { rows: Purchase[]; total: number };
+export type CountResultLine = { ingredientId: string; name: string; kind: 'opening' | 'count'; before: number; after: number; diff: number; value: number };
 export type RecipeLineInput = { ingredientId: string; qty: number; unit: Unit };
 export type RecipeCostLine = RecipeLineInput & { name: string; cost: number; incomplete: boolean };
 export type RecipeCost = { source: 'manual' | 'recipe'; lines: RecipeCostLine[]; hpp: number; incomplete: boolean };

@@ -1129,6 +1129,12 @@ export const EN: Dict = {
   'Hitung barang di rak lalu isi jumlahnya. Selisih dengan stok sistem dicatat otomatis. Kosongkan produk yang tidak dihitung.':
     'Count the goods on the shelf and enter the number. The difference from the system stock is recorded. Leave products you did not count empty.',
   'Isi jumlah minimal satu produk.': 'Enter a quantity for at least one product.',
+  'Isi minimal satu bahan.': 'Add at least one ingredient.',
+  'Belanja maksimal 50 bahan.': 'A purchase can have at most 50 ingredients.',
+  'Hitung stok maksimal 200 bahan.': 'A count can have at most 200 ingredients.',
+  'Total bayar harus angka, boleh Rp0.': 'The amount paid must be a number, Rp0 is fine.',
+  'Satu bahan hanya boleh sekali.': 'Each ingredient can appear only once.',
+  'Maksimal 20 karakter.': 'At most 20 characters.',
   'Jumlah terlalu besar.': 'The quantity is too large.',
   'Maksimal 500 produk.': 'At most 500 products.',
   'Satu produk hanya boleh sekali.': 'Each product only once.',

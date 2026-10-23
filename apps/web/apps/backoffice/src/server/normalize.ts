@@ -3,6 +3,9 @@ import { UNITS, type Unit } from '../lib/units';
 import type {
   Ingredient,
   IngredientImpact,
+  CountResultLine,
+  Purchase,
+  PurchaseList,
   RecipeCost,
   StockDocument,
   StockDocumentList,
@@ -485,7 +488,38 @@ export function toIngredient(r: Row): Ingredient {
     unitCost: num(r.unitCost),
     baseUnit: base === 'ml' || base === 'pcs' ? base : 'g',
     usedBy: num(r.usedBy),
+    stock: num(r.stock),
+    stockStarted: r.stockStarted === true,
+    packLabel: str(r.packLabel),
+    lastCountedAt: r.lastCountedAt ? str(r.lastCountedAt) : null,
   };
+}
+
+export function toPurchase(r: Row): Purchase {
+  return {
+    id: str(r.id),
+    boughtOn: str(r.boughtOn),
+    total: num(r.total),
+    cancelledAt: r.cancelledAt ? str(r.cancelledAt) : null,
+    lines: rows(r.lines).map((l) => ({
+      ingredientId: str(l.ingredientId),
+      name: str(l.name),
+      packLabel: str(l.packLabel),
+      packs: num(l.packs),
+      total: num(l.total),
+      priceBefore: num(l.priceBefore),
+      priceAfter: num(l.priceAfter),
+    })),
+  };
+}
+
+export function toPurchaseList(raw: unknown): PurchaseList {
+  const r = (raw ?? {}) as Row;
+  return { total: num(r.total), rows: rows(r.rows).map(toPurchase) };
+}
+
+export function toCountLine(r: Row): CountResultLine {
+  return { ingredientId: str(r.ingredientId), name: str(r.name), kind: r.kind === 'count' ? 'count' : 'opening', before: num(r.before), after: num(r.after), diff: num(r.diff), value: num(r.value) };
 }
 
 export function toRecipeCost(r: Row | null): RecipeCost {
