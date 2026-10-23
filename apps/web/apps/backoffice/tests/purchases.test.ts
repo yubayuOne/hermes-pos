@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { countSchema, ingredientSchema, purchaseCancelSchema, purchaseListSchema, purchaseSchema } from '../src/lib/schemas.ts';
 import { stockText } from '../src/lib/units.ts';
+import { pairFromTotal, pairFromUnit } from '../src/lib/purchase.ts';
 
 const outletId = '00000000-0000-4000-8000-000000000001';
 const i1 = '00000000-0000-4000-8000-000000000002';
@@ -95,4 +96,29 @@ test('stockText: readable stock with the base unit', () => {
   assert.equal(stockText(0, 'ml'), '0 ml');
   assert.equal(stockText(3000, 'pcs'), '3.000 pcs');
   assert.equal(stockText(1500, 'g', 'en'), '1.5 kg');
+});
+
+test('purchase: total and price per pack compute each other', () => {
+  assert.deepEqual(pairFromTotal(36000, 2), { total: 36000, unit: 18000 });
+  assert.deepEqual(pairFromUnit(18000, 2), { total: 36000, unit: 18000 });
+  assert.deepEqual(pairFromTotal(100, 3), { total: 100, unit: 33.33 });
+  assert.deepEqual(pairFromUnit(33.33, 3), { total: 100, unit: 33.33 });
+  assert.deepEqual(pairFromTotal(0, 2), { total: 0, unit: 0 });
+  assert.equal(pairFromTotal(100, 0), null);
+  assert.equal(pairFromUnit(100, 0), null);
+  assert.equal(pairFromTotal(100, Number.NaN), null);
+  assert.equal(pairFromTotal(Number.NaN, 2), null);
+});
+
+const TASK6_TEXTS = [
+  'Catat belanja', 'Tanggal belanja', 'dibatalkan', 'Belum ada belanja.', 'Rincian belanja', 'Harga sebelum', 'Harga sesudah',
+  'Total belanja', 'Total bayar (Rp)', 'Harga per {pack} (Rp)', '+ Bahan baru', 'Hapus baris', 'Alasan pembatalan', 'Batalkan belanja',
+  'Belanja dicatat.', 'Belanja dibatalkan.', 'Sudah ada belanja setelahnya; batalkan yang terbaru dulu.',
+  'Tanggal tidak boleh lebih dari hari ini.', 'Tanggal paling lama 90 hari ke belakang.', 'Jumlah {pack}', 'Pilih bahan',
+  'Isi {n} {u} per {pack}', 'Membatalkan...', 'Isi bahan di setiap baris.', 'Tutup', 'Belanja', 'Tanggal', 'Lihat',
+];
+test('every Task 6 text is translated', async () => {
+  const { EN } = await import('../src/dict.ts');
+  const { UI_EN: UI } = await import('../../../packages/ui/src/dict.ts');
+  assert.deepEqual(TASK6_TEXTS.filter((k) => !(k in EN) && !(k in UI)), []);
 });

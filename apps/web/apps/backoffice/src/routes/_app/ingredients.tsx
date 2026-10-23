@@ -1,34 +1,43 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, Chip, Dialog, Empty, FormAlert, Tag, dateShort, decimal, money, useI18n } from '@hermes-pos/ui';
+import { Button, Chip, Dialog, Empty, Field, FormAlert, Input, Tag, dateShort, decimal, money, useI18n } from '@hermes-pos/ui';
 import { CountDialog } from '../../components/CountDialog';
 import { IngredientDialog } from '../../components/IngredientDialog';
 import { OutletField } from '../../components/Filters';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
+import { Pagination } from '../../components/Pagination';
+import { PurchaseDialog } from '../../components/PurchaseDialog';
 import { RecipeEditor } from '../../components/RecipeEditor';
 import { useLock } from '../../lib/app';
-import { recipeSaveSchema } from '../../lib/schemas';
-import type { Ingredient, Product, RecipeCost, RecipeLineInput } from '../../lib/types';
+import { purchaseCancelSchema, recipeSaveSchema } from '../../lib/schemas';
+import type { Ingredient, Product, Purchase, RecipeCost, RecipeLineInput } from '../../lib/types';
 import { stockText } from '../../lib/units';
 import { useAction } from '../../lib/useAction';
-import { deleteIngredient, getRecipe, listIngredients, saveRecipe } from '../../server/ingredients';
+import { cancelPurchase, deleteIngredient, getRecipe, listIngredients, listPurchases, saveRecipe } from '../../server/ingredients';
 import { listCatalog } from '../../server/manage';
 import { pageHead } from '../../lang';
 
-type Search = { outlet?: string; tab?: 'resep'; product?: string };
+type Search = { outlet?: string; tab?: 'resep' | 'belanja'; product?: string; page?: number };
+/** Purchases per page, as the server sends them (owner_list_purchases). */
+const PURCHASE_PAGE = 50;
 
 export const Route = createFileRoute('/_app/ingredients')({
   validateSearch: (s: Record<string, unknown>): Search => ({
     outlet: typeof s.outlet === 'string' ? s.outlet : undefined,
-    tab: s.tab === 'resep' ? 'resep' : undefined,
+    tab: s.tab === 'resep' || s.tab === 'belanja' ? s.tab : undefined,
+    page: s.tab === 'belanja' && Number.isInteger(s.page) && (s.page as number) > 1 ? (s.page as number) : undefined,
     product: s.tab === 'resep' && typeof s.product === 'string' ? s.product : undefined,
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ deps, context }) => {
     const outletId = deps.outlet ?? context.app.outlets[0]?.id ?? null;
-    const none = { outletId, items: [] as Ingredient[], menus: [] as Product[], product: null as Product | null, recipe: null as RecipeCost | null };
+    const none = { outletId, items: [] as Ingredient[], menus: [] as Product[], product: null as Product | null, recipe: null as RecipeCost | null, purchases: { rows: [] as Purchase[], total: 0 } };
     if (!outletId) return none;
+    if (deps.tab === 'belanja') {
+      const [items, purchases] = await Promise.all([listIngredients({ data: { outletId } }), listPurchases({ data: { outletId, page: deps.page ?? 1 } })]);
+      return { ...none, items, purchases };
+    }
     if (deps.tab !== 'resep') return { ...none, items: await listIngredients({ data: { outletId } }) };
     const { products } = await listCatalog({ data: { outletId } });
     const product = deps.product ? (products.find((p) => p.id === deps.product) ?? null) : null;
@@ -50,11 +59,14 @@ function IngredientsAndRecipes() {
   return (
     <Page title={t('Bahan & Resep|menu')}>
       <nav aria-label={t('Bagian bahan dan resep')} className="flex flex-wrap gap-2">
-        <Chip aria-current={search.tab ? undefined : 'page'} onClick={() => set({ tab: undefined, product: undefined })}>
+        <Chip aria-current={search.tab ? undefined : 'page'} onClick={() => set({ tab: undefined, product: undefined, page: undefined })}>
           {t('Bahan')}
         </Chip>
-        <Chip aria-current={search.tab === 'resep' ? 'page' : undefined} onClick={() => set({ tab: 'resep', product: undefined })}>
+        <Chip aria-current={search.tab === 'resep' ? 'page' : undefined} onClick={() => set({ tab: 'resep', product: undefined, page: undefined })}>
           {t('Resep')}
+        </Chip>
+        <Chip aria-current={search.tab === 'belanja' ? 'page' : undefined} onClick={() => set({ tab: 'belanja', product: undefined, page: undefined })}>
+          {t('Belanja')}
         </Chip>
       </nav>
       {search.product ? (
@@ -69,10 +81,16 @@ function IngredientsAndRecipes() {
         <>
           <div className="mt-5 flex flex-wrap items-end gap-4">
             <div className="min-w-[200px] flex-1 sm:max-w-[280px]">
-              <OutletField all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, product: undefined })} />
+              <OutletField all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, product: undefined, page: undefined })} />
             </div>
           </div>
-          {search.tab === 'resep' ? <RecipeList menus={data.menus} onOpen={(id) => set({ product: id })} /> : <IngredientList outletId={data.outletId} items={data.items} />}
+          {search.tab === 'resep' ? (
+            <RecipeList menus={data.menus} onOpen={(id) => set({ product: id })} />
+          ) : search.tab === 'belanja' ? (
+            <PurchaseList outletId={data.outletId} items={data.items} purchases={data.purchases} page={search.page ?? 1} onPage={(p) => set({ page: p > 1 ? p : undefined })} />
+          ) : (
+            <IngredientList outletId={data.outletId} items={data.items} />
+          )}
         </>
       )}
     </Page>
@@ -336,5 +354,170 @@ function RecipePage({ outletId, product, recipe, onBack }: { outletId: string; p
         />
       )}
     </form>
+  );
+}
+
+/** "Susu 12 kemasan, SKM 2 kaleng, +2": the first two ingredients, then how many more. */
+function purchaseSummary(p: Purchase, pack: string, lang: 'id' | 'en') {
+  const head = p.lines.slice(0, 2).map((l) => `${l.name} ${decimal(l.packs, lang, 3)} ${l.packLabel || pack}`);
+  return p.lines.length > 2 ? [...head, `+${p.lines.length - 2}`].join(', ') : head.join(', ');
+}
+
+function PurchaseList({
+  outletId,
+  items,
+  purchases,
+  page,
+  onPage,
+}: {
+  outletId: string | null;
+  items: Ingredient[];
+  purchases: { rows: Purchase[]; total: number };
+  page: number;
+  onPage: (page: number) => void;
+}) {
+  const { t, lang } = useI18n();
+  const lock = useLock();
+  const [recording, setRecording] = useState(false);
+  const [viewing, setViewing] = useState<Purchase | null>(null);
+  return (
+    <>
+      {outletId && (
+        <div className="mt-4">
+          <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
+            {lock.label(t('Catat belanja'))}
+          </Button>
+        </div>
+      )}
+      {purchases.rows.length === 0 ? (
+        <Empty className="mt-6" title={t('Belum ada belanja.')}>
+          {t('Catat belanja bahan supaya stok dan harga rata-rata ikut berjalan.')}
+        </Empty>
+      ) : (
+        <div className="tbl-wrap mt-5">
+          <table className="tbl tbl-card">
+            <thead>
+              <tr>
+                <th scope="col">{t('Tanggal')}</th>
+                <th scope="col">{t('Bahan')}</th>
+                <th scope="col" className="num">
+                  {t('Total')}
+                </th>
+                <th scope="col">
+                  <span className="sr-only">{t('Aksi')}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {purchases.rows.map((p) => {
+                const cancelled = p.cancelledAt !== null;
+                return (
+                  <tr key={p.id}>
+                    <td data-l={t('Tanggal')} className={cancelled ? 'line-through' : undefined}>
+                      {dateShort(p.boughtOn, lang)}
+                      {cancelled && <span className="block text-[14px] text-mute no-underline">{t('dibatalkan')}</span>}
+                    </td>
+                    <td data-l={t('Bahan')} className={cancelled ? 'text-mute line-through' : undefined}>
+                      {purchaseSummary(p, t('kemasan'), lang)}
+                    </td>
+                    <td data-l={t('Total')} className={`num ${cancelled ? 'text-mute line-through' : ''}`}>
+                      {money(p.total)}
+                    </td>
+                    <td data-l={t('Aksi')}>
+                      <Button sm onClick={() => setViewing(p)} aria-label={`${t('Lihat')} ${dateShort(p.boughtOn, lang)}`}>
+                        {t('Lihat')}
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <Pagination page={page} pages={Math.max(1, Math.ceil(purchases.total / PURCHASE_PAGE))} onPage={onPage} />
+      {recording && outletId && <PurchaseDialog outletId={outletId} ingredients={items} onClose={() => setRecording(false)} />}
+      {viewing && <PurchaseDetail purchase={viewing} onClose={() => setViewing(null)} />}
+    </>
+  );
+}
+
+/** One purchase with each line's price before and after; the cancel form opens inside it. */
+function PurchaseDetail({ purchase, onClose }: { purchase: Purchase; onClose: () => void }) {
+  const { t, lang } = useI18n();
+  const lock = useLock();
+  const act = useAction();
+  const [cancelling, setCancelling] = useState(false);
+  const [reason, setReason] = useState('');
+  async function cancel(e: React.FormEvent) {
+    e.preventDefault();
+    const check = purchaseCancelSchema.safeParse({ id: purchase.id, reason });
+    if (!check.success) return act.setError(check.error.issues[0]?.message ?? 'Data tidak valid.');
+    const res = await act.run(() => cancelPurchase({ data: check.data }), { success: t('Belanja dibatalkan.') });
+    if (res) onClose();
+  }
+  return (
+    <Dialog
+      open
+      wide
+      onOpenChange={(o) => !o && onClose()}
+      title={t('Rincian belanja')}
+      description={`${dateShort(purchase.boughtOn, lang)}${purchase.cancelledAt ? `, ${t('dibatalkan')}` : ''}`}
+      footer={
+        cancelling ? (
+          <>
+            <Button onClick={() => setCancelling(false)} disabled={act.busy}>
+              {t('Batal')}
+            </Button>
+            <Button type="submit" form="purchase-cancel" variant="fire" busy={act.busy} busyLabel={t('Membatalkan...')}>
+              {t('Batalkan belanja')}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button onClick={onClose}>{t('Tutup')}</Button>
+            {!purchase.cancelledAt && (
+              <Button variant="fire" onClick={() => setCancelling(true)} {...lock.props}>
+                {lock.label(t('Batalkan belanja'))}
+              </Button>
+            )}
+          </>
+        )
+      }
+    >
+      <ul className="grid gap-2">
+        {purchase.lines.map((l) => (
+          <li key={l.ingredientId} className="rounded border border-rule bg-slip px-3 py-2">
+            <div className="flex flex-wrap justify-between gap-x-4">
+              <span className="font-semibold">{l.name}</span>
+              <span className="font-mono text-[15px]">
+                {decimal(l.packs, lang, 3)} {l.packLabel || t('kemasan')}, {money(l.total)}
+              </span>
+            </div>
+            <p className="font-mono text-[14px] text-mute">
+              {t('Harga sebelum')} {money(l.priceBefore)}, {t('Harga sesudah')} {money(l.priceAfter)}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-right font-mono text-[16px] font-semibold">
+        {t('Total belanja')}: {money(purchase.total)}
+      </p>
+      {cancelling && (
+        <form id="purchase-cancel" noValidate onSubmit={cancel} className="mt-4 grid gap-3">
+          <Field label={t('Alasan pembatalan')}>
+            <Input
+              autoFocus
+              value={reason}
+              onChange={(e) => {
+                act.setError('');
+                setReason(e.target.value);
+              }}
+            />
+          </Field>
+        </form>
+      )}
+      <FormAlert>{act.error && t(act.error)}</FormAlert>
+    </Dialog>
   );
 }
