@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { addDays } from '@hermes-pos/ui';
-import { expenseAddSchema, expenseCancelSchema, expenseListSchema, parser } from '../lib/schemas';
-import type { ActionResult, ExpenseList } from '../lib/types';
+import { expenseAddSchema, expenseCancelSchema, expenseListSchema, expenseRefSchema, linkExpenseItemsSchema, parser } from '../lib/schemas';
+import type { ActionResult, ExpenseList, ExpenseStockLink } from '../lib/types';
 import { toExpenseList } from './normalize';
 import { startOf } from './summary';
 
@@ -37,4 +37,29 @@ export const addExpenseItems = createServerFn({ method: 'POST' })
     const { callRpc } = await import('./supabase.server');
     const res = await callRpc('owner_add_expense_items', { p_shift_id: data.shiftId, p_paid_from: data.paidFrom, p_items: data.items });
     return res.ok ? { ok: true } : res;
+  });
+
+/** Records belanja items as one stock purchase (089). No cash moves: the expense already counted. The server refuses items older than 90 days. */
+export const linkExpenseItems = createServerFn({ method: 'POST' })
+  .validator(parser(linkExpenseItemsSchema))
+  .handler(async ({ data }): Promise<ActionResult> => {
+    const { callRpc } = await import('./supabase.server');
+    const res = await callRpc('owner_link_expense_items', { p_outlet_id: data.outletId, p_lines: data.lines });
+    return res.ok ? { ok: true } : res;
+  });
+
+/** Which items of one expense record already went into stock, and as what (089). */
+export const listExpenseStockLinks = createServerFn({ method: 'GET' })
+  .validator(parser(expenseRefSchema))
+  .handler(async ({ data }): Promise<ExpenseStockLink[]> => {
+    const { readRpc } = await import('./supabase.server');
+    const raw = (await readRpc<Record<string, unknown>[] | null>('owner_stock_links_for_expense', { p_expense_id: data.expenseId })) ?? [];
+    return raw.map((r) => ({
+      expenseItemId: String(r.expenseItemId ?? ''),
+      purchaseId: String(r.purchaseId ?? ''),
+      ingredientId: String(r.ingredientId ?? ''),
+      ingredientName: String(r.ingredientName ?? ''),
+      packs: Number(r.packs ?? 0),
+      active: r.active === true,
+    }));
   });

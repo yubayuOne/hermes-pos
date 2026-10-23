@@ -404,3 +404,6 @@ export type StockDocumentList = { rows: StockDocument[]; total: number };
 /** Customers by the name typed on paid bills (owner_customers, migration 081). */
 export type Customer = { name: string; bills: number; total: number; lastAt: string };
 export type CustomerList = { rows: Customer[]; total: number };
+
+/** An expense item that went into stock as a purchase line (089); `active` is false once the purchase was cancelled. */
+export type ExpenseStockLink = { expenseItemId: string; purchaseId: string; ingredientId: string; ingredientName: string; packs: number; active: boolean };

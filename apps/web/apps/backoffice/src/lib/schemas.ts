@@ -391,3 +391,15 @@ export const paymentSchema = z.object({
   amount: z.number({ error: 'Isi jumlah yang ditransfer.' }).int().min(1, 'Isi jumlah yang ditransfer.'),
   note: z.string().trim().max(300, 'Maksimal 300 karakter.'),
 });
+
+// ---------- Expense items to stock (089) ----------
+export const linkExpenseItemsSchema = z.object({
+  outletId: uuid,
+  lines: z
+    .array(z.object({ expenseItemId: uuid, ingredientId: uuid, packs: amount3('Jumlah') }))
+    .min(1, 'Isi minimal satu bahan.')
+    .max(50, 'Maksimal 50 bahan.')
+    .refine((ls) => new Set(ls.map((l) => l.expenseItemId)).size === ls.length, 'Satu barang hanya boleh sekali.')
+    .refine(oncePerIngredient, 'Satu bahan hanya boleh sekali.'),
+});
+export const expenseRefSchema = z.object({ expenseId: uuid });
