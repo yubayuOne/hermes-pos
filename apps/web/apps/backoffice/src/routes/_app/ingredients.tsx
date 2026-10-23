@@ -31,7 +31,7 @@ export const Route = createFileRoute('/_app/ingredients')({
     if (deps.tab !== 'resep') return { ...none, items: await listIngredients({ data: { outletId } }) };
     const { products } = await listCatalog({ data: { outletId } });
     const product = deps.product ? (products.find((p) => p.id === deps.product) ?? null) : null;
-    return { ...none, menus: products.filter((p) => p.isActive), product, recipe: product ? await getRecipe({ data: { productId: product.id } }) : null };
+    return { ...none, menus: products, product, recipe: product ? await getRecipe({ data: { productId: product.id } }) : null };
   },
   pendingMs: 150,
   pendingComponent: () => <PageLoading title="Bahan & Resep|menu" />,
@@ -192,7 +192,7 @@ function RemoveIngredientDialog({ ingredient, onClose }: { ingredient: Ingredien
   );
 }
 
-/** Every active menu item with its HPP and profit; the recipe itself opens on its own page. */
+/** Every menu item with its HPP and profit (an inactive one keeps its recipe, so it stays editable); the recipe opens on its own page. */
 function RecipeList({ menus, onOpen }: { menus: Product[]; onOpen: (id: string) => void }) {
   const { t, lang } = useI18n();
   const lock = useLock();
@@ -229,8 +229,9 @@ function RecipeList({ menus, onOpen }: { menus: Product[]; onOpen: (id: string) 
             const profit = p.price - p.hpp;
             return (
               <tr key={p.id}>
-                <td data-l={t('Menu')} className="font-semibold">
-                  {p.name}
+                <td data-l={t('Menu')}>
+                  <span className="font-semibold">{p.name}</span>
+                  {!p.isActive && <span className="block text-[14px] text-mute">{t('nonaktif')}</span>}
                 </td>
                 <td data-l={t('Harga jual')} className="num">
                   {money(p.price)}

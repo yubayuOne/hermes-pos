@@ -21,6 +21,9 @@ export function describeError(error: unknown): string {
     return 'Tidak dapat terhubung ke server. Periksa koneksi internet lalu coba lagi.';
   if (m.includes('environment variable')) return 'Server belum dikonfigurasi. Hubungi admin.';
   if (m.includes('duplicate key') || m.includes('unique')) return 'Data dengan nama itu sudah ada. Pakai nama lain.';
+  // Ingredient errors (084) carry a name; the sentence without it is translatable.
+  if (m.includes('satuan tidak cocok dengan bahan')) return 'Satuan tidak cocok dengan bahan. Pilih satuan dari jenis yang sama: berat, volume, atau pcs.';
+  if (m.includes('dipakai di resep')) return 'Bahan ini dipakai di resep. Hapus dari resep itu dulu.';
   if (raw) return raw;
   return 'Terjadi kesalahan. Coba lagi.';
 }

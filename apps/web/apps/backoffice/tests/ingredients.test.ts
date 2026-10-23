@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ingredientSchema, recipeSaveSchema } from '../src/lib/schemas.ts';
 import { sameFamilyUnits } from '../src/lib/units.ts';
+import { describeError } from '../src/lib/errors.ts';
 
 const outletId = '00000000-0000-4000-8000-000000000001';
 const i1 = '00000000-0000-4000-8000-000000000002';
@@ -71,7 +72,7 @@ const RESEP_TEXTS = [
   'Untung per porsi', 'Modal {pct}% dari harga jual', 'Menghitung...', 'Bahan {n}', 'Jumlah bahan {n}', 'Satuan bahan {n}',
   'Modal lebih besar dari harga jual. Cek jumlah atau harga bahan.', 'Ada bahan berharga Rp0, angka ini perkiraan.',
   'Resep belum diisi. Tambah minimal satu bahan, atau hapus resep.',
-  'Satuan tidak cocok dengan bahan', 'Jumlah bahan tidak valid', 'Resep maksimal 40 bahan', 'Satu bahan hanya boleh sekali di resep', 'Bahan tidak ditemukan di outlet ini',
+  'Satuan tidak cocok dengan bahan. Pilih satuan dari jenis yang sama: berat, volume, atau pcs.', 'Jumlah bahan tidak valid', 'Resep maksimal 40 bahan', 'Satu bahan hanya boleh sekali di resep', 'Bahan tidak ditemukan di outlet ini',
   // The Resep tab and the recipe page
   'Bagian bahan dan resep', 'Resep', 'Menu', 'Harga jual', 'Belum ada resep', 'Atur resep', 'Buat resep', 'Belum ada menu.',
   'Tambah menu di halaman Produk, lalu atur resepnya di sini.', 'Kembali ke daftar resep', 'Resep {name}', 'Simpan resep', 'Hapus resep',
@@ -81,4 +82,13 @@ const RESEP_TEXTS = [
 test('the recipe editor texts are translated', async () => {
   const { EN } = await import('../src/dict.ts');
   assert.deepEqual(RESEP_TEXTS.filter((k) => !(k in EN)), []);
+});
+
+test('database errors with a name inside become fixed sentences, so the English dictionary can translate them', async () => {
+  const { EN } = await import('../src/dict.ts');
+  const unit = describeError(new Error('Satuan tidak cocok dengan bahan Susu cair'));
+  const used = describeError(new Error('Dipakai di resep: Es kopi susu, Es latte. Hapus dari resep itu dulu.'));
+  assert.equal(unit, 'Satuan tidak cocok dengan bahan. Pilih satuan dari jenis yang sama: berat, volume, atau pcs.');
+  assert.equal(used, 'Bahan ini dipakai di resep. Hapus dari resep itu dulu.');
+  assert.ok(unit in EN && used in EN);
 });
