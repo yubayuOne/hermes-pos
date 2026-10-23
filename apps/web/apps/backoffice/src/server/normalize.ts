@@ -1,5 +1,6 @@
 import { DEFAULT_TZ, dayDiff, isoDay } from '@hermes-pos/ui';
 import { UNITS, type Unit } from '../lib/units';
+import { expenseItemIdOf } from '../lib/purchase';
 import type {
   Ingredient,
   IngredientImpact,
@@ -509,6 +510,7 @@ export function toPurchase(r: Row): Purchase {
       total: num(l.total),
       priceBefore: num(l.priceBefore),
       priceAfter: num(l.priceAfter),
+      expenseItemId: expenseItemIdOf(l.expenseItemId),
     })),
   };
 }

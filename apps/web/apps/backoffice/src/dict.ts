@@ -1280,6 +1280,7 @@ export const EN: Dict = {
   'Rincian belanja': 'Purchase details',
   'Harga sebelum': 'Price before',
   'Harga sesudah': 'Price after',
+  'dari pengeluaran': 'from expenses',
   'Total bayar (Rp)': 'Total paid (Rp)',
   'Harga per {pack} (Rp)': 'Price per {pack} (Rp)',
   'Jumlah {pack}': 'Number of {pack}',

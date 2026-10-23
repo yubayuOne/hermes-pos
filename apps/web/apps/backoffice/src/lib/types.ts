@@ -337,7 +337,7 @@ export type Ingredient = {
   packLabel: string;
   lastCountedAt: string | null;
 };
-export type PurchaseLine = { ingredientId: string; name: string; packLabel: string; packs: number; total: number; priceBefore: number; priceAfter: number };
+export type PurchaseLine = { ingredientId: string; name: string; packLabel: string; packs: number; total: number; priceBefore: number; priceAfter: number; expenseItemId: string | null };
 export type Purchase = { id: string; boughtOn: string; total: number; cancelledAt: string | null; lines: PurchaseLine[] };
 export type PurchaseList = { rows: Purchase[]; total: number };
 export type CountResultLine = { ingredientId: string; name: string; kind: 'opening' | 'count'; before: number; after: number; diff: number; value: number };

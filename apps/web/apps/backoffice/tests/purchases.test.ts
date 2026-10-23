@@ -164,3 +164,12 @@ test('parseCount: Indonesian notation for a counted amount', () => {
   assert.equal(parseCount('12.3456'), null);
   assert.equal(parseCount('abc'), null);
 });
+
+test('purchase line: expenseItemId from the database, null when absent', async () => {
+  const { expenseItemIdOf } = await import('../src/lib/purchase.ts');
+  assert.equal(expenseItemIdOf(i2), i2);
+  assert.equal(expenseItemIdOf(null), null);
+  assert.equal(expenseItemIdOf(undefined), null);
+  const { EN } = await import('../src/dict.ts');
+  assert.equal(EN['dari pengeluaran'], 'from expenses');
+});

@@ -7,6 +7,9 @@ const valid = (n: number, packs: number) => Number.isFinite(n) && Number.isFinit
 export const pairFromTotal = (total: number, packs: number): Pair => (valid(total, packs) ? { total, unit: round2(total / packs) } : null);
 export const pairFromUnit = (unit: number, packs: number): Pair => (valid(unit, packs) ? { total: Math.round(unit * packs), unit } : null);
 
+/** The expense item a purchase line came from (089); null for a purchase the owner recorded directly. */
+export const expenseItemIdOf = (v: unknown): string | null => (typeof v === 'string' && v ? v : null);
+
 /**
  * Reads a typed amount. Whole rupiah (default): dots must be real thousands separators (1.000), a comma is rejected ("1,5" is not Rp1).
  * With `decimals` (price per pack): a dot followed by exactly three digits is a thousands separator, "," or "." is the decimal mark.

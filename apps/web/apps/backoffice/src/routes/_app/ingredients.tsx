@@ -489,7 +489,10 @@ function PurchaseDetail({ purchase, onClose }: { purchase: Purchase; onClose: ()
         {purchase.lines.map((l) => (
           <li key={l.ingredientId} className="rounded border border-rule bg-slip px-3 py-2">
             <div className="flex flex-wrap justify-between gap-x-4">
-              <span className="font-semibold">{l.name}</span>
+              <span className="font-semibold">
+                {l.name}
+                {l.expenseItemId && <span className="ml-2 text-[14px] font-normal text-mute">({t('dari pengeluaran')})</span>}
+              </span>
               <span className="font-mono text-[15px]">
                 {decimal(l.packs, lang, 3)} {l.packLabel || t('kemasan')}, {money(l.total)}
               </span>
