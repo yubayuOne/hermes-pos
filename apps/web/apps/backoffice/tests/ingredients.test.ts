@@ -65,3 +65,22 @@ test('the Bahan page texts are translated', async () => {
   const missing = BAHAN_TEXTS.filter((k) => !(k in EN));
   assert.deepEqual(missing, []);
 });
+
+const RESEP_TEXTS = [
+  'HPP (modal per porsi)', 'HPP = harga pokok penjualan, modal untuk satu porsi. Dipakai untuk menghitung laba.', 'dari resep', 'perkiraan',
+  'Berubah sendiri kalau harga bahan diubah.', 'Hitung dari resep', 'Hapus resep, isi manual', 'Resep per porsi', 'Pilih bahan', '+ Bahan baru',
+  'Tambah bahan ke resep', 'Jumlah', 'Hapus baris {n}', 'Untung per porsi', 'Modal {pct}% dari harga jual', 'Menghitung...', 'Memuat resep...',
+  'Modal lebih besar dari harga jual. Cek jumlah atau harga bahan.', 'Ada bahan berharga Rp0, angka ini perkiraan.',
+  'Resep belum diisi. Tambah minimal satu bahan, atau hapus resep.', 'Bahan {n}', 'Jumlah bahan {n}', 'Satuan bahan {n}',
+  'Satuan tidak cocok dengan bahan', 'Jumlah bahan tidak valid', 'Resep maksimal 40 bahan', 'Satu bahan hanya boleh sekali di resep', 'Bahan tidak ditemukan di outlet ini',
+];
+test('the recipe editor texts are translated', async () => {
+  const { EN } = await import('../src/dict.ts');
+  assert.deepEqual(RESEP_TEXTS.filter((k) => !(k in EN)), []);
+});
+
+test('a product without a recipe key (the onboarding form) is valid and leaves the recipe alone', () => {
+  const r = productSchema.safeParse({ outletId, categoryId: null, name: 'Roti', price: 15000, hpp: 5000, trackStock: false, stock: 0, station: 'kitchen' });
+  assert.ok(r.success);
+  assert.equal(r.success && r.data.recipe, null);
+});

@@ -150,7 +150,7 @@ export const productSchema = z.object({
   stock: rupiah('Stok awal harus angka, boleh 0.'),
   station: z.enum(['kitchen', 'bar']),
   /** null leaves the recipe as it is, [] removes it, lines replace it (owner_save_product). */
-  recipe: recipeLines.nullable(),
+  recipe: recipeLines.nullable().default(null),
 });
 export const productActiveSchema = z.object({ id: uuid, active: z.boolean() });
 

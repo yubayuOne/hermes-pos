@@ -666,6 +666,10 @@ const RPC = {
   create_category: () => crypto.randomUUID(),
   create_product: () => 'id',
   update_product: () => 'id',
+  owner_save_product: () => 'id',
+  owner_list_ingredients: () => [],
+  owner_preview_recipe: () => ({ lines: [], hpp: 0, incomplete: false }),
+  owner_get_recipe: () => ({ source: 'manual', lines: [], hpp: 0, incomplete: false }),
   register_business: () => BIZ,
   owner_update_outlet: (a) =>
     expired()

@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, amount, isoDay, money, useI18n, PencilIcon } from '@hermes-pos/ui';
+import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, Tag, amount, isoDay, money, useI18n, PencilIcon } from '@hermes-pos/ui';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
 import { listProductSales } from '../../server/summary';
@@ -9,11 +9,14 @@ import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination, pageOf } from '../../components/Pagination';
 import { useApp, useLock } from '../../lib/app';
+import { describeError } from '../../lib/errors';
 import { categorySchema, productSchema } from '../../lib/schemas';
-import type { Category, Product, ProductSale } from '../../lib/types';
+import type { Category, Product, ProductSale, RecipeCost, RecipeLineInput } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
 import { useForm } from '../../lib/useForm';
+import { getRecipe } from '../../server/ingredients';
 import { createCategory, listCatalog, saveProduct, setProductActive } from '../../server/manage';
+import { RecipeEditor } from '../../components/RecipeEditor';
 import { ProductPhoto } from '../../components/ProductPhoto';
 import { pageHead } from '../../lang';
 
@@ -184,6 +187,11 @@ function Products() {
                   </td>
                   <td data-l="HPP" className="num">
                     {money(p.hpp)}
+                    {p.hppSource === 'recipe' && (
+                      <Tag tone="pine" className="ml-2 font-sans">
+                        {t('dari resep')}
+                      </Tag>
+                    )}
                   </td>
                   <td data-l={t('Stok')} className="num">
                     {p.trackStock ? amount(p.stock) : <span className="font-sans text-mute">{t('tanpa stok')}</span>}
@@ -235,6 +243,12 @@ function ProductDialog({
   const { t } = useI18n();
   const act = useAction();
   const [newCat, setNewCat] = useState(false);
+  // The HPP field has two states: typed (no recipe) or computed from the recipe (084). Removing a recipe sends [].
+  const hadRecipe = product?.hppSource === 'recipe';
+  const [mode, setMode] = useState<'manual' | 'recipe'>(hadRecipe ? 'recipe' : 'manual');
+  const [initialLines, setInitialLines] = useState<RecipeLineInput[] | null>(hadRecipe ? null : []);
+  const [lines, setLines] = useState<RecipeLineInput[]>([]);
+  const [cost, setCost] = useState<RecipeCost | null>(null);
   const f = useForm({
     name: product?.name ?? '',
     categoryId: product?.categoryId ?? defaultCategory ?? '',
@@ -244,9 +258,22 @@ function ProductDialog({
     stock: product ? String(product.stock) : '0',
     station: product?.station ?? ('kitchen' as 'kitchen' | 'bar'),
   });
+  useEffect(() => {
+    if (!product || !hadRecipe) return;
+    getRecipe({ data: { productId: product.id } }).then(
+      (r) => setInitialLines(r.lines.map((l) => ({ ingredientId: l.ingredientId, qty: l.qty, unit: l.unit }))),
+      (err) => act.setError(describeError(err)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per opened product
+  }, []);
+  function dropRecipe() {
+    if (cost) f.set('hpp', String(Math.round(cost.hpp)));
+    setMode('manual');
+  }
   async function save(e: React.FormEvent) {
     e.preventDefault();
     const v = f.values;
+    if (mode === 'recipe' && lines.length === 0) return act.setError('Resep belum diisi. Tambah minimal satu bahan, atau hapus resep.');
     const data = f.check(productSchema, {
       id: product?.id ?? null,
       outletId,
@@ -257,7 +284,7 @@ function ProductDialog({
       trackStock: v.trackStock,
       stock: Number(v.stock || 0),
       station: v.station,
-      recipe: null, // Task 6 replaces this with the recipe editor's lines
+      recipe: mode === 'recipe' ? lines : hadRecipe ? [] : null,
     });
     if (!data) return;
     const res = await act.run(() => saveProduct({ data }), {
@@ -308,10 +335,55 @@ function ProductDialog({
             <Field label={t('Harga jual (Rp)')} error={f.errors.price && t(f.errors.price)}>
               <Input inputMode="numeric" className="font-mono" value={f.values.price} onChange={(e) => f.set('price', e.target.value.replace(/\D/g, ''))} />
             </Field>
-            <Field label={t('HPP (Rp)')} error={f.errors.hpp && t(f.errors.hpp)} help={t('Modal per porsi, untuk menghitung laba.')}>
-              <Input inputMode="numeric" className="font-mono" value={f.values.hpp} onChange={(e) => f.set('hpp', e.target.value.replace(/\D/g, ''))} />
-            </Field>
+            {mode === 'manual' ? (
+              <Field label={t('HPP (modal per porsi)')} error={f.errors.hpp && t(f.errors.hpp)} help={t('HPP = harga pokok penjualan, modal untuk satu porsi. Dipakai untuk menghitung laba.')}>
+                <Input inputMode="numeric" className="font-mono" value={f.values.hpp} onChange={(e) => f.set('hpp', e.target.value.replace(/\D/g, ''))} />
+              </Field>
+            ) : (
+              <div className="fld">
+                <span className="fld-l">{t('HPP (modal per porsi)')}</span>
+                <p className="flex flex-wrap items-center gap-2 font-mono text-[18px] font-semibold">
+                  {cost ? money(cost.hpp) : money(product?.hpp ?? 0)}
+                  <Tag tone="pine" className="font-sans">
+                    {t('dari resep')}
+                  </Tag>
+                  {cost?.incomplete && <Tag className="font-sans">{t('perkiraan')}</Tag>}
+                </p>
+                <p className="help">{t('Berubah sendiri kalau harga bahan diubah.')}</p>
+              </div>
+            )}
           </div>
+          {mode === 'manual' ? (
+            <div>
+              <Button sm onClick={() => setMode('recipe')}>
+                {t('Hitung dari resep')}
+              </Button>
+            </div>
+          ) : initialLines === null ? (
+            <p className="text-[15px] text-mute">{t('Memuat resep...')}</p>
+          ) : (
+            <>
+              <RecipeEditor
+                outletId={outletId}
+                price={Number(f.values.price) || 0}
+                initial={initialLines}
+                onChange={(ls, c) => {
+                  setLines(ls);
+                  setCost(c);
+                }}
+              />
+              {f.errors.recipe && (
+                <p role="alert" className="text-[15px] text-error">
+                  {t(f.errors.recipe)}
+                </p>
+              )}
+              <div>
+                <Button sm onClick={dropRecipe}>
+                  {t('Hapus resep, isi manual')}
+                </Button>
+              </div>
+            </>
+          )}
           <div className="fld">
             <span className="fld-l">{t('Stok')}</span>
             <ChipGroup
