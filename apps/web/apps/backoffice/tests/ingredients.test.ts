@@ -45,3 +45,23 @@ test('units offered for a recipe line stay in the ingredient pack family', () =>
   assert.deepEqual(sameFamilyUnits('l'), ['ml', 'l']);
   assert.deepEqual(sameFamilyUnits('pcs'), ['pcs']);
 });
+
+// Every Indonesian text the Bahan page and its dialog show or validate must have an English line (DESIGN.md A8).
+const BAHAN_TEXTS = [
+  'Bahan|menu', 'Bahan', 'Tambah bahan', 'Ubah bahan', 'Simpan bahan', 'Simpan perubahan', 'Hapus bahan', 'Hapus {name}?', '{name} dihapus.', 'Menghapus...',
+  'Ubah', 'Nama bahan', 'Harga beli', 'Harga beli (Rp)', 'Isi kemasan', 'Harga per satuan', 'Dipakai di', 'belum dipakai', '{n} menu',
+  'Belum ada bahan.', 'Tambah bahan pertama di sini, atau buat langsung dari resep sebuah menu di halaman Produk.',
+  'Bahan yang sudah dipakai di resep tidak bisa dihapus.', 'Contoh: susu 1 liter seharga Rp18.000.',
+  'Harga satu kemasan, seperti yang Anda bayar ke pemasok.', 'Harga bahan ini dipakai di resep. Cek dulu HPP menu yang ikut berubah.',
+  'Menu yang ikut berubah', 'HPP dari {old} menjadi {now}',
+  'Nama bahan wajib diisi.', 'Harga beli harus angka, boleh Rp0.', 'Isi kemasan harus angka.', 'Isi kemasan maksimal 3 angka di belakang koma.',
+  'Isi kemasan harus lebih dari 0.', 'Isi kemasan terlalu besar.', 'Pilih satuan.', 'Jumlah harus lebih dari 0.',
+  'Resep maksimal 40 bahan.', 'Satu bahan hanya boleh sekali di resep.',
+  'Nama bahan sudah dipakai', 'Bahan tidak ditemukan', 'Satuan tidak valid', 'Satuan kemasan tidak bisa berganti jenis selama bahan dipakai resep',
+  'Isi kemasan harus lebih dari 0', 'Harga tidak boleh negatif',
+];
+test('the Bahan page texts are translated', async () => {
+  const { EN } = await import('../src/dict.ts');
+  const missing = BAHAN_TEXTS.filter((k) => !(k in EN));
+  assert.deepEqual(missing, []);
+});

@@ -21,6 +21,7 @@ import { Route as AppCashiersRouteImport } from './routes/_app/cashiers'
 import { Route as AppClosingRouteImport } from './routes/_app/closing'
 import { Route as AppCustomersRouteImport } from './routes/_app/customers'
 import { Route as AppExpensesRouteImport } from './routes/_app/expenses'
+import { Route as AppIngredientsRouteImport } from './routes/_app/ingredients'
 import { Route as AppOutletsRouteImport } from './routes/_app/outlets'
 import { Route as AppProductsRouteImport } from './routes/_app/products'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
@@ -89,6 +90,11 @@ const AppExpensesRoute = AppExpensesRouteImport.update({
   path: '/expenses',
   getParentRoute: () => AppRoute,
 } as any)
+const AppIngredientsRoute = AppIngredientsRouteImport.update({
+  id: '/ingredients',
+  path: '/ingredients',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppOutletsRoute = AppOutletsRouteImport.update({
   id: '/outlets',
   path: '/outlets',
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/closing': typeof AppClosingRoute
   '/customers': typeof AppCustomersRoute
   '/expenses': typeof AppExpensesRoute
+  '/ingredients': typeof AppIngredientsRoute
   '/outlets': typeof AppOutletsRoute
   '/products': typeof AppProductsRoute
   '/reports': typeof AppReportsRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/closing': typeof AppClosingRoute
   '/customers': typeof AppCustomersRoute
   '/expenses': typeof AppExpensesRoute
+  '/ingredients': typeof AppIngredientsRoute
   '/outlets': typeof AppOutletsRoute
   '/products': typeof AppProductsRoute
   '/reports': typeof AppReportsRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/_app/closing': typeof AppClosingRoute
   '/_app/customers': typeof AppCustomersRoute
   '/_app/expenses': typeof AppExpensesRoute
+  '/_app/ingredients': typeof AppIngredientsRoute
   '/_app/outlets': typeof AppOutletsRoute
   '/_app/products': typeof AppProductsRoute
   '/_app/reports': typeof AppReportsRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/closing'
     | '/customers'
     | '/expenses'
+    | '/ingredients'
     | '/outlets'
     | '/products'
     | '/reports'
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/closing'
     | '/customers'
     | '/expenses'
+    | '/ingredients'
     | '/outlets'
     | '/products'
     | '/reports'
@@ -251,6 +262,7 @@ export interface FileRouteTypes {
     | '/_app/closing'
     | '/_app/customers'
     | '/_app/expenses'
+    | '/_app/ingredients'
     | '/_app/outlets'
     | '/_app/products'
     | '/_app/reports'
@@ -359,6 +371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppExpensesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/ingredients': {
+      id: '/_app/ingredients'
+      path: '/ingredients'
+      fullPath: '/ingredients'
+      preLoaderRoute: typeof AppIngredientsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/outlets': {
       id: '/_app/outlets'
       path: '/outlets'
@@ -423,6 +442,7 @@ interface AppRouteChildren {
   AppClosingRoute: typeof AppClosingRoute
   AppCustomersRoute: typeof AppCustomersRoute
   AppExpensesRoute: typeof AppExpensesRoute
+  AppIngredientsRoute: typeof AppIngredientsRoute
   AppOutletsRoute: typeof AppOutletsRoute
   AppProductsRoute: typeof AppProductsRoute
   AppReportsRoute: typeof AppReportsRoute
@@ -438,6 +458,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppClosingRoute: AppClosingRoute,
   AppCustomersRoute: AppCustomersRoute,
   AppExpensesRoute: AppExpensesRoute,
+  AppIngredientsRoute: AppIngredientsRoute,
   AppOutletsRoute: AppOutletsRoute,
   AppProductsRoute: AppProductsRoute,
   AppReportsRoute: AppReportsRoute,
