@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
-import { ingredientPreviewSchema, ingredientRefSchema, ingredientSchema, outletRefSchema, parser, productRefSchema, recipePreviewSchema } from '../lib/schemas';
+import { ingredientPreviewSchema, ingredientRefSchema, ingredientSchema, outletRefSchema, parser, productRefSchema, recipePreviewSchema, recipeSaveSchema } from '../lib/schemas';
 import type { ActionResult, Ingredient, IngredientImpact, RecipeCost } from '../lib/types';
 import { toImpact, toIngredient, toRecipeCost } from './normalize';
 
@@ -61,4 +61,13 @@ export const getRecipe = createServerFn({ method: 'GET' })
   .handler(async ({ data }): Promise<RecipeCost> => {
     const { readRpc } = await import('./supabase.server');
     return toRecipeCost(await readRpc<Row | null>('owner_get_recipe', { p_product_id: data.productId }));
+  });
+
+/** Replaces a product's recipe; [] removes it and the product keeps its last HPP (085). */
+export const saveRecipe = createServerFn({ method: 'POST' })
+  .validator(parser(recipeSaveSchema))
+  .handler(async ({ data }): Promise<ActionResult> => {
+    const { callRpc } = await import('./supabase.server');
+    const res = await callRpc('owner_save_recipe', { p_product_id: data.productId, p_lines: data.lines });
+    return res.ok ? { ok: true } : res;
   });

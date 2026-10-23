@@ -40,8 +40,6 @@ export function IngredientDialog({
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    // This dialog opens from inside the product form; React would bubble the submit up to it and save the product too.
-    e.stopPropagation();
     const v = f.values;
     const data = f.check(ingredientSchema, {
       id: ingredient?.id ?? null,

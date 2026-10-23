@@ -106,7 +106,7 @@ function SidebarBody({ close }: { close?: ReactNode }) {
       label: 'Atur toko',
       items: [
         { to: '/products', label: 'Produk', meta: c.products },
-        { to: '/ingredients', label: 'Bahan' },
+        { to: '/ingredients', label: 'Bahan & Resep' },
         { to: '/vouchers', label: 'Voucher', meta: c.vouchers },
         { to: '/outlets', label: 'Outlet', meta: c.outlets },
         { to: '/cashiers', label: 'Kasir', meta: c.cashiers },

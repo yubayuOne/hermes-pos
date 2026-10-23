@@ -667,6 +667,7 @@ const RPC = {
   create_product: () => 'id',
   update_product: () => 'id',
   owner_save_product: () => 'id',
+  owner_save_recipe: () => null,
   owner_list_ingredients: () => [],
   owner_preview_recipe: () => ({ lines: [], hpp: 0, incomplete: false }),
   owner_get_recipe: () => ({ source: 'manual', lines: [], hpp: 0, incomplete: false }),

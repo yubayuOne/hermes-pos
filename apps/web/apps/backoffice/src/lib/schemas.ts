@@ -137,6 +137,8 @@ const recipeLines = z
   .max(40, 'Resep maksimal 40 bahan.')
   .refine((ls) => new Set(ls.map((l) => l.ingredientId)).size === ls.length, 'Satu bahan hanya boleh sekali di resep.');
 export const recipePreviewSchema = z.object({ outletId: uuid, lines: recipeLines });
+/** [] removes the recipe; the product keeps its last HPP (owner_save_recipe, 085). */
+export const recipeSaveSchema = z.object({ productId: uuid, lines: recipeLines });
 export const productRefSchema = z.object({ productId: uuid });
 
 export const productSchema = z.object({
@@ -149,8 +151,6 @@ export const productSchema = z.object({
   trackStock: z.boolean(),
   stock: rupiah('Stok awal harus angka, boleh 0.'),
   station: z.enum(['kitchen', 'bar']),
-  /** null leaves the recipe as it is, [] removes it, lines replace it (owner_save_product). */
-  recipe: recipeLines.nullable().default(null),
 });
 export const productActiveSchema = z.object({ id: uuid, active: z.boolean() });
 

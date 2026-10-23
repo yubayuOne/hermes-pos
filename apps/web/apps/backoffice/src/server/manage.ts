@@ -130,7 +130,7 @@ export const createCategory = createServerFn({ method: 'POST' })
 
 const productArgs = (p: ReturnType<typeof productSchema.parse>) => ({
   p_product_id: p.id ?? null,
-  p_recipe: p.recipe,
+  p_recipe: null, // recipes are saved on their own page (owner_save_recipe)
   p_outlet_id: p.outletId,
   p_category_id: p.categoryId,
   p_name: p.name,
