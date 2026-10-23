@@ -333,6 +333,16 @@ const reset = () => {
   const sentBefore = expenseCalls.length;
   await Q.syncCheckoutQueue();
   ok(Q.getQueueSnapshot().length === 0 && expenseCalls.length === sentBefore, 'set-aside expenses are not in the queue and are not sent');
+  // The 077 build copied the entry aside but never rewrote the main queue, so on a real phone it is in both keys.
+  reset();
+  const stale = { id: 'x', kind: 'expense', idempotencyKey: 'expense:old', shiftId: 's1', status: 'waiting', total: 15000, expense: { paidFrom: 'drawer', items: [{ name: 'Es batu', amount: 15000 }] } };
+  store.set(Q.QUEUE_KEY, JSON.stringify([stale]));
+  store.set(Q.QUEUE_KEY + ':expense', JSON.stringify([stale]));
+  await Q.loadQueue();
+  const sentBoth = expenseCalls.length;
+  await Q.syncCheckoutQueue();
+  ok(Q.getQueueSnapshot().length === 0 && expenseCalls.length === sentBoth, 'an expense in both the queue and the set-aside copy is not loaded and not sent');
+  ok(!String(store.get(Q.QUEUE_KEY)).includes('expense:old'), 'the cleaned queue is written back, so forgetting the set-aside copy cannot bring the entry back');
   const old = await Q.oldExpenses();
   ok(old && old.count === 1 && old.total === 15000 && old.names[0] === 'Es batu', 'old expense: count, total, and names for the owner');
   await Q.forgetOldExpenses();

@@ -58,7 +58,7 @@ export function useCheckoutQueueSync(who: { outletId: string } | null) {
         if (!live || !old) return;
         const ok = await notifyRef.current.confirm({
           title: t('Pengeluaran lama belum terkirim'),
-          message: t('{n} pengeluaran, total {amount}: {names}. Catat ulang di backoffice.', {
+          message: t('{n} pengeluaran, total {amount}: {names}. Catat ulang di backoffice; pilih Kas laci kalau uangnya dari laci.', {
             n: old.count,
             amount: money(old.total),
             names: old.names.join(', '),

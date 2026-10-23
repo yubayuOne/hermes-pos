@@ -134,8 +134,12 @@ function ensureLoaded() {
       }
       try {
         const parsed = raw ? JSON.parse(raw) : [];
-        // Expenses a 077 build set aside under `${QUEUE_KEY}:expense` are not loaded here: oldExpenses() tells the owner, nothing resends them.
-        items = Array.isArray(parsed) ? parsed.filter((x) => x && x.idempotencyKey && x.shiftId) : [];
+        // Expenses a 077 build set aside under `${QUEUE_KEY}:expense` are not loaded here: oldExpenses() tells the owner, nothing
+        // resends them. That build copied them aside without rewriting this list, so the same entry is usually still in both.
+        const aside = new Set(await asideExpenseKeys());
+        items = Array.isArray(parsed) ? parsed.filter((x) => x && x.idempotencyKey && x.shiftId && !aside.has(x.idempotencyKey)) : [];
+        // Write the cleaned list back: forgetting the set-aside copy later must not bring the entry back from here.
+        if (Array.isArray(parsed) && aside.size && items.length < parsed.length) await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(items)).catch(() => undefined);
       } catch {
         // Corrupt JSON: keep the raw text so the sales can still be recovered by hand.
         await AsyncStorage.setItem(`${QUEUE_KEY}:corrupt`, raw ?? '').catch(() => undefined);
@@ -145,6 +149,16 @@ function ensureLoaded() {
     })();
   }
   return loaded;
+}
+
+/** Idempotency keys of the expenses a 077 build set aside (empty when there are none or the copy cannot be read). */
+async function asideExpenseKeys(): Promise<string[]> {
+  try {
+    const parsed = JSON.parse((await AsyncStorage.getItem(`${QUEUE_KEY}:expense`)) ?? '[]');
+    return Array.isArray(parsed) ? parsed.map((x) => String(x?.idempotencyKey ?? '')).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
 }
 
 /** Unsent expenses left by an app version before 077, set aside by the loader: what the owner must record again. */
