@@ -13,6 +13,8 @@ import {
   CheckoutResult,
   CustomerInfo,
   Discount,
+  Expense,
+  ExpenseItem,
   PaymentInput,
   Product,
   ProductStation,
@@ -480,6 +482,49 @@ function toVoucher(d: any): Voucher {
   };
 }
 
+export const toExpense = (d: any): Expense => ({
+  id: String(d.id),
+  createdAt: String(d.createdAt),
+  total: Number(d.total ?? 0),
+  drawerTotal: Number(d.drawerTotal ?? 0),
+  items: ((d.items as any[]) ?? []).map((i) => ({
+    name: String(i.name),
+    category: i.category === 'operasional' ? 'operasional' : 'belanja',
+    quantity: Number(i.quantity),
+    unit: String(i.unit),
+    amount: Number(i.amount),
+    paidFrom: i.paidFrom === 'other' ? 'other' : 'drawer',
+  })),
+});
+
+/** Adds items to the shift's expense record (migrations 040, 041, 043) and returns that record. From the drawer it leaves the shift's cash at once. Offline: queued (offlineQueue). */
+export async function recordExpense(args: {
+  shiftId: string;
+  cashierId: string;
+  outletId: string;
+  paidFrom: 'drawer' | 'other';
+  items: ExpenseItem[];
+  idempotencyKey: string;
+}): Promise<Expense> {
+  const { data, error } = await supabase.rpc('record_expense', {
+    p_shift_id: args.shiftId,
+    p_cashier_id: args.cashierId,
+    p_outlet_id: args.outletId,
+    p_paid_from: args.paidFrom,
+    p_items: args.items,
+    p_idempotency_key: args.idempotencyKey,
+  });
+  if (error) throw error;
+  return toExpense(data);
+}
+
+/** Zero or one record: one per shift since 041. */
+export async function fetchShiftExpenses(shiftId: string): Promise<Expense[]> {
+  const { data, error } = await supabase.rpc('list_shift_expenses', { p_shift_id: shiftId });
+  if (error) throw error;
+  return ((data as any[]) ?? []).map(toExpense);
+}
+
 /** Every shift of the outlet (open and closed), newest first. Next page: pass the last row's openedAt as `before`. `from`: period start (045). */
 export async function fetchOutletShifts(
   cashierId: string,
@@ -512,6 +557,7 @@ export async function fetchOutletShifts(
     }),
     cashierName: String(d.cashierName ?? ''),
     sales: Number(d.sales ?? 0),
+    expenses: Number(d.expenses ?? 0),
   }));
 }
 

@@ -38,6 +38,7 @@ const repo = {
   toBillRow: (b) => ({ id: b.id, status: b.status }),
   toBillItem: (i) => i,
   toRefunds: (r) => r ?? [],
+  toExpense: (e) => e,
   toCashSummary: (c) => ({ cashIn: Number(c.cash_in), cashOut: Number(c.cash_out), expectedCash: Number(c.expected_cash) }),
   toDashboard: (d) => ({ hourly: d.hourly ?? [], top: d.top ?? [] }),
 };
