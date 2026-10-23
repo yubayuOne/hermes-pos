@@ -258,3 +258,135 @@ select pg_temp.ok('C2 cancelling with another live purchase keeps the stock runn
   pg_temp.icol('Gelas', 'stock_started') = 'true' and pg_temp.icol('Gelas', 'stock')::numeric = 10
   and pg_temp.icol('Gelas', 'price')::numeric = 12000 and pg_temp.icol('Gelas', 'pack_qty')::numeric = 10
   and pg_temp.hpp() = current_setting('t.h0')::numeric);
+
+-- ================================================================ sales consume ingredients (Task 2)
+-- Kopi runs at 1000 g, Gelas at 10 pcs, Gula aren is not running. Susu starts again at 12.000 ml from a purchase.
+create or replace function pg_temp.st(n text) returns numeric language sql security definer as $$
+  select stock from public.ingredients where id = pg_temp.ing(n)::uuid
+$$;
+-- Sale moves of a bill.
+create or replace function pg_temp.sales(doc text) returns bigint language sql security definer as $$
+  select count(*) from public.ingredient_moves where kind = 'sale' and doc_id = doc::uuid
+$$;
+create or replace function pg_temp.item(pid text, q int) returns jsonb language sql as $$
+  select jsonb_build_object('product_id', current_setting(pid), 'quantity', q)
+$$;
+create or replace function pg_temp.pay(pid text, q int, k text, existing uuid default null) returns uuid language sql as $$
+  select (public.complete_checkout(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
+    jsonb_build_object('items', jsonb_build_array(pg_temp.item(pid, q))), 'cash', 1000000, null, k, null, existing) ->> 'transactionId')::uuid
+$$;
+-- The total stock of Kopi, Susu, Gelas, Gula aren, as one row to compare.
+create or replace function pg_temp.snap() returns text language sql security definer as $$
+  select string_agg(name || '=' || stock, ',' order by name) from public.ingredients
+  where outlet_id = current_setting('t.o')::uuid and name in ('Kopi', 'Susu', 'Gelas', 'Gula aren')
+$$;
+
+update public.ingredients set stock = 0 where id = pg_temp.ing('Susu')::uuid;
+set role authenticated;
+select pg_temp.buy('Susu', 12, 216000);
+select set_config('t.roti', public.create_product(current_setting('t.o')::uuid, null, 'Roti bakar', 6000, 18000, 50)::text, false);
+select public.owner_create_cashier(current_setting('t.o')::uuid, 'Rani', '123456');
+select set_config('t.c', (select cashier_id::text from public.owner_list_cashiers() where cashier_name = 'Rani'), false);
+select public.owner_set_void_code('271828');
+select set_config('t.sh', public.open_shift(current_setting('t.c')::uuid, current_setting('t.o')::uuid, 0)::text, false);
+select set_config('t.s1', pg_temp.pay('t.p', 2, 's-1')::text, false);
+reset role;
+-- 2 es kopi susu: susu 2 x 150 ml, kopi 2 x 18 g, gelas 2.
+select pg_temp.ok('S1 a sale consumes',
+  pg_temp.st('Susu') = 11700 and pg_temp.st('Kopi') = 964 and pg_temp.st('Gelas') = 8
+  and pg_temp.icol('Susu', 'price')::numeric = 18000 and pg_temp.sales(current_setting('t.s1')) = 3
+  and (select qty from public.ingredient_moves where kind = 'sale' and doc_id = current_setting('t.s1')::uuid and ingredient_id = pg_temp.ing('Susu')::uuid) = -300);
+select pg_temp.ok('S2 not started is untouched', pg_temp.st('Gula aren') = 0 and pg_temp.icol('Gula aren', 'stock_started') = 'false'
+  and not exists (select 1 from public.ingredient_moves where ingredient_id = pg_temp.ing('Gula aren')::uuid and kind = 'sale'));
+
+select set_config('t.snap', pg_temp.snap(), false);
+set role authenticated;
+select set_config('t.s3', pg_temp.pay('t.roti', 1, 's-3')::text, false);
+reset role;
+select pg_temp.ok('S3 manual product', pg_temp.snap() = current_setting('t.snap') and pg_temp.sales(current_setting('t.s3')) = 0);
+
+set role authenticated;
+select set_config('t.h', public.save_held_bill(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
+  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.p', 1))), 'h-1')::text, false);
+reset role;
+select pg_temp.ok('S4a a held bill does not consume', pg_temp.snap() = current_setting('t.snap') and pg_temp.sales(current_setting('t.h')) = 0);
+set role authenticated;
+select pg_temp.pay('t.p', 1, 's-4', current_setting('t.h')::uuid);
+reset role;
+select pg_temp.ok('S4 held bill: consumed once, when paid', pg_temp.st('Susu') = 11550 and pg_temp.st('Gelas') = 7 and pg_temp.sales(current_setting('t.h')) = 3);
+
+-- Review Focus 2.
+select set_config('t.snap', pg_temp.snap(), false);
+set role authenticated;
+select public.void_transaction_approved(current_setting('t.s1')::uuid, 'Salah input', '271828');
+reset role;
+select pg_temp.ok('S5 void does not return', pg_temp.snap() = current_setting('t.snap'));
+set role authenticated;
+select set_config('t.s6', pg_temp.pay('t.p', 1, 's-6')::text, false);
+select set_config('t.snap', pg_temp.snap(), false);
+select public.refund_items_approved(current_setting('t.s6')::uuid, current_setting('t.sh')::uuid, current_setting('t.c')::uuid,
+  jsonb_build_array(jsonb_build_object('item_id', (select id from public.transaction_items where transaction_id = current_setting('t.s6')::uuid), 'quantity', 1, 'restock', true)),
+  'cash', 'Tumpah', '271828', 'r-1');
+reset role;
+select pg_temp.ok('S6 refund does not return', pg_temp.snap() = current_setting('t.snap'));
+
+-- Review Focus 1: 2 corrected to 3 consumes 1 more; corrected down to 1 changes nothing.
+set role authenticated;
+select set_config('t.s7', pg_temp.pay('t.p', 2, 's-7')::text, false);
+select set_config('t.snap', pg_temp.snap(), false);
+select set_config('t.k1', public.owner_correct_bill(current_setting('t.s7')::uuid,
+  jsonb_build_array(jsonb_build_object('itemId', (select id from public.transaction_items where transaction_id = current_setting('t.s7')::uuid), 'quantity', 3)),
+  'cash', '', '', 'Tambah satu') ->> 'id', false);
+reset role;
+select pg_temp.ok('S7a correction 2 to 3 consumes only the extra one',
+  pg_temp.st('Susu') = split_part(split_part(current_setting('t.snap'), 'Susu=', 2), ',', 1)::numeric - 150
+  and pg_temp.st('Gelas') = split_part(split_part(current_setting('t.snap'), 'Gelas=', 2), ',', 1)::numeric - 1
+  and pg_temp.sales(current_setting('t.k1')) = 3
+  and (select qty from public.ingredient_moves where kind = 'sale' and doc_id = current_setting('t.k1')::uuid and ingredient_id = pg_temp.ing('Susu')::uuid) = -150);
+select set_config('t.snap', pg_temp.snap(), false);
+set role authenticated;
+select set_config('t.k2', public.owner_correct_bill(current_setting('t.k1')::uuid,
+  jsonb_build_array(jsonb_build_object('itemId', (select id from public.transaction_items where transaction_id = current_setting('t.k1')::uuid), 'quantity', 1)),
+  'cash', '', '', 'Jadi satu') ->> 'id', false);
+reset role;
+select pg_temp.ok('S7 correction adds only the extra; 3 to 1 neither returns nor consumes',
+  pg_temp.snap() = current_setting('t.snap') and pg_temp.sales(current_setting('t.k2')) = 0);
+
+-- Two completions of the same bill in one transaction.
+set role authenticated;
+select set_config('t.h8', public.save_held_bill(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
+  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.p', 1))), 'h-8')::text, false);
+reset role;
+select set_config('t.snap', pg_temp.snap(), false);
+begin;
+update public.transactions set status = 'completed' where id = current_setting('t.h8')::uuid;
+update public.transactions set status = 'held' where id = current_setting('t.h8')::uuid;
+update public.transactions set status = 'completed' where id = current_setting('t.h8')::uuid;
+commit;
+select pg_temp.ok('S8 deferred trigger is idempotent', pg_temp.sales(current_setting('t.h8')) = 3
+  and pg_temp.st('Susu') = split_part(split_part(current_setting('t.snap'), 'Susu=', 2), ',', 1)::numeric - 150);
+
+select set_config('t.snap', pg_temp.snap(), false);
+set role authenticated;
+select public.owner_save_recipe(current_setting('t.p')::uuid, jsonb_build_array(
+  jsonb_build_object('ingredientId', pg_temp.ing('Kopi'), 'qty', 20, 'unit', 'g'),
+  jsonb_build_object('ingredientId', pg_temp.ing('Susu'), 'qty', 200, 'unit', 'ml'),
+  jsonb_build_object('ingredientId', pg_temp.ing('Gelas'), 'qty', 1, 'unit', 'pcs')));
+reset role;
+select pg_temp.ok('S9 recipe edited later', pg_temp.snap() = current_setting('t.snap'));
+
+-- A sale must never fail because of ingredients.
+select set_config('t.snap', pg_temp.snap(), false);
+alter table public.ingredients add constraint tmp_block check (stock >= 1e12) not valid;
+set role authenticated;
+select set_config('t.s10', pg_temp.pay('t.p', 1, 's-10')::text, false);
+reset role;
+alter table public.ingredients drop constraint tmp_block;
+set role authenticated;
+select set_config('t.s10b', pg_temp.pay('t.p', 1, 's-10b')::text, false);
+reset role;
+select pg_temp.ok('S10 a failing consumption never blocks the sale',
+  (select status::text from public.transactions where id = current_setting('t.s10')::uuid) = 'completed'
+  and pg_temp.sales(current_setting('t.s10')) = 0
+  and pg_temp.sales(current_setting('t.s10b')) = 3
+  and pg_temp.st('Susu') = split_part(split_part(current_setting('t.snap'), 'Susu=', 2), ',', 1)::numeric - 200);

@@ -327,3 +327,190 @@ revoke all on function public.owner_preview_ingredient(uuid, numeric, numeric, t
 grant execute on function public.owner_list_ingredients(uuid) to authenticated;
 grant execute on function public.owner_save_ingredient(uuid, uuid, text, numeric, numeric, text, text) to authenticated;
 grant execute on function public.owner_preview_ingredient(uuid, numeric, numeric, text) to authenticated;
+
+-- ================================================================ sales consume ingredients (Task 2)
+-- A paid bill takes its recipe ingredients out of stock, only for ingredients whose stock runs. Nothing ever comes
+-- back: not on void, refund, or a correction that lowers a quantity. A correction consumes only what it adds.
+create index if not exists ingredient_moves_doc on public.ingredient_moves(doc_id) where kind = 'sale';
+
+-- p_items: [{"productId", "qty"}].
+create or replace function public.consume_ingredients(p_transaction uuid, p_items jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  ids uuid[];
+  x record;
+begin
+  create temporary table if not exists pg_temp.tmp_088_use (ingredient_id uuid, used numeric) on commit drop;
+  truncate pg_temp.tmp_088_use;
+  insert into pg_temp.tmp_088_use
+  select r.ingredient_id, sum(it.qty * r.qty * public.unit_factor(r.unit))
+  from (select (e ->> 'productId')::uuid as pid, (e ->> 'qty')::numeric as qty from jsonb_array_elements(p_items) e) it
+  join public.products p on p.id = it.pid and p.hpp_source = 'recipe'
+  join public.recipe_lines r on r.product_id = p.id
+  where it.qty > 0
+  group by r.ingredient_id;
+  ids := array(select ingredient_id from pg_temp.tmp_088_use);
+  perform 1 from public.ingredients where id = any(ids) order by id for update;
+  for x in
+    select u.ingredient_id, i.outlet_id, round(u.used, 3) as used
+    from pg_temp.tmp_088_use u join public.ingredients i on i.id = u.ingredient_id
+    where i.stock_started and u.used > 0 order by u.ingredient_id
+  loop
+    update public.ingredients set stock = stock - x.used where id = x.ingredient_id;
+    insert into public.ingredient_moves(ingredient_id, outlet_id, kind, qty, doc_id, created_by)
+    values (x.ingredient_id, x.outlet_id, 'sale', -x.used, p_transaction, auth.uid());
+  end loop;
+end $$;
+revoke all on function public.consume_ingredients(uuid, jsonb) from public, anon, authenticated;
+
+-- Deferred to commit so it sees the bill's final items on every payment path (new bill, held bill, split part).
+-- Any error only skips the ingredients, with a warning; the sale stays.
+create or replace function public.trg_consume_ingredients()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  begin
+    if current_setting('hermes.skip_ingredients', true) = '1' then return null; end if;
+    if tg_op = 'UPDATE' and old.status = 'completed' then return null; end if;
+    if exists (select 1 from public.ingredient_moves where kind = 'sale' and doc_id = new.id) then return null; end if;
+    perform public.consume_ingredients(new.id, coalesce((
+      select jsonb_agg(jsonb_build_object('productId', product_id, 'qty', quantity))
+      from public.transaction_items where transaction_id = new.id), '[]'::jsonb));
+  exception when others then
+    raise warning 'Stok bahan tidak dikurangi untuk bill %: %', new.id, sqlerrm;
+  end;
+  return null;
+end $$;
+revoke all on function public.trg_consume_ingredients() from public, anon, authenticated;
+
+drop trigger if exists transactions_consume_ingredients on public.transactions;
+create constraint trigger transactions_consume_ingredients
+after insert or update of status on public.transactions
+deferrable initially deferred
+for each row when (new.status = 'completed')
+execute function public.trg_consume_ingredients();
+
+-- Same as 073, plus: the new bill skips the trigger and consumes only what it adds per product.
+
+-- p_items: the whole new list. [{"itemId", "quantity"}] keeps a line of the original bill at its price and discount (0 or
+-- left out drops it); [{"productId", "quantity"}] adds a product at today's catalog price.
+create or replace function public.owner_correct_bill(p_transaction_id uuid, p_items jsonb, p_payment_method public.payment_method,
+  p_customer_name text, p_table_number text, p_reason text)
+returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  v_reason text := public._067_reason(p_reason);
+  v_name text := btrim(coalesce(p_customer_name, ''));
+  v_table text := btrim(coalesce(p_table_number, ''));
+  v_before jsonb;
+  t public.transactions%rowtype;
+  v_new uuid;
+  v_number text;
+  v_gross numeric;
+  v_idisc numeric;
+  v_hpp numeric;
+  v_total numeric;
+begin
+  if p_payment_method is null or p_payment_method not in ('cash', 'qris') then raise exception 'Metode bayar tidak valid'; end if;
+  if char_length(v_name) > 40 then raise exception 'Nama pelanggan maksimal 40 karakter'; end if;
+  if char_length(v_table) > 6 then raise exception 'Nomor meja maksimal 6 karakter'; end if;
+  if jsonb_typeof(p_items) is distinct from 'array' or jsonb_array_length(p_items) = 0 then raise exception 'Isi minimal satu item'; end if;
+  if jsonb_array_length(p_items) > 200 then raise exception 'Maksimal 200 item'; end if;
+  if exists (select 1 from jsonb_array_elements(p_items) e
+             where jsonb_typeof(e) <> 'object' or (e ? 'itemId') = (e ? 'productId')
+               or coalesce(e->>'itemId', e->>'productId') !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+               or coalesce(e->>'quantity', '') !~ '^[0-9]{1,4}$') then
+    raise exception 'Data item tidak valid';
+  end if;
+
+  v_before := public._067_begin(p_transaction_id);
+  select * into t from public.transactions where id = p_transaction_id;
+  if t.status <> 'completed' then raise exception 'Hanya bill yang sudah dibayar yang bisa dikoreksi.'; end if;
+  if t.parent_transaction_id is not null then
+    raise exception 'Bill hasil Split Bill tidak bisa dikoreksi. Batalkan bill ini lalu catat ulang di aplikasi kasir.';
+  end if;
+  if t.refunded_total > 0 then raise exception 'Bill yang sudah direfund tidak bisa dikoreksi.'; end if;
+  if exists (select 1 from public.voucher_redemptions where transaction_id = t.id) then
+    raise exception 'Bill yang memakai voucher tidak bisa dikoreksi. Batalkan bill ini lalu catat ulang di aplikasi kasir.';
+  end if;
+
+  create temporary table if not exists pg_temp.tmp_073_lines (item_id uuid, product_id uuid, quantity numeric) on commit drop;
+  truncate pg_temp.tmp_073_lines;
+  insert into pg_temp.tmp_073_lines
+  select (e->>'itemId')::uuid, (e->>'productId')::uuid, (e->>'quantity')::numeric from jsonb_array_elements(p_items) e;
+  if (select count(item_id) <> count(distinct item_id) from pg_temp.tmp_073_lines) then raise exception 'Data item tidak valid'; end if;
+  if exists (select 1 from pg_temp.tmp_073_lines l where l.item_id is not null
+             and not exists (select 1 from public.transaction_items ti where ti.id = l.item_id and ti.transaction_id = t.id)) then
+    raise exception 'Item tidak ada di bill ini';
+  end if;
+  if exists (select 1 from pg_temp.tmp_073_lines l where l.product_id is not null and l.quantity > 0
+             and not exists (select 1 from public.products p where p.id = l.product_id and p.outlet_id = t.outlet_id and p.is_active)) then
+    raise exception 'Produk tidak ditemukan atau sudah tidak aktif';
+  end if;
+
+  -- The original goes first: its stock comes back, its payment leaves the cash book.
+  perform public._066_void_bill(t.id, 'Dikoreksi: ' || v_reason);
+  -- The deferred trigger must not consume the whole new bill again.
+  perform set_config('hermes.skip_ingredients', '1', true);
+
+  insert into public.transactions(shift_id, cashier_id, outlet_id, number, customer_name, customer_phone, table_number, status,
+    created_at, corrects_transaction_id)
+  values (t.shift_id, t.cashier_id, t.outlet_id, public.next_transaction_number(), v_name, t.customer_phone, v_table, 'draft',
+    t.created_at, t.id)
+  returning id, number into v_new, v_number;
+  -- The number carries the bill's own day, like the bill it replaces.
+  v_number := '#HPOS-' || to_char(t.created_at at time zone public.outlet_tz(t.outlet_id), 'YYYYMMDD') || substr(v_number, 15);
+  update public.transactions set number = v_number where id = v_new;
+
+  insert into public.transaction_items(transaction_id, product_id, quantity, hpp_unit, selling_price_unit, discount_amount,
+    discount_type, discount_value, note)
+  select v_new, ti.product_id, l.quantity, ti.hpp_unit, ti.selling_price_unit, x.amount,
+    case when x.amount > 0 then ti.discount_type end,
+    case when x.amount > 0 then (case when ti.discount_type = 'amount' then x.amount else ti.discount_value end) end,
+    ti.note
+  from pg_temp.tmp_073_lines l
+  join public.transaction_items ti on ti.id = l.item_id
+  cross join lateral (select case ti.discount_type
+      when 'percent' then public.calc_discount(l.quantity * ti.selling_price_unit, 'percent', ti.discount_value)
+      when 'amount' then least(ti.discount_value, l.quantity * ti.selling_price_unit)
+      else 0 end as amount) x
+  where l.quantity > 0;
+  insert into public.transaction_items(transaction_id, product_id, quantity, hpp_unit, selling_price_unit)
+  select v_new, p.id, x.qty, p.hpp, p.selling_price
+  from (select product_id, sum(quantity) as qty from pg_temp.tmp_073_lines where product_id is not null group by 1) x
+  join public.products p on p.id = x.product_id
+  where x.qty > 0
+  order by p.id;
+
+  if exists (select 1 from public.products p
+             join (select product_id, sum(quantity) as qty from public.transaction_items where transaction_id = v_new group by 1) x on x.product_id = p.id
+             where p.track_stock and p.stock < x.qty) then
+    raise exception 'Stok produk tidak mencukupi';
+  end if;
+  update public.products p set stock = p.stock - x.qty
+  from (select product_id, sum(quantity) as qty from public.transaction_items where transaction_id = v_new group by 1) x
+  where p.id = x.product_id and p.track_stock;
+  perform public.consume_ingredients(v_new, coalesce((
+    select jsonb_agg(jsonb_build_object('productId', n.product_id, 'qty', n.qty - coalesce(o.qty, 0)))
+    from (select product_id, sum(quantity) as qty from public.transaction_items where transaction_id = v_new group by 1) n
+    left join (select product_id, sum(quantity) as qty from public.transaction_items where transaction_id = t.id group by 1) o
+      on o.product_id = n.product_id
+    where n.qty > coalesce(o.qty, 0)), '[]'::jsonb));
+
+  select coalesce(sum(quantity * selling_price_unit), 0), coalesce(sum(discount_amount), 0), coalesce(sum(quantity * hpp_unit), 0)
+    into v_gross, v_idisc, v_hpp
+  from public.transaction_items where transaction_id = v_new;
+  v_total := public.set_bill_totals(v_new, v_gross, v_idisc, t.bill_discount_type, t.bill_discount_value);
+  update public.transactions
+  -- completed_at is when its stock left (now); created_at keeps the sale on the original's day.
+  set total_hpp = v_hpp, payment_method = p_payment_method, status = 'completed', completed_at = now()
+  where id = v_new;
+  insert into public.payments(transaction_id, method, amount_received, change_amount, status)
+  values (v_new, p_payment_method, v_total, 0, 'paid');
+  perform public._066_recount_shift(t.shift_id);
+
+  insert into public.transaction_edits(transaction_id, edited_by, kind, reason, before, after)
+  values (t.id, auth.uid(), 'correction', v_reason, v_before, public._067_snapshot(v_new));
+  return jsonb_build_object('id', v_new, 'number', v_number, 'total', v_total, 'previousTotal', t.total, 'previousNumber', t.number);
+end $$;
+revoke all on function public.owner_correct_bill(uuid, jsonb, public.payment_method, text, text, text) from public, anon;
+grant execute on function public.owner_correct_bill(uuid, jsonb, public.payment_method, text, text, text) to authenticated;
