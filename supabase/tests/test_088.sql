@@ -95,7 +95,7 @@ select pg_temp.ok('P1b the answer has the purchase and its line',
   (current_setting('t.r1')::jsonb ->> 'total')::numeric = 204000 and current_setting('t.r1')::jsonb ->> 'cancelledAt' is null
   and (current_setting('t.r1')::jsonb ->> 'boughtOn')::date = pg_temp.today()
   and current_setting('t.r1')::jsonb -> 'lines' = jsonb_build_array(jsonb_build_object('ingredientId', pg_temp.ing('Susu'), 'name', 'Susu',
-    'packLabel', null, 'packs', 12, 'total', 204000, 'priceBefore', 18000, 'priceAfter', 17000)));
+    'packLabel', null, 'packs', 12, 'total', 204000, 'priceBefore', 18000, 'priceAfter', 17000, 'expenseItemId', null)));
 
 -- The owner's example: 2 l on hand at 18.000, buy 1 l for 22.000 -> (36.000 + 22.000) / 3 l = 19.333,33 a liter.
 -- HPP: 3810 + 150 x 19,33333 = 6710.
