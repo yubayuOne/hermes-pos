@@ -188,8 +188,21 @@ begin
   end if;
 
   update public.purchases set cancelled_at = now(), cancel_reason = v_reason where id = p.id;
-  for x in select * from public.purchase_lines where purchase_id = p.id order by ingredient_id loop
-    update public.ingredients set stock = stock - x.base_qty, price = x.price_before, updated_at = now() where id = x.ingredient_id;
+  for x in
+    select l.*, i.pack_qty * public.unit_factor(i.pack_unit) as per_pack_now,
+      -- Still running if another live purchase or a count is behind it; otherwise back to "not counted".
+      exists (select 1 from public.purchase_lines l2 join public.purchases q on q.id = l2.purchase_id
+              where l2.ingredient_id = l.ingredient_id and q.id <> p.id and q.cancelled_at is null)
+      or exists (select 1 from public.ingredient_moves m where m.ingredient_id = l.ingredient_id and m.kind in ('opening', 'count')) as still_started
+    from public.purchase_lines l join public.ingredients i on i.id = l.ingredient_id
+    where l.purchase_id = p.id order by l.ingredient_id
+  loop
+    -- price_before is per the pack size at purchase time (base_qty / packs); the pack may have changed since.
+    update public.ingredients
+    set stock = case when x.still_started then stock - x.base_qty else 0 end,
+        price = round(x.price_before / (x.base_qty / x.packs) * x.per_pack_now, 2),
+        stock_started = x.still_started, updated_at = now()
+    where id = x.ingredient_id;
     insert into public.ingredient_moves(ingredient_id, outlet_id, kind, qty, doc_id, created_by)
     values (x.ingredient_id, p.outlet_id, 'purchase_cancel', -x.base_qty, p.id, auth.uid());
   end loop;

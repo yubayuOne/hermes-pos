@@ -222,3 +222,39 @@ select pg_temp.fails('X1c list', format('select public.owner_list_purchases(%L)'
 reset role;
 select pg_temp.ok('X1 another business', pg_temp.purchases() = current_setting('t.n')::bigint + 3
   and (select cancelled_at from public.purchases where id = (current_setting('t.r7b')::jsonb ->> 'id')::uuid) is null);
+
+-- ================================================================ fix round 1: cancel after a pack change, cancel of the only purchase
+select set_config('request.jwt.claim.sub', 'e8800000-0000-0000-0000-000000000001', false);
+-- Gula aren is not running (32.000 a kg). Buy 1 kg for 40.000, repack to 500 g, cancel: the only purchase, so the stock
+-- stops running at 0 and the price is the old 32 a g expressed per 500 g.
+select set_config('t.h0', pg_temp.hpp()::text, false);
+set role authenticated;
+select set_config('t.rg', pg_temp.buy('Gula aren', 1, 40000)::text, false);
+select public.owner_save_ingredient(current_setting('t.o')::uuid, pg_temp.ing('Gula aren')::uuid, 'Gula aren', 40000, 500, 'g');
+reset role;
+select pg_temp.ok('C1a repacking a running ingredient keeps its average per g', pg_temp.icol('Gula aren', 'price')::numeric = 20000);
+set role authenticated;
+select public.owner_cancel_purchase((current_setting('t.rg')::jsonb ->> 'id')::uuid, 'Salah catat');
+reset role;
+select pg_temp.ok('C1 cancelling the only purchase after a repack: not running, stock 0, average per g as before, HPP back',
+  pg_temp.icol('Gula aren', 'stock_started') = 'false' and pg_temp.icol('Gula aren', 'stock')::numeric = 0
+  and pg_temp.icol('Gula aren', 'price')::numeric = 16000
+  and pg_temp.icol('Gula aren', 'price')::numeric / (pg_temp.icol('Gula aren', 'pack_qty')::numeric) = 32
+  and pg_temp.hpp() = current_setting('t.h0')::numeric);
+set role authenticated;
+select public.owner_save_ingredient(current_setting('t.o')::uuid, pg_temp.ing('Gula aren')::uuid, 'Gula aren', 17000, 500, 'g');
+reset role;
+select pg_temp.ok('C1b the typed price is editable again', pg_temp.icol('Gula aren', 'price')::numeric = 17000);
+
+-- Gelas runs at 10 pcs, 1.200 each, from an earlier live purchase. Buy 5 for 7.500 (average 1.300), repack to 10 pcs, cancel:
+-- still running, 10 pcs, 1.200 a pcs again.
+select set_config('t.h0', pg_temp.hpp()::text, false);
+set role authenticated;
+select set_config('t.rc', pg_temp.buy('Gelas', 5, 7500)::text, false);
+select public.owner_save_ingredient(current_setting('t.o')::uuid, pg_temp.ing('Gelas')::uuid, 'Gelas', 1300, 10, 'pcs');
+select public.owner_cancel_purchase((current_setting('t.rc')::jsonb ->> 'id')::uuid, 'Salah catat');
+reset role;
+select pg_temp.ok('C2 cancelling with another live purchase keeps the stock running, average per pcs as before, HPP back',
+  pg_temp.icol('Gelas', 'stock_started') = 'true' and pg_temp.icol('Gelas', 'stock')::numeric = 10
+  and pg_temp.icol('Gelas', 'price')::numeric = 12000 and pg_temp.icol('Gelas', 'pack_qty')::numeric = 10
+  and pg_temp.hpp() = current_setting('t.h0')::numeric);
