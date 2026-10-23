@@ -273,6 +273,7 @@ function ProductDialog({
   async function save(e: React.FormEvent) {
     e.preventDefault();
     const v = f.values;
+    if (mode === 'recipe' && initialLines === null) return act.setError('Resep belum selesai dimuat. Tutup lalu buka lagi produk ini.');
     if (mode === 'recipe' && lines.length === 0) return act.setError('Resep belum diisi. Tambah minimal satu bahan, atau hapus resep.');
     const data = f.check(productSchema, {
       id: product?.id ?? null,
@@ -280,7 +281,8 @@ function ProductDialog({
       categoryId: v.categoryId || null,
       name: v.name,
       price: v.price === '' ? NaN : Number(v.price),
-      hpp: Number(v.hpp || 0),
+      // A recipe product's HPP comes from the recipe and often has decimals the schema refuses; the database ignores it.
+      hpp: mode === 'recipe' ? 0 : Number(v.hpp || 0),
       trackStock: v.trackStock,
       stock: Number(v.stock || 0),
       station: v.station,

@@ -1216,6 +1216,7 @@ export const EN: Dict = {
   'Modal lebih besar dari harga jual. Cek jumlah atau harga bahan.': 'The cost is higher than the selling price. Check the amounts or ingredient prices.',
   'Ada bahan berharga Rp0, angka ini perkiraan.': 'An ingredient costs Rp0, so this figure is an estimate.',
   'Resep belum diisi. Tambah minimal satu bahan, atau hapus resep.': 'The recipe is empty. Add at least one ingredient, or remove the recipe.',
+  'Resep belum selesai dimuat. Tutup lalu buka lagi produk ini.': 'The recipe has not finished loading. Close and reopen this product.',
   'Bahan {n}': 'Ingredient {n}',
   'Jumlah bahan {n}': 'Amount of ingredient {n}',
   'Satuan bahan {n}': 'Unit of ingredient {n}',

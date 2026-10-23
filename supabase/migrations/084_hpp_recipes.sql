@@ -305,9 +305,12 @@ begin
   if p_product_id is null then
     pid := public.create_product(p_outlet_id, p_category_id, p_name, p_hpp, p_selling_price, p_stock, p_station, p_track_stock);
   else
+    if not exists (select 1 from public.products where id = p_product_id and outlet_id = p_outlet_id) then raise exception 'Produk tidak ditemukan'; end if;
+    -- Removing the recipe first turns the product manual, so the HPP typed in the same save applies.
+    if p_recipe = '[]'::jsonb then perform public.apply_recipe(p_product_id, p_recipe); end if;
     pid := public.update_product(p_product_id, p_outlet_id, p_category_id, p_name, p_hpp, p_selling_price, p_stock, p_station, p_track_stock);
   end if;
-  if p_recipe is not null and p_recipe <> 'null'::jsonb then perform public.apply_recipe(pid, p_recipe); end if;
+  if p_recipe is not null and p_recipe <> 'null'::jsonb and p_recipe <> '[]'::jsonb then perform public.apply_recipe(pid, p_recipe); end if;
   return pid;
 end $$;
 

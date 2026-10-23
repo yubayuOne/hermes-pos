@@ -225,18 +225,18 @@ select pg_temp.ok('R9 manual product: p_hpp applies, recipe null leaves it manua
   (select hpp from public.products where id = current_setting('t.p2')::uuid) = 5500
   and (select hpp_source from public.products where id = current_setting('t.p2')::uuid) = 'manual');
 
--- Review focus 3: removing the recipe keeps the last HPP and hands the field back to the owner.
+-- Review focus 3: removing the recipe keeps the HPP the form sends (it prefills the last recipe HPP) and hands the field back.
 set role authenticated;
-select public.owner_save_product(current_setting('t.latte')::uuid, current_setting('t.o')::uuid, null, 'Es latte', 1, 26000, 0, 'bar', false, '[]'::jsonb);
+select public.owner_save_product(current_setting('t.latte')::uuid, current_setting('t.o')::uuid, null, 'Es latte', 7000, 26000, 0, 'bar', false, '[]'::jsonb);
 reset role;
-select pg_temp.ok('R4a recipe removed: manual, last HPP kept, no lines',
-  (select hpp from public.products where id = current_setting('t.latte')::uuid) = 6960
+select pg_temp.ok('R4a recipe removed with a typed HPP: manual, 7000 applied in the same save, no lines',
+  (select hpp from public.products where id = current_setting('t.latte')::uuid) = 7000
   and (select hpp_source from public.products where id = current_setting('t.latte')::uuid) = 'manual'
   and not exists (select 1 from public.recipe_lines where product_id = current_setting('t.latte')::uuid));
 set role authenticated;
-select public.owner_save_product(current_setting('t.latte')::uuid, current_setting('t.o')::uuid, null, 'Es latte', 7000, 26000, 0, 'bar', false, null);
+select public.owner_save_product(current_setting('t.latte')::uuid, current_setting('t.o')::uuid, null, 'Es latte', 7100, 26000, 0, 'bar', false, null);
 reset role;
-select pg_temp.ok('R4b after that, a typed HPP applies again', (select hpp from public.products where id = current_setting('t.latte')::uuid) = 7000);
+select pg_temp.ok('R4b after that, a typed HPP keeps applying', (select hpp from public.products where id = current_setting('t.latte')::uuid) = 7100);
 
 -- Another business cannot read or preview a recipe.
 select set_config('request.jwt.claim.sub', 'e8400000-0000-0000-0000-000000000002', false);
@@ -259,3 +259,12 @@ select public.owner_save_ingredient(current_setting('t.o')::uuid, pg_temp.ing('S
 reset role;
 select pg_temp.ok('P7a a tracked recipe product moved with the ingredient price (18000 -> 25000 per liter adds 1050)', pg_temp.hpp() = 7560);
 select pg_temp.ok('P7b the stock book has no P7 failure', pg_temp.p7() = '[]'::jsonb);
+
+-- Review fix: a product id from another outlet is refused before the recipe is touched.
+select set_config('t.o2', (select o.id::text from public.outlets o join public.business_members m on m.business_id = o.business_id
+  where m.auth_user_id = 'e8400000-0000-0000-0000-000000000002'), false);
+select set_config('request.jwt.claim.sub', 'e8400000-0000-0000-0000-000000000002', false);
+set role authenticated;
+select pg_temp.fails('X4a another business: foreign product id with its own outlet', format('select public.owner_save_product(%L, %L, null, %L, 0, 1000, 0, %L, false, %L::jsonb)', current_setting('t.free'), current_setting('t.o2'), 'Air putih', 'bar', '[]'), 'Produk tidak ditemukan');
+reset role;
+select pg_temp.ok('X4b the foreign product kept its recipe', exists (select 1 from public.recipe_lines where product_id = current_setting('t.free')::uuid));

@@ -71,7 +71,7 @@ const RESEP_TEXTS = [
   'Berubah sendiri kalau harga bahan diubah.', 'Hitung dari resep', 'Hapus resep, isi manual', 'Resep per porsi', 'Pilih bahan', '+ Bahan baru',
   'Tambah bahan ke resep', 'Jumlah', 'Hapus baris {n}', 'Untung per porsi', 'Modal {pct}% dari harga jual', 'Menghitung...', 'Memuat resep...',
   'Modal lebih besar dari harga jual. Cek jumlah atau harga bahan.', 'Ada bahan berharga Rp0, angka ini perkiraan.',
-  'Resep belum diisi. Tambah minimal satu bahan, atau hapus resep.', 'Bahan {n}', 'Jumlah bahan {n}', 'Satuan bahan {n}',
+  'Resep belum diisi. Tambah minimal satu bahan, atau hapus resep.', 'Resep belum selesai dimuat. Tutup lalu buka lagi produk ini.', 'Bahan {n}', 'Jumlah bahan {n}', 'Satuan bahan {n}',
   'Satuan tidak cocok dengan bahan', 'Jumlah bahan tidak valid', 'Resep maksimal 40 bahan', 'Satu bahan hanya boleh sekali di resep', 'Bahan tidak ditemukan di outlet ini',
 ];
 test('the recipe editor texts are translated', async () => {
