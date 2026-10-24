@@ -11,10 +11,14 @@ export async function fetchTables(outletId: string): Promise<TableRow[]> {
   if (error) throw error;
   const rows = ((data as any[]) ?? [])
     .filter((r) => r.isActive !== false)
-    .map((r) => ({ id: r.id as string, name: r.name as string, occupied: !!r.occupied, since: (r.since as string) ?? null, heldTotal: Number(r.heldTotal ?? 0) }));
+    .map((r) => ({ id: r.id as string, name: r.name as string, occupied: !!r.occupied, since: (r.since as string) ?? null, heldTotal: Number(r.heldTotal ?? 0) }))
+    .sort(byTableName);
   await setCache(key(outletId), rows);
   return rows;
 }
+
+/** Meja 2 before Meja 10: numbers count as numbers, not text. */
+export const byTableName = (a: TableRow, b: TableRow) => a.name.localeCompare(b.name, 'id', { numeric: true });
 
 export const cachedTables = (outletId: string) => getCache<TableRow[]>(key(outletId));
 

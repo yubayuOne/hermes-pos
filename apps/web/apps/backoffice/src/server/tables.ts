@@ -10,7 +10,9 @@ export const listTables = createServerFn({ method: 'GET' })
   .validator(parser(outletRefSchema))
   .handler(async ({ data }): Promise<OutletTable[]> => {
     const { readRpc } = await import('./supabase.server');
-    return ((await readRpc<Row[] | null>('list_tables', { p_outlet_id: data.outletId })) ?? []).map(toTable);
+    const rows = ((await readRpc<Row[] | null>('list_tables', { p_outlet_id: data.outletId })) ?? []).map(toTable);
+    // Meja 2 before Meja 10: numbers count as numbers, not text.
+    return rows.sort((a, b) => a.name.localeCompare(b.name, 'id', { numeric: true }));
   });
 
 /** Creates (no id) or renames a table. Renaming a table with a held bill is refused by the database. Returns the id. */
