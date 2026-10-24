@@ -7,10 +7,15 @@ import { Button, ButtonRow, IconButton } from '../../components/Button';
 import { Dashed, Stepper, Tag } from '../../components/bits';
 import { Icon } from '../../components/Icon';
 import { TextField } from '../../components/Field';
+import { TablePicker } from '../../components/TablePicker';
 import { ActionFooter, Sheet, SheetBody, SheetHeader } from '../../components/Sheet';
 import { useLayout } from '../../hooks/useLayout';
 import { useAppStore } from '../../hooks/AppStore';
 import { useBill } from '../../hooks/useBill';
+import { useNotify } from '../../hooks/NotifyProvider';
+import { isOnline } from '../../services/network/network';
+import { billWaits } from '../../services/transaction/offlineQueue';
+import { moveHeldBill } from '../../services/tables/tables';
 import { useKeyboardOpen } from '../../hooks/useKeyboardOpen';
 import { CartItem } from '../../types/domain';
 import { discountLabel, lineDiscount, lineGross } from '../../utils/discount';
@@ -27,23 +32,30 @@ type OnTyping = (on: boolean) => void;
 
 /** Customer and table folded into one row (DESIGN I9a); opens two optional fields. */
 function CustomerRow({ compact, onTyping }: { compact: boolean; onTyping?: OnTyping }) {
-  const { customer, setCustomer } = useAppStore();
+  const { customer, setCustomer, session, activeHeldBillId } = useAppStore();
+  const notify = useNotify();
   const [open, setOpen] = useState(false);
+  /** A bill already held moves on the server (refused when occupied); a new bill just takes the table. */
+  const pickTable = async (name: string) => {
+    if (activeHeldBillId) {
+      if (!isOnline()) return notify.toast('warning', t('Pindah meja perlu internet'), t('Bill ini tetap di meja lama sampai internet kembali.'));
+      if (billWaits(activeHeldBillId)) return notify.toast('warning', t('Bill masih dikirim'), t('Tunggu sampai bill ini terkirim, lalu pindah meja.'));
+      try {
+        await moveHeldBill(activeHeldBillId, name);
+      } catch (e) {
+        return void notify.fail(t('Meja belum bisa dipindah'), e);
+      }
+    }
+    setCustomer({ ...customer, table: name });
+  };
   const summary = [customer.table ? t('Meja {n}', { n: customer.table }) : null, customer.name || null].filter(Boolean).join(' · ');
   if (open) {
     return (
       <View className="flex-row gap-2.5">
-        <TextField
-          containerClassName="w-[38%] min-w-0"
-          label={compact ? undefined : t('Meja')}
-          placeholder={t('Meja')}
-          value={customer.table}
-          onChangeText={(table) => setCustomer({ ...customer, table })}
-          keyboardType="number-pad"
-          maxLength={6}
-          onFocus={() => onTyping?.(true)}
-          onBlur={() => onTyping?.(false)}
-        />
+        <View className="w-[38%] min-w-0 gap-1">
+          {compact ? null : <Text className="text-[13px] text-mute">{t('Meja')}</Text>}
+          <TablePicker outletId={session?.outletId ?? ''} current={customer.table} onPick={pickTable} />
+        </View>
         <TextField
           containerClassName="min-w-0 flex-1"
           label={compact ? undefined : t('Nama')}

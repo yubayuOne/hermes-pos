@@ -91,7 +91,7 @@ select set_config('t.sh', public.open_shift(current_setting('t.cw')::uuid, curre
 select pg_temp.ok('K1 buka shift saat aktif', current_setting('t.sh') <> '');
 select pg_temp.ok('K2 checkout tunai saat aktif',
   (public.complete_checkout(current_setting('t.sh')::uuid, current_setting('t.cw')::uuid, current_setting('t.o1')::uuid,
-    jsonb_build_object('items', jsonb_build_array(jsonb_build_object('product_id', current_setting('t.kopi'), 'quantity', 2))),
+    jsonb_build_object('table_number','M1','items', jsonb_build_array(jsonb_build_object('product_id', current_setting('t.kopi'), 'quantity', 2))),
     'cash', 50000, null, 'k-030-1') ->> 'total')::numeric = 40000);
 select pg_temp.ok('K3 stok berkurang', (select stock from public.products where id = current_setting('t.kopi')::uuid) = 8);
 
@@ -150,7 +150,7 @@ insert into public.shifts(id, cashier_id, outlet_id, opening_cash, shift_number,
   ('b0000000-0000-0000-0000-000000000002', current_setting('t.c1')::uuid, current_setting('t.o2')::uuid, 0, 2, current_date, 'closed');
 update public.subscriptions set expires_at = now() - interval '1 minute' where business_id = current_setting('t.b1')::uuid;
 update public.shifts set opened_at = now() where id = 'b0000000-0000-0000-0000-000000000002';
-select pg_temp.fails('E13 bill ditahan baru ditolak', format($q$insert into public.transactions(shift_id, cashier_id, outlet_id, number, status) values (%L, %L, %L, 'T-030-3', 'held')$q$,
+select pg_temp.fails('E13 bill ditahan baru ditolak', format($q$insert into public.transactions(shift_id, cashier_id, outlet_id, number, status, table_number) values (%L, %L, %L, 'T-030-3', 'held', 'M1')$q$,
   'b0000000-0000-0000-0000-000000000002', current_setting('t.c1'), current_setting('t.o2')), 'Langganan berakhir');
 update public.transactions set status = 'voided' where number = 'T-030-1';
 select pg_temp.ok('E14 void tetap boleh', (select status = 'voided' from public.transactions where number = 'T-030-1'));

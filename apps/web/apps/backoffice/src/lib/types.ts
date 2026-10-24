@@ -302,6 +302,8 @@ export type Outlet = {
   receiptHeader: string | null;
   receiptFooter: string | null;
 };
+/** A table of the outlet. `occupied` while a held bill sits on it (list_tables, 091). */
+export type OutletTable = { id: string; name: string; isActive: boolean; occupied: boolean; since: string | null; heldTotal: number };
 export type Cashier = { cashierId: string; name: string; outletId: string; outletName: string; isActive: boolean; lockedUntil: string | null };
 export type Category = { id: string; name: string };
 export type Product = {

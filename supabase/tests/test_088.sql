@@ -273,7 +273,7 @@ create or replace function pg_temp.item(pid text, q int) returns jsonb language 
 $$;
 create or replace function pg_temp.pay(pid text, q int, k text, existing uuid default null) returns uuid language sql as $$
   select (public.complete_checkout(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
-    jsonb_build_object('items', jsonb_build_array(pg_temp.item(pid, q))), 'cash', 1000000, null, k, null, existing) ->> 'transactionId')::uuid
+    jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item(pid, q))), 'cash', 1000000, null, k, null, existing) ->> 'transactionId')::uuid
 $$;
 -- The total stock of Kopi, Susu, Gelas, Gula aren, as one row to compare.
 create or replace function pg_temp.snap() returns text language sql security definer as $$
@@ -307,7 +307,7 @@ select pg_temp.ok('S3 manual product', pg_temp.snap() = current_setting('t.snap'
 
 set role authenticated;
 select set_config('t.h', public.save_held_bill(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
-  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.p', 1))), 'h-1')::text, false);
+  jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.p', 1))), 'h-1')::text, false);
 reset role;
 select pg_temp.ok('S4a a held bill does not consume', pg_temp.snap() = current_setting('t.snap') and pg_temp.sales(current_setting('t.h')) = 0);
 set role authenticated;
@@ -355,7 +355,7 @@ select pg_temp.ok('S7 correction adds only the extra; 3 to 1 neither returns nor
 -- Two completions of the same bill in one transaction.
 set role authenticated;
 select set_config('t.h8', public.save_held_bill(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
-  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.p', 1))), 'h-8')::text, false);
+  jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.p', 1))), 'h-8')::text, false);
 reset role;
 select set_config('t.snap', pg_temp.snap(), false);
 begin;

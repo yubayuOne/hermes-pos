@@ -68,12 +68,12 @@ begin
   select id into pc from products where name='C';
   select id into sh1 from shifts where cashier_id=current_setting('t.c1')::uuid;
   select id into sh2 from shifts where cashier_id=current_setting('t.c2')::uuid;
-  r := complete_checkout(sh1,current_setting('t.c1')::uuid,current_setting('t.o1')::uuid,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2))),'cash',50000,null,'k1',null,null);
+  r := complete_checkout(sh1,current_setting('t.c1')::uuid,current_setting('t.o1')::uuid,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2))),'cash',50000,null,'k1',null,null);
   perform set_config('t.bill1', r->>'transactionId', false);
-  r := complete_checkout(sh1,current_setting('t.c1')::uuid,current_setting('t.o1')::uuid,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',1))),'qris',15000,null,'k2',null,null);
-  r := complete_checkout(sh2,current_setting('t.c2')::uuid,current_setting('t.o1b')::uuid,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pc,'quantity',1))),'cash',5000,null,'k3',null,null);
-  perform save_held_bill(sh1,current_setting('t.c1')::uuid,current_setting('t.o1')::uuid,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'h1');
-  r := complete_checkout(sh1,current_setting('t.c1')::uuid,current_setting('t.o1')::uuid,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',10000,null,'k4',null,null);
+  r := complete_checkout(sh1,current_setting('t.c1')::uuid,current_setting('t.o1')::uuid,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',1))),'qris',15000,null,'k2',null,null);
+  r := complete_checkout(sh2,current_setting('t.c2')::uuid,current_setting('t.o1b')::uuid,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pc,'quantity',1))),'cash',5000,null,'k3',null,null);
+  perform save_held_bill(sh1,current_setting('t.c1')::uuid,current_setting('t.o1')::uuid,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'h1');
+  r := complete_checkout(sh1,current_setting('t.c1')::uuid,current_setting('t.o1')::uuid,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',10000,null,'k4',null,null);
   perform t_void((r->>'transactionId')::uuid,'salah input');
 end $$;
 select set_config('request.jwt.claim.sub',:'u2',false);
@@ -83,7 +83,7 @@ declare pa uuid; r jsonb; sh3 uuid;
 begin
   select id into pa from products where outlet_id=current_setting('t.o2')::uuid and name='A';
   select id into sh3 from shifts where cashier_id=current_setting('t.c3')::uuid;
-  r := complete_checkout(sh3,current_setting('t.c3')::uuid,current_setting('t.o2')::uuid,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',10000,null,'k5',null,null);
+  r := complete_checkout(sh3,current_setting('t.c3')::uuid,current_setting('t.o2')::uuid,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',10000,null,'k5',null,null);
   perform set_config('t.bill4', r->>'transactionId', false);
 end $$;
 

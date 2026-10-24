@@ -27,6 +27,7 @@ import { Route as AppProductsRouteImport } from './routes/_app/products'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppStockRouteImport } from './routes/_app/stock'
+import { Route as AppTablesRouteImport } from './routes/_app/tables'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
 import { Route as AppVouchersRouteImport } from './routes/_app/vouchers'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
@@ -120,6 +121,11 @@ const AppStockRoute = AppStockRouteImport.update({
   path: '/stock',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTablesRoute = AppTablesRouteImport.update({
+  id: '/tables',
+  path: '/tables',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTransactionsRoute = AppTransactionsRouteImport.update({
   id: '/transactions',
   path: '/transactions',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
   '/stock': typeof AppStockRoute
+  '/tables': typeof AppTablesRoute
   '/transactions': typeof AppTransactionsRoute
   '/vouchers': typeof AppVouchersRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
   '/stock': typeof AppStockRoute
+  '/tables': typeof AppTablesRoute
   '/transactions': typeof AppTransactionsRoute
   '/vouchers': typeof AppVouchersRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/_app/reports': typeof AppReportsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/stock': typeof AppStockRoute
+  '/_app/tables': typeof AppTablesRoute
   '/_app/transactions': typeof AppTransactionsRoute
   '/_app/vouchers': typeof AppVouchersRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/stock'
+    | '/tables'
     | '/transactions'
     | '/vouchers'
     | '/auth/callback'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/stock'
+    | '/tables'
     | '/transactions'
     | '/vouchers'
     | '/auth/callback'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/_app/reports'
     | '/_app/settings'
     | '/_app/stock'
+    | '/_app/tables'
     | '/_app/transactions'
     | '/_app/vouchers'
     | '/auth/callback'
@@ -413,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStockRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/tables': {
+      id: '/_app/tables'
+      path: '/tables'
+      fullPath: '/tables'
+      preLoaderRoute: typeof AppTablesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/transactions': {
       id: '/_app/transactions'
       path: '/transactions'
@@ -448,6 +467,7 @@ interface AppRouteChildren {
   AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppStockRoute: typeof AppStockRoute
+  AppTablesRoute: typeof AppTablesRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
   AppVouchersRoute: typeof AppVouchersRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -464,6 +484,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppStockRoute: AppStockRoute,
+  AppTablesRoute: AppTablesRoute,
   AppTransactionsRoute: AppTransactionsRoute,
   AppVouchersRoute: AppVouchersRoute,
   AppIndexRoute: AppIndexRoute,

@@ -34,6 +34,11 @@ export function useBill(onOpenShift: () => void) {
   /** Tahan (new bill) or Simpan (recalled held bill). Offline holds go to the queue (PRD E2). */
   const hold = useCallback(async (): Promise<boolean> => {
     if (!cart.length || !session) return false;
+    // The server refuses a held bill without a table (migration 091); a queued one would be refused later, so stop here.
+    if (!customer.table.trim()) {
+      notify.toast('warning', t('Pilih meja dulu'), t('Bill makan di tempat perlu meja. Pilih meja di bagian Meja.'));
+      return false;
+    }
     if (!shift) {
       await explainNoShift();
       return false;

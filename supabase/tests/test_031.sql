@@ -147,7 +147,9 @@ select pg_temp.ok('C14b expired plan renewed from today', (select expires_at > n
 select pg_temp.ok('C14c new expiry stored on the payment', (select new_expires_at is not null from public.payment_confirmations where id = current_setting('t.pay')::uuid));
 select pg_temp.fails('C15 verify twice refused', format('select public.admin_verify_payment(%L)', current_setting('t.pay')), 'sudah diproses');
 select pg_temp.ok('C16 verify the active business payment', (select public.admin_verify_payment(id)->>'status' from public.payment_confirmations where plan_code = 'monthly') = 'verified');
-select pg_temp.ok('C16b renewal while active adds to the remaining 7 days', (select expires_at > now() + interval '1 month' + interval '6 days' from public.subscriptions where business_id = '10000000-0000-0000-0000-000000000001'));
+-- Same arithmetic as admin_activate_subscription: (now + 7 days) + 1 month. Month-end clamping makes
+-- "now + 1 month + 6 days" differ from it on some calendar days, so compare against the exact expression.
+select pg_temp.ok('C16b renewal while active adds to the remaining 7 days', (select expires_at >= now() + interval '7 days' + interval '1 month' - interval '1 minute' from public.subscriptions where business_id = '10000000-0000-0000-0000-000000000001'));
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
 select pg_temp.ok('C17 after renewal writes work again', public.owner_save_voucher(null,'DEDI','bill','amount',5000,0,null,current_date+1,null) is not null);

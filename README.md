@@ -221,7 +221,7 @@ All schema changes live in [`supabase/migrations`](supabase/migrations), numbere
   073 replaces 071's Balancing page); the POS build that reads the business time zone needs 064, and the POS build
   that sends the QRIS total at shift close needs 075, and the Bahan & Resep page and the product form need 084 to 086 in order
   (ingredients and recipes; 084 replaces `update_product`, so apply it to a test project first), and 088 for the Belanja tab, ingredient stock, and Hitung stok (apply 088 before the BackOffice build that has the Belanja tab; it adds columns and triggers, so apply it to a test project first; no POS change, no new APK), and 089 for Masuk stok on BackOffice Pengeluaran (apply after 088), and 087 for the cashier's
-  expenses to work again (apply 087 before the POS build that has the Catat pengeluaran button). Apply 059 only after every
+  expenses to work again (apply 087 before the POS build that has the Catat pengeluaran button), and 091 for Meja (the table list in BackOffice and the cashier's table picker; apply it only after every till runs the POS build with the table picker, because an older build holds dine-in bills without a table, which 091 refuses). Apply 059 only after every
   phone runs a build that no longer reads PIN hashes.
 - SQL tests apply every migration to a fresh Postgres database and print `PASS` or `FAIL` per check:
 

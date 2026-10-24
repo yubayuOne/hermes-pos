@@ -3,6 +3,7 @@ import { UNITS, type Unit } from '../lib/units';
 import { expenseItemIdOf } from '../lib/purchase';
 import type {
   Ingredient,
+  OutletTable,
   IngredientImpact,
   CountResultLine,
   Purchase,
@@ -477,6 +478,10 @@ export function toStockDocumentList(raw: unknown): StockDocumentList {
 
 // ---------- Ingredients and recipes (084) ----------
 const unitOf = (v: unknown): Unit => (UNITS.includes(v as Unit) ? (v as Unit) : 'g');
+
+export function toTable(r: Row): OutletTable {
+  return { id: str(r.id), name: str(r.name), isActive: r.isActive === true, occupied: r.occupied === true, since: r.since ? str(r.since) : null, heldTotal: num(r.heldTotal) };
+}
 
 export function toIngredient(r: Row): Ingredient {
   const base = str(r.baseUnit);

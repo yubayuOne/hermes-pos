@@ -40,15 +40,15 @@ declare
 begin
   select id into pa from products where name='A'; select id into pb from products where name='B'; select id into pc from products where name='C';
 
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2))),'cash',20000,null,'a1',null,null);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2))),'cash',20000,null,'a1',null,null);
   select * into tx from transactions where id=(r->>'transactionId')::uuid;
   perform t_ck('A1 tanpa diskon: subtotal=total, diskon 0', tx.subtotal=20000 and tx.total=20000 and tx.item_discount=0 and tx.bill_discount=0);
 
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',3,'discount_type','percent','discount_value',10))),'cash',30000,null,'a2',null,null);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',3,'discount_type','percent','discount_value',10))),'cash',30000,null,'a2',null,null);
   select * into tx from transactions where id=(r->>'transactionId')::uuid;
   perform t_ck('A2 diskon item 10% pada 3x10000 = 3000, total 27000, kembalian 3000', tx.item_discount=3000 and tx.total=27000 and (r->>'change')::numeric=3000, tx.total::text);
 
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',1,'discount_type','amount','discount_value',5000))),'qris',0,null,'a3',null,null);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',1,'discount_type','amount','discount_value',5000))),'qris',0,null,'a3',null,null);
   perform t_ck('A3 diskon item nominal 5000 pada 15000 = 10000', (r->>'total')::numeric=10000);
 
   r := complete_checkout(sh,c,o,jsonb_build_object(
@@ -58,33 +58,33 @@ begin
   perform t_ck('A4 item 10% (2000) + bill 5% dari 33000 (1650) = 31350', tx.subtotal=35000 and tx.item_discount=2000 and tx.bill_discount=1650 and tx.total=31350 and tx.bill_discount_type='percent', tx.total::text);
   perform t_ck('A4 kembalian dihitung dari total setelah diskon', (r->>'change')::numeric=8650);
 
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pc,'quantity',3,'discount_type','percent','discount_value',15))),'cash',9999,null,'a5',null,null);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pc,'quantity',3,'discount_type','percent','discount_value',15))),'cash',9999,null,'a5',null,null);
   perform t_ck('A5 pembulatan: 15% dari 9999 = 1499.85 -> 1500, total 8499', (r->>'total')::numeric=8499);
 
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pc,'quantity',3,'discount_type','percent','discount_value',12.5))),'cash',9999,null,'a5b',null,null);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pc,'quantity',3,'discount_type','percent','discount_value',12.5))),'cash',9999,null,'a5b',null,null);
   perform t_ck('A5b persen desimal 12.5% dari 9999 = 1249.875 -> 1250, total 8749', (r->>'total')::numeric=8749);
 
-  begin perform complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'discount_type','percent','discount_value',101))),'cash',99999,null,'e1',null,null); err:=null; exception when others then err:=sqlerrm; end;
+  begin perform complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'discount_type','percent','discount_value',101))),'cash',99999,null,'e1',null,null); err:=null; exception when others then err:=sqlerrm; end;
   perform t_ck('A6 persen > 100 ditolak', err like '%tidak boleh lebih dari 100%', coalesce(err,'(tidak error)'));
-  begin perform complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'discount_type','amount','discount_value',10001))),'cash',99999,null,'e2',null,null); err:=null; exception when others then err:=sqlerrm; end;
+  begin perform complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'discount_type','amount','discount_value',10001))),'cash',99999,null,'e2',null,null); err:=null; exception when others then err:=sqlerrm; end;
   perform t_ck('A7 diskon item nominal melebihi harga ditolak', err like '%melebihi harga%', coalesce(err,'(tidak error)'));
-  begin perform complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1)),'bill_discount_type','percent','bill_discount_value',100),'cash',99999,null,'e3',null,null); err:=null; exception when others then err:=sqlerrm; end;
+  begin perform complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1)),'bill_discount_type','percent','bill_discount_value',100),'cash',99999,null,'e3',null,null); err:=null; exception when others then err:=sqlerrm; end;
   perform t_ck('A8 diskon yang membuat total 0 ditolak', err like '%total menjadi nol%', coalesce(err,'(tidak error)'));
-  begin perform complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'discount_type','bogus','discount_value',5))),'cash',99999,null,'e4',null,null); err:=null; exception when others then err:=sqlerrm; end;
+  begin perform complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'discount_type','bogus','discount_value',5))),'cash',99999,null,'e4',null,null); err:=null; exception when others then err:=sqlerrm; end;
   perform t_ck('A9 jenis diskon tidak dikenal ditolak', err like '%Jenis diskon tidak valid%', coalesce(err,'(tidak error)'));
-  begin perform complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2,'discount_type','percent','discount_value',50))),'cash',9999,null,'e5',null,null); err:=null; exception when others then err:=sqlerrm; end;
+  begin perform complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2,'discount_type','percent','discount_value',50))),'cash',9999,null,'e5',null,null); err:=null; exception when others then err:=sqlerrm; end;
   perform t_ck('A10 uang kurang dibanding TOTAL SETELAH DISKON ditolak (10000)', err like '%Uang diterima kurang%', coalesce(err,'(tidak error)'));
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2,'discount_type','percent','discount_value',50))),'cash',10000,null,'e6',null,null);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2,'discount_type','percent','discount_value',50))),'cash',10000,null,'e6',null,null);
   perform t_ck('A11 uang pas dengan total setelah diskon diterima', (r->>'change')::numeric=0);
 
   -- idempotensi: kunci sama -> transaksi sama, stok & diskon tidak berlipat
-  payload := jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',2,'discount_type','percent','discount_value',20)));
+  payload := jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',2,'discount_type','percent','discount_value',20)));
   select stock into st from products where id=pb;
   r := complete_checkout(sh,c,o,payload,'cash',50000,null,'idem1',null,null);
   r2 := complete_checkout(sh,c,o,payload,'cash',50000,null,'idem1',null,null);
   select stock into st2 from products where id=pb;
   perform t_ck('A12 pengiriman ulang (kunci sama) = transaksi sama, stok berkurang sekali', r->>'transactionId'=r2->>'transactionId' and st-st2=2 and (r2->>'total')::numeric=24000, (st-st2)::text);
-  begin perform complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',2,'discount_type','percent','discount_value',10))),'cash',50000,null,'idem1',null,null); err:=null; exception when others then err:=sqlerrm; end;
+  begin perform complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',2,'discount_type','percent','discount_value',10))),'cash',50000,null,'idem1',null,null); err:=null; exception when others then err:=sqlerrm; end;
   perform t_ck('A13 kunci sama dengan diskon berbeda ditolak', err like '%IDEMPOTENCY_KEY_REUSED%', coalesce(err,'(tidak error)'));
 
   perform t_ck('A14 overload lama complete_checkout 9 argumen sudah dihapus', not exists(select 1 from pg_proc where proname='complete_checkout' and pronargs=9));
@@ -98,7 +98,7 @@ declare
 begin
   select id into pa from products where name='A'; select id into pb from products where name='B';
 
-  payload := jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2,'discount_type','percent','discount_value',10)),'bill_discount_type','percent','bill_discount_value',10,'customer_name','Ani','customer_phone','','table_number','3');
+  payload := jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2,'discount_type','percent','discount_value',10)),'bill_discount_type','percent','bill_discount_value',10,'customer_name','Ani','customer_phone','','table_number','3');
   held := save_held_bill(sh,c,o,payload,'hold-k1');
   held2 := save_held_bill(sh,c,o,payload,'hold-k1');
   select count(*) into n from transactions where status='held' and customer_name='Ani';
@@ -112,20 +112,20 @@ begin
     rec->>'billDiscountType'='percent' and (rec->>'billDiscountValue')::numeric=10
     and rec->'items'->0->>'discountType'='percent' and (rec->'items'->0->>'discountValue')::numeric=10 and (rec->'items'->0->>'discountAmount')::numeric=2000, rec::text);
 
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2,'discount_type','percent','discount_value',10)),'bill_discount_type','percent','bill_discount_value',10),'cash',20000,null,'b-pay1',null,held);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2,'discount_type','percent','discount_value',10)),'bill_discount_type','percent','bill_discount_value',10),'cash',20000,null,'b-pay1',null,held);
   select * into tx from transactions where id=held;
   perform t_ck('B5 bayar bill ditahan: total sama persis & status completed', tx.status='completed' and tx.total=16200 and (r->>'change')::numeric=3800, tx.total::text);
 
   -- tambah item saat recall + harga produk berubah sejak ditahan
-  held := save_held_bill(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2,'discount_type','percent','discount_value',10)),'customer_name','Budi'),'hold-k2');
+  held := save_held_bill(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2,'discount_type','percent','discount_value',10)),'customer_name','Budi'),'hold-k2');
   reset role; update products set selling_price=12000 where id=pa; set role authenticated;
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',3,'discount_type','percent','discount_value',10))),'cash',50000,null,'b-pay2',null,held);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',3,'discount_type','percent','discount_value',10))),'cash',50000,null,'b-pay2',null,held);
   select * into tx from transactions where id=held;
   perform t_ck('B6 qty lama pakai harga tahan (2x10000) + qty baru harga katalog (1x12000), diskon 10% dari 32000 = 3200, total 28800', tx.subtotal=32000 and tx.item_discount=3200 and tx.total=28800, tx.total::text);
   perform t_ck('B7 diskon terbagi ke 2 baris tanpa selisih (2000 + 1200)', (select sum(discount_amount) from transaction_items where transaction_id=held)=3200 and (select count(*) from transaction_items where transaction_id=held)=2);
   reset role; update products set selling_price=10000 where id=pa; set role authenticated;
 
-  begin perform save_held_bill(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1)),'bill_discount_type','percent','bill_discount_value',100)); err:=null; exception when others then err:=sqlerrm; end;
+  begin perform save_held_bill(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1)),'bill_discount_type','percent','bill_discount_value',100)); err:=null; exception when others then err:=sqlerrm; end;
   perform t_ck('B8 Tahan Bill dengan diskon yang menihilkan total ditolak', err like '%total menjadi nol%', coalesce(err,'(tidak error)'));
 end $$;
 
@@ -138,7 +138,7 @@ begin
   select id into pa from products where name='A'; select id into pb from products where name='B'; select id into pc from products where name='C';
 
   -- C1: A x4 (item nominal 4000) + C x3, diskon bill 10%
-  held := save_held_bill(sh,c,o,jsonb_build_object('items',jsonb_build_array(
+  held := save_held_bill(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(
       jsonb_build_object('product_id',pa,'quantity',4,'discount_type','amount','discount_value',4000),
       jsonb_build_object('product_id',pc,'quantity',3)),
       'bill_discount_type','percent','bill_discount_value',10),'hold-s1');
@@ -152,22 +152,22 @@ begin
   perform t_ck('C4 sisa item membawa total diskon 8600', (select sum((x->>'discountAmount')::numeric) from jsonb_array_elements(items) x)=8600);
 
   s := 0;
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',99999,null,'s1-1',held,null); s := s + (r->>'total')::numeric;
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',99999,null,'s1-2',held,null); s := s + (r->>'total')::numeric;
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',99999,null,'s1-1',held,null); s := s + (r->>'total')::numeric;
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',99999,null,'s1-2',held,null); s := s + (r->>'total')::numeric;
   select * into tx from transactions where id=held;
   perform t_ck('C5 induk tetap ditahan selama masih ada sisa', tx.status='held');
   rem_total := (select sum((x->>'quantity')::numeric*(x->>'unitPrice')::numeric-(x->>'discountAmount')::numeric) from jsonb_array_elements(get_held_bill_items(held)) x);
   perform t_ck('C6 sisa bill + yang sudah dibayar = total awal', rem_total + s = parent_total, (rem_total+s)::text);
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2),jsonb_build_object('product_id',pc,'quantity',3))),'cash',99999,null,'s1-3',held,null); s := s + (r->>'total')::numeric;
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2),jsonb_build_object('product_id',pc,'quantity',3))),'cash',99999,null,'s1-3',held,null); s := s + (r->>'total')::numeric;
   select * into tx from transactions where id=held;
   perform t_ck('C7 split 1+1+(2 A & 3 C): jumlah semua bayaran = total awal PERSIS (tanpa selisih rupiah)', s = parent_total and tx.status='cancelled', s::text);
 
   -- C2: pembulatan tiga arah: C x3 = 9999, diskon bill nominal 100 -> 33 + 34 + 33
-  held := save_held_bill(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pc,'quantity',3)),'bill_discount_type','amount','bill_discount_value',100),'hold-s2');
+  held := save_held_bill(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pc,'quantity',3)),'bill_discount_type','amount','bill_discount_value',100),'hold-s2');
   perform start_split_from_held(held);
   s := 0;
   for k in 1..3 loop
-    r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pc,'quantity',1))),'cash',99999,null,'s2-'||k,held,null);
+    r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pc,'quantity',1))),'cash',99999,null,'s2-'||k,held,null);
     s := s + (r->>'total')::numeric;
   end loop;
   perform t_ck('C8 split tiga arah dari 9999 dengan diskon 100: total semua = 9899', s=9899, s::text);
@@ -175,13 +175,13 @@ begin
      (select array_agg(ti.discount_amount order by ti.discount_amount)::text from transaction_items ti join transactions t on t.id=ti.transaction_id where t.parent_transaction_id=held));
 
   -- C3: split sebagian lalu bayar sisanya biasa (bill ditahan, dengan diskon item persen)
-  held := save_held_bill(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',4,'discount_type','percent','discount_value',10))),'hold-s3');
+  held := save_held_bill(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',4,'discount_type','percent','discount_value',10))),'hold-s3');
   perform start_split_from_held(held);
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',1))),'cash',99999,null,'s3-1',held,null);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',1))),'cash',99999,null,'s3-1',held,null);
   perform t_ck('C10 bagian split 1 dari 4 B (60000, diskon 6000): 13500', (r->>'total')::numeric=13500, r->>'total');
   items := get_held_bill_items(held);
   perform t_ck('C11 sisa: 3 porsi, diskon 4500, bertipe nominal', (items->0->>'quantity')::numeric=3 and (items->0->>'discountAmount')::numeric=4500 and items->0->>'discountType'='amount', items::text);
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',3,'discount_type','amount','discount_value',4500))),'cash',99999,null,'s3-2',null,held);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pb,'quantity',3,'discount_type','amount','discount_value',4500))),'cash',99999,null,'s3-2',null,held);
   perform t_ck('C12 bayar sisa sebagai bill biasa: 40500', (r->>'total')::numeric=40500, r->>'total');
 end $$;
 
@@ -194,7 +194,7 @@ begin
   select id into pa from products where name='A';
   select (get_shift_cash_summary(sh)->>'expected_cash')::numeric into cash0;
   select stock into st0 from products where id=pa;
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',3,'discount_type','percent','discount_value',10))),'cash',40000,null,'v1',null,null);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',3,'discount_type','percent','discount_value',10))),'cash',40000,null,'v1',null,null);
   tid := (r->>'transactionId')::uuid;
   select stock into st1 from products where id=pa;
   select (get_shift_cash_summary(sh)->>'expected_cash')::numeric into cash1;
@@ -214,11 +214,11 @@ begin
   perform t_ck('D6 batal ulang = sukses tanpa efek (aman untuk retry)', (v->>'alreadyVoided')='true' and (select stock from products where id=pa)=st0);
 
   -- bill ditahan & anak split tidak bisa dibatalkan lewat jalur ini
-  held := save_held_bill(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2))));
+  held := save_held_bill(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2))));
   begin perform t_void(held,'coba'); err:=null; exception when others then err:=sqlerrm; end;
   perform t_ck('D7 bill ditahan tidak bisa dibatalkan (pakai Hapus Bill)', err like '%sudah dibayar%', coalesce(err,'(tidak error)'));
   perform start_split_from_held(held);
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',99999,null,'v-split',held,null);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',99999,null,'v-split',held,null);
   child := (r->>'transactionId')::uuid;
   begin perform t_void(child,'coba'); err:=null; exception when others then err:=sqlerrm; end;
   perform t_ck('D8 anak Split Bill tidak bisa dibatalkan satuan', err like '%Split Bill%', coalesce(err,'(tidak error)'));

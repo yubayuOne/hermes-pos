@@ -37,7 +37,7 @@ begin
   select id into pa from products where name='A'; select id into pb from products where name='B';
 
   -- A. checkout bill baru
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(
         jsonb_build_object('product_id',pa,'quantity',2,'note','  tanpa es, gula sedikit  '),
         jsonb_build_object('product_id',pb,'quantity',1,'note','   '))),'cash',50000,null,'n1',null,null);
   tid:=(r->>'transactionId')::uuid;
@@ -47,18 +47,18 @@ begin
   perform t_ck('A3 get_bill_items mengembalikan catatan', (select x->>'note' from jsonb_array_elements(items) x where x->>'productId'=pa::text)='tanpa es, gula sedikit', items::text);
   perform t_ck('A4 catatan tidak mengubah total (2x10000 + 15000 = 35000)', (r->>'total')::numeric=35000);
 
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'note',repeat('x',300)))),'cash',50000,null,'n2',null,null);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'note',repeat('x',300)))),'cash',50000,null,'n2',null,null);
   perform t_ck('A5 catatan dipotong 200 karakter', (select char_length(ti.note) from transaction_items ti where ti.transaction_id=(r->>'transactionId')::uuid)=200);
 
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',50000,null,'n3',null,null);
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1))),'cash',50000,null,'n3',null,null);
   perform t_ck('A6 tanpa catatan: NULL', (select ti.note from transaction_items ti where ti.transaction_id=(r->>'transactionId')::uuid) is null);
 
-  r := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(
+  r := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(
         jsonb_build_object('product_id',pa,'quantity',1),jsonb_build_object('product_id',pa,'quantity',1,'note','pedas'))),'cash',50000,null,'n4',null,null);
   perform t_ck('A7 produk sama di dua baris payload: catatan yang ada dipakai', (select ti.note from transaction_items ti where ti.transaction_id=(r->>'transactionId')::uuid)='pedas');
 
   -- B. Tahan Bill
-  hid := save_held_bill(sh,c,o,jsonb_build_object('items',jsonb_build_array(
+  hid := save_held_bill(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(
         jsonb_build_object('product_id',pa,'quantity',3,'note','tanpa bawang'),jsonb_build_object('product_id',pb,'quantity',2)),'table_number','5'));
   perform t_ck('B1 save_held_bill menyimpan catatan', (select ti.note from transaction_items ti where ti.transaction_id=hid and ti.product_id=pa)='tanpa bawang');
   r := recall_held_bill_with_items(hid);
@@ -67,18 +67,18 @@ begin
   perform t_ck('B3 get_bill_items (bill ditahan) mengembalikan catatan', (select x->>'note' from jsonb_array_elements(get_bill_items(hid)) x where x->>'productId'=pa::text)='tanpa bawang');
 
   -- bayar bill ditahan dengan qty ditambah dan catatan diubah -> semua baris produk itu memakai catatan baru
-  r2 := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(
+  r2 := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(
         jsonb_build_object('product_id',pa,'quantity',4,'note','extra pedas'),jsonb_build_object('product_id',pb,'quantity',2))),'cash',200000,null,'n5',null,hid);
   perform t_ck('B4 bayar bill ditahan: catatan diperbarui di semua baris produk', (select count(*) from transaction_items ti where ti.transaction_id=hid and ti.product_id=pa and ti.note='extra pedas')=(select count(*) from transaction_items ti where ti.transaction_id=hid and ti.product_id=pa), (select count(*) from transaction_items ti where ti.transaction_id=hid and ti.product_id=pa)::text);
   perform t_ck('B5 catatan dihapus saat bayar -> NULL', (select ti.note from transaction_items ti where ti.transaction_id=hid and ti.product_id=pb) is null);
 
   -- C. Split Bill
-  parent := save_held_bill(sh,c,o,jsonb_build_object('items',jsonb_build_array(
+  parent := save_held_bill(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(
         jsonb_build_object('product_id',pa,'quantity',3,'note','tanpa es'),jsonb_build_object('product_id',pb,'quantity',1,'note','panas'))));
   perform start_split_from_held(parent);
   r := get_held_bill_items(parent);
   perform t_ck('C1 sisa item split membawa catatan', (select x->>'note' from jsonb_array_elements(r) x where x->>'productId'=pa::text)='tanpa es', r::text);
-  r2 := complete_checkout(sh,c,o,jsonb_build_object('items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'note','tanpa es'))),'cash',20000,null,'n6',parent,null);
+  r2 := complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'note','tanpa es'))),'cash',20000,null,'n6',parent,null);
   ch:=(r2->>'transactionId')::uuid;
   perform t_ck('C2 bagian split menyimpan catatan', (select ti.note from transaction_items ti where ti.transaction_id=ch)='tanpa es');
   r := get_held_bill_items(parent);

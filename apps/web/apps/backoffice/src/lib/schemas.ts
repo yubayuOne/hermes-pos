@@ -138,6 +138,9 @@ export const ingredientSchema = z.object({
 });
 export const ingredientPreviewSchema = z.object({ id: uuid, price: ingredientPrice, packQty: amount3('Isi kemasan'), packUnit: unit });
 export const ingredientRefSchema = z.object({ id: uuid });
+// ---------- Tables (091) ----------
+export const tableSchema = z.object({ outletId: uuid, id: uuid.nullish(), name: req('Isi nama meja.', 20, 'Nama meja maksimal 20 huruf.') });
+export const tableActiveSchema = z.object({ id: uuid, active: z.boolean() });
 export const recipeLineSchema = z.object({ ingredientId: uuid, qty: amount3('Jumlah'), unit });
 const recipeLines = z
   .array(recipeLineSchema)

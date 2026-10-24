@@ -23,20 +23,22 @@ Kasir tidak bisa melihat meja mana yang sedang terisi. Nomor meja diketik bebas 
 1. **Meja wajib untuk makan di tempat.** Bill makan di tempat tanpa meja tidak bisa disimpan.
 2. **Status terisi diturunkan dari bill yang ditahan di meja itu.** Tidak ada kolom status yang bisa tidak sinkron.
 3. **Meja dipakai di HP lain** tampil sebagai terisi begitu sinkron, dengan tanda "di HP lain". Saat offline, pemakaian tidak diblokir, dan bisa terjadi dua kasir memakai meja yang sama sampai sinkron.
-4. **Tutup shift saat ada meja terisi: peringatan, tidak diblokir.** Kasir melihat daftar meja yang masih terbuka sebelum menutup.
+4. **Tutup shift saat ada meja terisi tetap diblokir** oleh aturan bill ditahan yang sudah ada ("N bill masih ditahan. Bayar atau hapus dulu."). Peringatan saja tidak dipakai, karena bill ditahan di meja itu memang harus diselesaikan dulu.
+5. **Bill ditahan wajib punya meja** (trigger pada `transactions`, sehingga semua jalur ikut, termasuk ubah bill). Bill yang sudah ada tanpa meja hanya diperiksa saat mejanya diganti.
 
 ## Perilaku
 
 - BackOffice: halaman Meja (nomor atau nama, aktif, tambah, ubah, nonaktifkan). Nonaktifkan tidak boleh untuk meja yang masih punya bill ditahan.
 - Kasir: saat membuka bill makan di tempat, muncul kotak meja (kosong / terisi + jam mulai). Pindah meja dari menu bill.
+- Yang belum ada di v1: membuka bill dari meja terisi langsung. Meja terisi tidak bisa dipilih; bill-nya dibuka dari tab Bill.
 - Teks bill tetap menampilkan nomor meja, sehingga laporan dan struk tidak berubah.
 - Bill lama dengan nomor meja teks bebas tetap tampil apa adanya.
 
 ## Data (saran)
 
 - Tabel `tables` (outlet, nomor/nama unik per outlet, aktif, dibuat).
-- Kolom `table_id` pada transaksi (nullable), dengan `table_number` tetap diisi sebagai salinan untuk tampilan lama.
-- Migrasi 091 untuk tabel dan kolom, dengan RLS dan grant mengikuti pola 088.
+- Tidak ada kolom `table_id`. Bill tetap menyimpan nama meja di `table_number` (teks, seperti sebelum 091), sehingga struk, laporan, dan bill lama tampil sama. Status terisi dicari dari nama itu.
+- Migrasi 091 untuk tabel `tables`, fungsi, dan trigger, dengan RLS dan grant mengikuti pola 088.
 
 ## Pengujian
 
@@ -44,5 +46,6 @@ Kasir tidak bisa melihat meja mana yang sedang terisi. Nomor meja diketik bebas 
 - Makan di tempat tanpa meja ditolak; bawa pulang diterima.
 - Pindah meja memindahkan bill dan mengosongkan meja asal.
 - Meja terisi terlihat dari HP lain setelah sinkron.
-- Tutup shift dengan meja terbuka menampilkan peringatan dan tetap bisa ditutup.
+- Dua bill baru bisa jatuh di meja kosong yang sama saat offline atau bersamaan; server tidak menolak. Ini diterima di v1 (keputusan 3).
+- Tutup shift dengan bill ditahan tetap diblokir (aturan lama, keputusan 4).
 - Isolasi antar bisnis dan outlet.

@@ -57,18 +57,18 @@ select pg_temp.fails('V4 inactive code', format('select public.pos_check_voucher
 select pg_temp.fails('V5 expired code', format('select public.pos_check_voucher(%L, %L, %L)', current_setting('t.c'), current_setting('t.o'), 'LAMA'), 'sudah berakhir');
 
 -- ===== bill voucher
-select set_config('t.r1', pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 2)), 'voucher_code', 'hemat10'), 'v-1')::text, false);
+select set_config('t.r1', pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 2)), 'voucher_code', 'hemat10'), 'v-1')::text, false);
 select pg_temp.ok('V6 10% bill voucher: 44.000 becomes 39.600', (current_setting('t.r1')::jsonb ->> 'total')::numeric = 39600);
 select pg_temp.ok('V7 discount amount returned', (current_setting('t.r1')::jsonb ->> 'voucherDiscount')::numeric = 4400);
 select pg_temp.ok('V8 voucher counted once', (select used_count from public.vouchers where code = 'HEMAT10') = 1);
 select pg_temp.ok('V9 bill keeps the discount', (select bill_discount from public.transactions where id = (current_setting('t.r1')::jsonb ->> 'transactionId')::uuid) = 4400);
-select pg_temp.ok('V10 replay returns the same bill', (pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 2)), 'voucher_code', 'hemat10'), 'v-1') ->> 'transactionId') = current_setting('t.r1')::jsonb ->> 'transactionId');
+select pg_temp.ok('V10 replay returns the same bill', (pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 2)), 'voucher_code', 'hemat10'), 'v-1') ->> 'transactionId') = current_setting('t.r1')::jsonb ->> 'transactionId');
 select pg_temp.ok('V11 replay does not count again', (select used_count from public.vouchers where code = 'HEMAT10') = 1);
 select pg_temp.ok('V12 one redemption row', (select count(*) from public.voucher_redemptions) = 1);
-select pg_temp.fails('V13 min spend', $q$select pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1)), 'voucher_code', 'HEMAT10'), 'v-2')$q$, 'Belanja minimal');
-select pg_temp.fails('V14 not with manual bill discount', $q$select pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 2)), 'voucher_code', 'HEMAT10', 'bill_discount_type', 'percent', 'bill_discount_value', 5), 'v-3')$q$, 'diskon bill');
-select pg_temp.ok('V15 second use within quota', (pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 2)), 'voucher_code', 'HEMAT10'), 'v-4') ->> 'total')::numeric = 39600);
-select pg_temp.fails('V16 quota used up', $q$select pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 2)), 'voucher_code', 'HEMAT10'), 'v-5')$q$, 'habis');
+select pg_temp.fails('V13 min spend', $q$select pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1)), 'voucher_code', 'HEMAT10'), 'v-2')$q$, 'Belanja minimal');
+select pg_temp.fails('V14 not with manual bill discount', $q$select pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 2)), 'voucher_code', 'HEMAT10', 'bill_discount_type', 'percent', 'bill_discount_value', 5), 'v-3')$q$, 'diskon bill');
+select pg_temp.ok('V15 second use within quota', (pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 2)), 'voucher_code', 'HEMAT10'), 'v-4') ->> 'total')::numeric = 39600);
+select pg_temp.fails('V16 quota used up', $q$select pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 2)), 'voucher_code', 'HEMAT10'), 'v-5')$q$, 'habis');
 -- 044: the till's voucher list shows only usable vouchers, in the pos_check_voucher shape.
 select set_config('t.list', public.pos_list_vouchers(current_setting('t.c')::uuid, current_setting('t.o')::uuid)::text, false);
 select pg_temp.ok('V16b list: POTONG5K, ROTI25K, ROTI50 only (no inactive, expired, or used up)',
@@ -76,34 +76,34 @@ select pg_temp.ok('V16b list: POTONG5K, ROTI25K, ROTI50 only (no inactive, expir
 select pg_temp.ok('V16c list rows carry type, value, and product ids',
   (select (x->>'value')::numeric = 50 and x->>'discount_type' = 'percent' and jsonb_array_length(x->'product_ids') = 1
    from jsonb_array_elements(current_setting('t.list')::jsonb) x where x->>'code' = 'ROTI50'));
-select pg_temp.fails('V17 amount voucher larger than bill', $q$select pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.permen', 1)), 'voucher_code', 'POTONG5K'), 'v-6')$q$, 'lebih besar');
-select pg_temp.fails('V18 failed checkout (stock) does not count', $q$select pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.air', 5), pg_temp.item('t.kopi', 1)), 'voucher_code', 'POTONG5K'), 'v-7')$q$, 'Stok');
+select pg_temp.fails('V17 amount voucher larger than bill', $q$select pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.permen', 1)), 'voucher_code', 'POTONG5K'), 'v-6')$q$, 'lebih besar');
+select pg_temp.fails('V18 failed checkout (stock) does not count', $q$select pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.air', 5), pg_temp.item('t.kopi', 1)), 'voucher_code', 'POTONG5K'), 'v-7')$q$, 'Stok');
 select pg_temp.ok('V19 ...and leaves the quota alone', (select used_count from public.vouchers where code = 'POTONG5K') = 0);
 select pg_temp.fails('V20 not for split parts', format('select public.complete_checkout(%L,%L,%L,%L::jsonb,%L,50000,null,%L,%L,null)', current_setting('t.sh'), current_setting('t.c'), current_setting('t.o'),
-  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1)), 'voucher_code', 'POTONG5K'), 'cash', 'v-8', gen_random_uuid()), 'pisah bill');
+  jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1)), 'voucher_code', 'POTONG5K'), 'cash', 'v-8', gen_random_uuid()), 'pisah bill');
 
 -- ===== product voucher
-select set_config('t.r2', pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1), pg_temp.item('t.roti', 2)), 'voucher_code', 'ROTI50'), 'v-9')::text, false);
+select set_config('t.r2', pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1), pg_temp.item('t.roti', 2)), 'voucher_code', 'ROTI50'), 'v-9')::text, false);
 select pg_temp.ok('V21 50% on roti only: 22.000 + 18.000', (current_setting('t.r2')::jsonb ->> 'total')::numeric = 40000);
 select pg_temp.ok('V22 discount sits on the roti line', (select discount_amount from public.transaction_items where transaction_id = (current_setting('t.r2')::jsonb ->> 'transactionId')::uuid and product_id = current_setting('t.roti')::uuid) = 18000);
-select pg_temp.ok('V23 amount per line capped at line price', (pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1), pg_temp.item('t.roti', 1)), 'voucher_code', 'ROTI25K'), 'v-10') ->> 'total')::numeric = 22000);
-select pg_temp.fails('V24 product not in bill', $q$select pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1)), 'voucher_code', 'ROTI50'), 'v-11')$q$, 'menu tertentu');
-select pg_temp.fails('V25 not with item discount on the same line', $q$select pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.roti', 1) || '{"discount_type":"amount","discount_value":1000}'), 'voucher_code', 'ROTI50'), 'v-12')$q$, 'diskon item');
+select pg_temp.ok('V23 amount per line capped at line price', (pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1), pg_temp.item('t.roti', 1)), 'voucher_code', 'ROTI25K'), 'v-10') ->> 'total')::numeric = 22000);
+select pg_temp.fails('V24 product not in bill', $q$select pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1)), 'voucher_code', 'ROTI50'), 'v-11')$q$, 'menu tertentu');
+select pg_temp.fails('V25 not with item discount on the same line', $q$select pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.roti', 1) || '{"discount_type":"amount","discount_value":1000}'), 'voucher_code', 'ROTI50'), 'v-12')$q$, 'diskon item');
 
 -- ===== held bill, no voucher path, privileges
 select set_config('t.held', public.save_held_bill(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
-  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1), pg_temp.item('t.roti', 1))), 'h-1')::text, false);
-select pg_temp.ok('V26 voucher on a recalled held bill', (pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1), pg_temp.item('t.roti', 1)), 'voucher_code', 'POTONG5K'), 'v-13', 1000000, current_setting('t.held')::uuid) ->> 'total')::numeric = 35000);
-select pg_temp.ok('V27 no voucher: unchanged', (pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1))), 'v-14') ->> 'total')::numeric = 22000);
-select pg_temp.ok('V28 no voucher replay', (pg_temp.pay(jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1))), 'v-14') ->> 'total')::numeric = 22000);
+  jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1), pg_temp.item('t.roti', 1))), 'h-1')::text, false);
+select pg_temp.ok('V26 voucher on a recalled held bill', (pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1), pg_temp.item('t.roti', 1)), 'voucher_code', 'POTONG5K'), 'v-13', 1000000, current_setting('t.held')::uuid) ->> 'total')::numeric = 35000);
+select pg_temp.ok('V27 no voucher: unchanged', (pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1))), 'v-14') ->> 'total')::numeric = 22000);
+select pg_temp.ok('V28 no voucher replay', (pg_temp.pay(jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1))), 'v-14') ->> 'total')::numeric = 22000);
 select pg_temp.fails('V29 core not callable by the app', format('select public.complete_checkout_core(%L,%L,%L,%L::jsonb,%L,50000,null,%L,null,null)', current_setting('t.sh'), current_setting('t.c'), current_setting('t.o'), '{}', 'cash', 'v-15'), 'permission denied');
 select pg_temp.fails('V30 redemptions not writable', $q$insert into public.voucher_redemptions(voucher_id, transaction_id, cashier_id, idempotency_key, payload) values (gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), 'x', '{}')$q$, 'permission denied');
 
 -- ===== update a recalled held bill
 select set_config('t.held2', public.save_held_bill(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
-  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1)), 'table_number', '4'), 'h-2')::text, false);
+  jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1)), 'table_number', '4'), 'h-2')::text, false);
 select pg_temp.ok('H1 update keeps the same bill', public.update_held_bill(current_setting('t.held2')::uuid,
-  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 2), pg_temp.item('t.roti', 1) || '{"note":"tanpa gula"}'), 'table_number', '7')) = current_setting('t.held2')::uuid);
+  jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 2), pg_temp.item('t.roti', 1) || '{"note":"tanpa gula"}'), 'table_number', '7')) = current_setting('t.held2')::uuid);
 select pg_temp.ok('H2 total follows the new cart', (select total from public.transactions where id = current_setting('t.held2')::uuid) = 62000);
 select pg_temp.ok('H3 items replaced, note kept', (select count(*) = 2 and bool_or(note = 'tanpa gula') from public.transaction_items where transaction_id = current_setting('t.held2')::uuid));
 select pg_temp.ok('H4 table updated', (select table_number from public.transactions where id = current_setting('t.held2')::uuid) = '7');
@@ -112,11 +112,11 @@ select pg_temp.ok('H5 still one held bill, stock untouched', (select status::tex
 select pg_temp.fails('H6 empty cart refused', format('select public.update_held_bill(%L, %L::jsonb)', current_setting('t.held2'), '{"items":[]}'), 'Bill kosong');
 select public.start_split_from_held(current_setting('t.held2')::uuid);
 select public.complete_checkout(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
-  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1))), 'cash', 22000, null, 'h-split-1', current_setting('t.held2')::uuid, null);
+  jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1))), 'cash', 22000, null, 'h-split-1', current_setting('t.held2')::uuid, null);
 select pg_temp.fails('H7 refused after a split part was paid', format('select public.update_held_bill(%L, %L::jsonb)', current_setting('t.held2'),
-  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1)))), 'pisah bill');
+  jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1)))), 'pisah bill');
 select pg_temp.fails('H8 paid bill cannot be updated', format('select public.update_held_bill(%L, %L::jsonb)', current_setting('t.r2')::jsonb ->> 'transactionId',
-  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1)))), 'Bill Ditahan');
+  jsonb_build_object('table_number','M1','items', jsonb_build_array(pg_temp.item('t.kopi', 1)))), 'Bill Ditahan');
 
 -- ===== owner approval code
 select set_config('t.tx', current_setting('t.r1')::jsonb ->> 'transactionId', false);
