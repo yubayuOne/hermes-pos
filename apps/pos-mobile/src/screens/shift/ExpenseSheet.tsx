@@ -4,7 +4,6 @@ import { Mono, Text } from '../../components/Text';
 import { Button, ButtonRow, IconButton } from '../../components/Button';
 import { Chip, Label } from '../../components/bits';
 import { TextField } from '../../components/Field';
-import { ChoiceButton } from '../../components/ChoiceSheet';
 import { Sheet, SheetBody, SheetHeader } from '../../components/Sheet';
 import { useAppStore } from '../../hooks/AppStore';
 import { useNotify } from '../../hooks/NotifyProvider';
@@ -12,7 +11,7 @@ import { recordExpense } from '../../services/transaction/repository';
 import { CHECKOUT_TIMEOUT_MS, enqueueCheckout, queueFirst, waitsForQueue, withTimeout } from '../../services/transaction/offlineQueue';
 import { refreshSubscription } from '../../services/subscription/subscription';
 import { describeError, isExpiredError, isNetworkError } from '../../utils/errors';
-import { checkLines, emptyLine, EXPENSE_UNITS, ExpenseLine, parseAmount } from '../../utils/expense';
+import { checkLines, emptyLine, ExpenseLine, parseAmount } from '../../utils/expense';
 import { haptic } from '../../utils/haptics';
 import { colors } from '../../theme';
 import { money, num, t, useT } from '../../i18n';
@@ -20,8 +19,8 @@ import { money, num, t, useT } from '../../i18n';
 type RowErrors = Partial<Record<keyof ExpenseLine, string>>;
 
 /**
- * Catat pengeluaran (migrations 040, 041, 043): one or more items, each with a name, operasional or belanja, a quantity
- * with its unit, and the total price for that quantity. They join the shift's one expense record and count at once; from
+ * Catat pengeluaran (migrations 040, 041, 043): one or more notes, each with a name, operasional or belanja, and the total paid.
+ * The quantity is 1 pcs, so the note is only what was bought, and the owner does not need to match it to stock. They join the shift's one expense record and count at once; from
  * the drawer they leave the shift's cash at once. No owner approval; the owner can edit it on the web. Offline: stored in
  * the offline queue with the same key and sent when the internet is back, so it is recorded once.
  */
@@ -31,7 +30,8 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
   const { shift, session } = useAppStore();
   const [lines, setLines] = useState<ExpenseLine[]>([emptyLine()]);
   const [errors, setErrors] = useState<RowErrors[]>([]);
-  const [paidFrom, setPaidFrom] = useState<'drawer' | 'other'>('drawer');
+  // The cashier's expenses always come out of the drawer (owner's decision, 23 Oct 2026); other money is the owner's in the backoffice.
+  const paidFrom = 'drawer' as const;
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const key = useRef('');
@@ -39,7 +39,6 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
     if (!visible) return;
     setLines([emptyLine()]);
     setErrors([]);
-    setPaidFrom('drawer');
     setFormError('');
     // One key per opened sheet: a retry after a lost response records once.
     key.current = `expense:${session?.cashierId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
@@ -63,12 +62,7 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
       if (waitsForQueue(shift.id)) throw queueFirst();
       await withTimeout(recordExpense(args), CHECKOUT_TIMEOUT_MS);
       haptic.heavy();
-      notify.success(
-        t('Pengeluaran tercatat'),
-        paidFrom === 'drawer'
-          ? t('{amount} keluar dari kas laci dan masuk laporan shift.', { amount: money(total) })
-          : t('{amount} dicatat di laporan shift, bukan dari kas laci.', { amount: money(total) }),
-      );
+      notify.success(t('Pengeluaran tercatat'), t('{amount} keluar dari kas laci dan masuk laporan shift.', { amount: money(total) }));
       onSaved();
     } catch (err) {
       if (isExpiredError(err)) void refreshSubscription().catch(() => undefined);
@@ -127,7 +121,7 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
                 ) : null}
               </View>
               <TextField
-                label={t('Nama barang atau biaya')}
+                label={t('Catatan: yang dibeli atau dibayar')}
                 value={l.name}
                 onChangeText={(v) => set(i, { name: v })}
                 placeholder={t('Gula pasir, galon, listrik')}
@@ -139,29 +133,6 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
                 <Chip grow label={t('Operasional')} selected={l.category === 'operasional'} onPress={() => set(i, { category: 'operasional' })} />
               </View>
               <TextField
-                label={t('Jumlah')}
-                value={l.quantity}
-                onChangeText={(v) => set(i, { quantity: v.replace(/[^\d.,]/g, '') })}
-                keyboardType="decimal-pad"
-                mono
-                maxLength={10}
-                error={e.quantity ? t(e.quantity) : null}
-              />
-              <View>
-                <Text className="mb-1.5 font-body-600 text-[14px]">{t('Satuan')}</Text>
-                <ChoiceButton
-                  title={t('Satuan')}
-                  options={EXPENSE_UNITS.map((u) => ({ key: u, label: u }))}
-                  value={l.unit}
-                  onChange={(u) => set(i, { unit: u })}
-                />
-                {e.unit ? (
-                  <Text accessibilityRole="alert" className="mt-1.5 font-body-600 text-[14px] text-error">
-                    {t(e.unit)}
-                  </Text>
-                ) : null}
-              </View>
-              <TextField
                 label={t('Harga total')}
                 value={l.amount ? num(Number(l.amount)) : ''}
                 onChangeText={(v) => set(i, { amount: v.replace(/\D/g, '').replace(/^0+/, '') })}
@@ -169,7 +140,7 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
                 mono
                 maxLength={13}
                 placeholder="0"
-                help={t('Total untuk {qty} {unit}, bukan harga per satuan.', { qty: l.quantity || '0', unit: l.unit })}
+                help={t('Total yang dibayar. Satu catatan, tanpa jumlah dan satuan.')}
                 error={e.amount ? t(e.amount) : null}
               />
             </View>
@@ -179,16 +150,7 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
           <Button icon="plus" label={t('Tambah barang')} onPress={() => setLines((ls) => [...ls, emptyLine(ls[ls.length - 1]?.category)])} />
         ) : null}
 
-        <Label>{t('Uang dari')}</Label>
-        <View className="flex-row gap-2">
-          <Chip grow label={t('Kas laci')} selected={paidFrom === 'drawer'} onPress={() => setPaidFrom('drawer')} />
-          <Chip grow label={t('Bukan dari laci')} selected={paidFrom === 'other'} onPress={() => setPaidFrom('other')} />
-        </View>
-        <Text className="text-[14px] text-mute">
-          {paidFrom === 'drawer'
-            ? t('Mengurangi kas seharusnya di shift ini sekarang juga.')
-            : t('Misalnya dibayar pemilik atau transfer. Kas laci tidak berubah.')}
-        </Text>
+        <Text className="text-[14px] text-mute">{t('Dari kas laci. Mengurangi kas seharusnya di shift ini sekarang juga.')}</Text>
         <View
           accessibilityLiveRegion="polite"
           className="flex-row items-center justify-between rounded-k px-3.5 py-3"

@@ -707,6 +707,8 @@ export const EN: Record<string, string | [string, string]> = {
   'Barang {n}': 'Item {n}',
   'Hapus barang {n}': 'Remove item {n}',
   'Nama barang atau biaya': 'Item or cost name',
+  'Catatan: yang dibeli atau dibayar': 'Note: what was bought or paid',
+  'Total yang dibayar. Satu catatan, tanpa jumlah dan satuan.': 'Total paid. One note, no quantity or unit.',
   'Gula pasir, galon, listrik': 'Sugar, water gallon, electricity',
   Belanja: 'Supplies',
   Operasional: 'Operating',
@@ -718,6 +720,7 @@ export const EN: Record<string, string | [string, string]> = {
   'Kas laci': 'Cash drawer',
   'Bukan dari laci': 'Not from the drawer',
   'Mengurangi kas seharusnya di shift ini sekarang juga.': 'Lowers the expected cash of this shift right away.',
+  'Dari kas laci. Mengurangi kas seharusnya di shift ini sekarang juga.': 'From the cash drawer. Lowers the expected cash of this shift right away.',
   'Misalnya dibayar pemilik atau transfer. Kas laci tidak berubah.': 'For example paid by the owner or by transfer. The drawer does not change.',
   'Total pengeluaran': 'Total expense',
   'Langsung masuk laporan shift ini tanpa persetujuan. Pemilik bisa mengubahnya di backoffice. Tanpa internet, disimpan dulu di perangkat.':

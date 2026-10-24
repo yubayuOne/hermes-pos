@@ -6,10 +6,9 @@ import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { Pagination } from '../../components/Pagination';
 import { Stat } from '../../components/Stat';
-import type { DayShift, Expense, ExpenseItem, ExpenseStockLink } from '../../lib/types';
+import type { DayShift, Expense, ExpenseItem } from '../../lib/types';
 import { describeError } from '../../lib/errors';
-import { StockLinkDialog } from '../../components/StockLinkDialog';
-import { addExpenseItems, cancelExpenseItem, listExpenses, listExpenseStockLinks } from '../../server/expenses';
+import { addExpenseItems, cancelExpenseItem, listExpenses } from '../../server/expenses';
 import { getDay } from '../../server/closing';
 import { OutletField } from '../../components/Filters';
 import { EXPENSE_UNITS, expenseCancelSchema, expenseItemSchema } from '../../lib/schemas';
@@ -167,16 +166,6 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
   const tz = useApp().business.timezone;
   const [cancelling, setCancelling] = useState<ExpenseItem | null>(null);
   const [adding, setAdding] = useState(false);
-  const [stocking, setStocking] = useState(false);
-  const [links, setLinks] = useState<ExpenseStockLink[]>([]);
-  const [linkTick, setLinkTick] = useState(0);
-  const hasBelanja = e.items.some((i) => i.category === 'belanja');
-  useEffect(() => {
-    if (hasBelanja) listExpenseStockLinks({ data: { expenseId: e.id } }).then(setLinks, () => setLinks([]));
-  }, [e.id, hasBelanja, linkTick]);
-  // Only a link whose purchase is still active counts; a cancelled purchase frees the item again.
-  const linked = (id: string) => links.find((l) => l.expenseItemId === id && l.active);
-  const unlinked = e.items.filter((i) => i.category === 'belanja' && !linked(i.id));
   return (
     <Card as="article" aria-label={t('Pengeluaran shift {n}, {amount}', { n: e.shiftNumber, amount: money(e.total) })}>
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -227,17 +216,6 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                     {money(i.amount)}
                   </td>
                   <td data-l="" className="text-right">
-                    {i.category === 'belanja' &&
-                      (linked(i.id) ? (
-                        <Tag tone="pine">
-                          {t('Sudah masuk stok')}: {linked(i.id)?.ingredientName}
-                        </Tag>
-                      ) : (
-                        <Button sm onClick={() => setStocking(true)} {...lock.props}>
-                          {t('Masuk stok')}
-                          <span className="sr-only"> {i.name}</span>
-                        </Button>
-                      ))}{' '}
                     <Button sm onClick={() => setCancelling(i)} {...lock.props}>
                       {t('Batalkan')}
                       <span className="sr-only"> {i.name}</span>
@@ -262,16 +240,6 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
         </ul>
       )}
       {cancelling && <CancelDialog expense={e} item={cancelling} onClose={() => setCancelling(null)} />}
-      {stocking && (
-        <StockLinkDialog
-          outletId={e.outletId}
-          items={unlinked}
-          onClose={() => {
-            setStocking(false);
-            setLinkTick((n) => n + 1);
-          }}
-        />
-      )}
       {adding && <AddDialog shift={{ id: e.shiftId, number: e.shiftNumber }} onClose={() => setAdding(false)} />}
     </Card>
   );
