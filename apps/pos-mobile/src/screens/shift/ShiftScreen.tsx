@@ -175,6 +175,8 @@ export function ShiftScreen({
   const cacheKey = `${session?.cashierId ?? '-'}|${shift?.id ?? '-'}`;
   const snap = shiftCache.get(cacheKey);
   const [report, setReport] = useState<SalesReport | null>(snap?.report ?? null);
+  // QRIS on the server plus what this phone still has to send: the figure the merchant app total should match.
+  const qrisSystem = (report?.qrisRevenue ?? 0) + pendingQris;
   const [cash, setCash] = useState<Cash | null>(snap?.cash ?? null);
   const [dash, setDash] = useState<DashboardSummary | null>(snap?.dash ?? null);
   const [today, setToday] = useState<Shift[]>(snap?.today ?? []);
@@ -416,7 +418,7 @@ export function ShiftScreen({
       <SlipRow left={t('Kas awal (modal)')} right={money(openingCash)} />
       <SlipRow left={t('Penjualan tunai')} right={money(cashSales)} />
       <SlipRow left={t('Kas keluar (refund, pengeluaran)')} right={`-${money(cash?.cashOut ?? 0)}`} />
-      <SlipBand tone="pineSoft" left={t('Total cash')} right={money(expectedCash)} />
+      <SlipBand tone="pineSoft" left={t('Seharusnya di laci')} right={money(expectedCash)} />
       {pendingDrawer !== 0 ? (
         <>
           <SlipRow sub left={t('Belum terkirim (tunai)')} right={`${pendingDrawer > 0 ? '+' : '-'}${money(Math.abs(pendingDrawer))}`} />
@@ -432,7 +434,7 @@ export function ShiftScreen({
         <Banner
           tone="error"
           title={t('Shift ini dibuka di HP lain.')}
-          message={t('Jualan dan tutup shift hanya bisa di HP itu. Pemilik bisa memindahkannya ke HP ini.')}
+          message={t('Hanya di HP itu.')}
         >
           <ButtonRow>
             <Button size="sm" variant="danger" label={t('Pindahkan ke HP ini')} onPress={() => setTakeOver(true)} />
@@ -443,7 +445,7 @@ export function ShiftScreen({
         <Banner
           tone="slip"
           title={t('Offline: angka terakhir yang dimuat')}
-          message={t('Penjualan offline belum masuk ke angka ini. Tutup shift butuh internet.')}
+          message={t('Belum termasuk penjualan offline.')}
         />
       ) : null}
       {pendingSales.length ? (
@@ -618,7 +620,7 @@ export function ShiftScreen({
           <Text className="mt-2 text-[14px] text-mute">{t('Belum ada pengeluaran di shift ini.')}</Text>
         )}
         {queuedExpenses.length ? (
-          <Text className="mt-2 text-[13px] text-mute">{t('Yang belum terkirim masuk laporan dan kas setelah internet kembali.')}</Text>
+          <Text className="mt-2 text-[13px] text-mute">{t('Belum terkirim.')}</Text>
         ) : null}
       </Card>
       <Card>
@@ -745,10 +747,19 @@ export function ShiftScreen({
             onChange={setCounted}
             second={askQris ? { label: t('QRIS di aplikasi merchant'), value: qris, onChange: setQris } : undefined}
           />
+          {/* The QRIS the system has for this shift, so the cashier checks the merchant app's total right here. */}
           {askQris ? (
-            <Text className="text-[13px] text-mute">{t('Lihat total QRIS shift ini di aplikasi merchant.')}</Text>
+            <Slip torn={false}>
+              <SlipRow left={t('QRIS tercatat di sistem')} right={money(qrisSystem)} />
+              {qris !== '' ? (
+                <SlipBand
+                  tone={Number(qris) === qrisSystem ? 'pineSoft' : 'error'}
+                  left={t('Selisih QRIS')}
+                  right={money(Number(qris) - qrisSystem)}
+                />
+              ) : null}
+            </Slip>
           ) : null}
-          <Text className="text-[13px] text-mute">{t('Server menghitung selisih setelah shift ditutup. Perlu internet.')}</Text>
         </SheetBody>
         <ActionFooter>
           <ButtonRow>

@@ -9,6 +9,7 @@ import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination, pageOf } from '../../components/Pagination';
 import { useApp, useLock } from '../../lib/app';
+import { groupRupiah } from '../../lib/purchase';
 import { categorySchema, productSchema } from '../../lib/schemas';
 import type { Category, Product, ProductSale } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
@@ -259,7 +260,7 @@ function ProductDialog({
       outletId,
       categoryId: v.categoryId || null,
       name: v.name,
-      price: v.price === '' ? NaN : Number(v.price),
+      price: v.price === '' ? NaN : Number(v.price.replace(/\./g, '')),
       // A recipe product's HPP comes from the recipe and often has decimals the schema refuses; the database ignores it.
       hpp: fromRecipe ? 0 : Number(v.hpp || 0),
       trackStock: v.trackStock,
@@ -313,7 +314,7 @@ function ProductDialog({
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t('Harga jual (Rp)')} error={f.errors.price && t(f.errors.price)}>
-              <Input inputMode="numeric" className="font-mono" value={f.values.price} onChange={(e) => f.set('price', e.target.value.replace(/\D/g, ''))} />
+              <Input inputMode="numeric" className="font-mono" value={f.values.price} onChange={(e) => f.set('price', groupRupiah(e.target.value))} />
             </Field>
             {product && fromRecipe ? (
               <div className="fld">

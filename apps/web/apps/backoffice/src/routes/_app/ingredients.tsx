@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button, Chip, Dialog, Empty, Field, FormAlert, Input, Tag, dateShort, decimal, money, useI18n } from '@hermes-pos/ui';
 import { CountDialog } from '../../components/CountDialog';
 import { IngredientDialog } from '../../components/IngredientDialog';
@@ -17,6 +17,7 @@ import { useAction } from '../../lib/useAction';
 import { cancelPurchase, deleteIngredient, getRecipe, listIngredients, listPurchases, saveRecipe } from '../../server/ingredients';
 import { listCatalog } from '../../server/manage';
 import { pageHead } from '../../lang';
+import { ReasonChips } from '../../components/ReasonChips';
 
 type Search = { outlet?: string; tab?: 'resep' | 'belanja'; product?: string; page?: number };
 /** Purchases per page, as the server sends them (owner_list_purchases). */
@@ -136,7 +137,9 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
       {items.some((i) => !i.stockStarted) && <p className="mt-4">{t('Hitung stok sekali untuk memulai stok bahan.')}</p>}
       {items.length === 0 ? (
         <Empty className="mt-6" title={t('Belum ada bahan.')}>
-          {t('Tambah bahan pertama di sini, atau buat langsung dari resep sebuah menu di tab Resep.')}
+          <Button variant="fire" onClick={() => setEditing('new')}>
+            {t('Tambah bahan')}
+          </Button>
         </Empty>
       ) : (
         <div className="tbl-wrap mt-5">
@@ -240,7 +243,9 @@ function RecipeList({ menus, onOpen }: { menus: Product[]; onOpen: (id: string) 
   if (menus.length === 0)
     return (
       <Empty className="mt-6" title={t('Belum ada menu.')}>
-        {t('Tambah menu di halaman Produk, lalu atur resepnya di sini.')}
+        <Link to="/products" className="btn btn-ink btn-sm">
+          {t('Buka Produk')}
+        </Link>
       </Empty>
     );
   return (
@@ -402,7 +407,9 @@ function PurchaseList({
       )}
       {purchases.rows.length === 0 ? (
         <Empty className="mt-6" title={t('Belum ada belanja.')}>
-          {t('Catat belanja bahan supaya stok dan harga rata-rata ikut berjalan.')}
+          <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
+            {lock.label(t('Catat belanja'))}
+          </Button>
         </Empty>
       ) : (
         <div className="tbl-wrap mt-5">
@@ -519,6 +526,7 @@ function PurchaseDetail({ purchase, onClose }: { purchase: Purchase; onClose: ()
       </p>
       {cancelling && (
         <form id="purchase-cancel" noValidate onSubmit={cancel} className="mt-4 grid gap-3">
+          <ReasonChips options={['Salah catat', 'Dibatalkan pemasok', 'Harga salah']} onPick={setReason} />
           <Field label={t('Alasan pembatalan')}>
             <Input
               autoFocus

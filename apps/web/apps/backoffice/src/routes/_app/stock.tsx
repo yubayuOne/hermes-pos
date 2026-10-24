@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button, Card, Chip, Dialog, Empty, Field, FormAlert, Input, Select, Tag, amount, dateShort, isoDay, money, time, useI18n } from '@hermes-pos/ui';
 import { OutletField } from '../../components/Filters';
 import { Page } from '../../components/Page';
@@ -39,8 +39,8 @@ export const Route = createFileRoute('/_app/stock')({
     return { outletId, today, range, items: await listStock({ data: { outletId } }), docs: null };
   },
   pendingMs: 150,
-  pendingComponent: () => <PageLoading title="Stok|menu" />,
-  head: ({ match }) => pageHead(match.context.lang, 'Stok|menu'),
+  pendingComponent: () => <PageLoading title="Stok produk|menu" />,
+  head: ({ match }) => pageHead(match.context.lang, 'Stok produk|menu'),
   component: Stock,
 });
 
@@ -57,7 +57,7 @@ function Stock() {
   const set = (patch: Partial<Search>) => navigate({ search: (s: Search) => ({ ...s, ...patch }), replace: true });
   const [kind, setKind] = useState<Kind | null>(null);
   return (
-    <Page title={t('Stok|menu')}>
+    <Page title={t('Stok produk|menu')}>
       <nav aria-label={t('Bagian stok')} className="flex flex-wrap gap-2">
         <Chip aria-current={search.tab ? undefined : 'page'} onClick={() => set({ tab: undefined, page: undefined })}>
           {t('Stok sekarang')}
@@ -79,7 +79,9 @@ function Stock() {
         <History docs={data.docs?.rows ?? []} total={data.docs?.total ?? 0} set={set} />
       ) : data.items.length === 0 ? (
         <Empty className="mt-6" title={t('Belum ada produk yang stoknya dilacak.')}>
-          {t('Aktifkan Lacak stok di menu Produk.')}
+          <Link to="/products" className="btn btn-ink btn-sm">
+            {t('Buka Produk')}
+          </Link>
         </Empty>
       ) : (
         <>

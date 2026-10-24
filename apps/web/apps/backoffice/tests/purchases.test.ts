@@ -194,3 +194,12 @@ test('every usability text is translated', async () => {
   const { EN } = await import('../src/dict.ts');
   assert.deepEqual(USABILITY_TEXTS.filter((k) => !(k in EN)), []);
 });
+
+test('groupRupiah: typed whole rupiah groups with dots', async () => {
+  const { groupRupiah } = await import('../src/lib/purchase.ts');
+  assert.equal(groupRupiah('18000'), '18.000');
+  assert.equal(groupRupiah('1000000'), '1.000.000');
+  assert.equal(groupRupiah('0012'), '12');
+  assert.equal(groupRupiah(''), '');
+  assert.equal(groupRupiah('1a8.0'), '180');
+});

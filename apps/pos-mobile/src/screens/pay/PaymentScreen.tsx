@@ -397,7 +397,7 @@ export function PaymentScreen({
                   </ButtonRow>
                 ) : null}
               </View>
-              <Text className="mt-2 text-[13px] text-mute">{t('Cetak tidak wajib. Printer yang gagal tidak membatalkan pembayaran.')}</Text>
+              <Text className="mt-2 text-[13px] text-mute">{t('Opsional')}</Text>
             </View>
             <View style={wide ? { flex: 1 } : { marginTop: 16 }}>
               <ReceiptView data={done.receipt} totalBand={false} />
@@ -464,7 +464,7 @@ export function PaymentScreen({
       ) : (
         <View className="rounded-k border-k border-ink bg-fireSoft px-3.5 py-3">
           <Text className="font-body-600 text-[15px]">{t('Nominal QRIS: {amount}', { amount: money(total) })}</Text>
-          <Text className="mt-1 text-[14px] text-mute">{t('Pastikan pembayaran QRIS berhasil diterima sebelum mencatat transaksi.')}</Text>
+          <Text className="mt-1 text-[14px] text-mute">{t('Cek QRIS masuk dulu.')}</Text>
         </View>
       )}
     </View>

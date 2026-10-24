@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Dialog, Field, FormAlert, Input, Select, money, useI18n } from '@hermes-pos/ui';
 import { describeError } from '../lib/errors';
+import { groupRupiah } from '../lib/purchase';
 import { ingredientSchema } from '../lib/schemas';
 import type { Ingredient, IngredientImpact } from '../lib/types';
 import { UNITS, UNIT_LABEL, type Unit, packSentence, sameFamilyUnits } from '../lib/units';
@@ -49,7 +50,7 @@ export function IngredientDialog({
       id: ingredient?.id ?? null,
       outletId,
       name: v.name,
-      price: priceLocked ? ingredient.price : v.price === '' ? Number.NaN : Number(v.price),
+      price: priceLocked ? ingredient.price : v.price === '' ? Number.NaN : Number(v.price.replace(/\./g, '')),
       packQty: toNumber(v.packQty),
       packUnit: v.packUnit,
       packLabel: v.packLabel,
@@ -124,7 +125,7 @@ export function IngredientDialog({
                 className="font-mono"
                 readOnly={priceLocked}
                 value={f.values.price}
-                onChange={(e) => f.set('price', e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => f.set('price', groupRupiah(e.target.value))}
               />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">

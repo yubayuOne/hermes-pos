@@ -536,6 +536,7 @@ export const EN: Dict = {
   'Produk yang dibuat di sini langsung muncul di aplikasi kasir outlet ini.': 'Products created here appear right away in this outlet’s cashier app.',
   'Tidak ada produk yang cocok. Ubah pencarian atau kategori.': 'No matching products. Change the search or category.',
   Harga: 'Price',
+  'Stok produk': 'Product stock',
   Stok: 'Stock',
   'Tanpa kategori': 'No category',
   'tanpa stok': 'not tracked',
@@ -1092,7 +1093,7 @@ export const EN: Dict = {
   'Pilih kategori.': 'Choose a category.',
   'Pilih satuan.': 'Choose a unit.',
   // Stock (migration 074)
-  'Stok|menu': 'Stock',
+  'Stok produk|menu': 'Product stock',
   'Bagian stok': 'Stock sections',
   'Stok sekarang': 'Current stock',
   Riwayat: 'History',
@@ -1319,4 +1320,15 @@ export const EN: Dict = {
   'Isi bahan di setiap baris.': 'Choose an ingredient on every row.',
   'Jumlah dalam nama kemasan bahan. Isi total bayar atau harga per kemasan, yang lain terhitung sendiri.': 'Amounts are in each ingredient\'s pack name. Fill the total paid or the price per pack; the other is worked out.',
   'Isi tanggal belanja.': 'Enter the purchase date.',
+  // Quick reasons and empty-state links (usability pass)
+  'Pilihan alasan': 'Reason options',
+  'Salah catat': 'Wrong entry',
+  'Dicatat dua kali': 'Recorded twice',
+  'Nominal salah': 'Wrong amount',
+  'Dibatalkan pemasok': 'Cancelled by the supplier',
+  'Harga salah': 'Wrong price',
+  'Buka Produk': 'Open Products',
+  'Salah input': 'Wrong input',
+  'Pelanggan batal': 'Customer cancelled',
+  'Pelanggan ganti menu': 'Customer changed the order',
 };

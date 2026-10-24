@@ -35,6 +35,7 @@ import { billCorrectionSchema } from '../../lib/schemas';
 import { listCatalog } from '../../server/manage';
 import { listProductSales } from '../../server/summary';
 import { pageHead } from '../../lang';
+import { ReasonChips } from '../../components/ReasonChips';
 
 const STATUSES = [
   { value: 'completed', label: 'Selesai' },
@@ -462,6 +463,7 @@ function VoidDialog({ bill: b, onClose, onBack }: EditProps) {
     >
       <form id="bill-edit" noValidate onSubmit={save} className="grid gap-4">
         <PastNote bill={b} />
+        <ReasonChips options={['Salah input', 'Pelanggan batal']} onPick={setReason} />
         <Field label={t('Alasan')}>
           <Textarea autoFocus rows={3} maxLength={200} value={reason} onChange={(e) => setReason(e.target.value)} />
         </Field>
@@ -575,6 +577,7 @@ function CorrectDialog({ bill: b, items, onClose, onBack }: EditProps & { items:
             <Input maxLength={6} value={table} onChange={(e) => setTable(e.target.value)} />
           </Field>
         </div>
+        <ReasonChips options={['Salah input', 'Pelanggan ganti menu']} onPick={setReason} />
         <Field label={t('Alasan koreksi')}>
           <Input maxLength={200} value={reason} onChange={(e) => setReason(e.target.value)} />
         </Field>

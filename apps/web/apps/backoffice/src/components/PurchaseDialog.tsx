@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, Dialog, Field, FormAlert, Input, Select, isoDay, money, useI18n } from '@hermes-pos/ui';
 import { useApp } from '../lib/app';
-import { pairFromTotal, pairFromUnit, parseRupiah } from '../lib/purchase';
+import { groupRupiah, pairFromTotal, pairFromUnit, parseRupiah } from '../lib/purchase';
 import { purchaseSchema } from '../lib/schemas';
 import type { Ingredient } from '../lib/types';
 import { useAction } from '../lib/useAction';
@@ -107,7 +107,7 @@ export function PurchaseDialog({ outletId, ingredients, onClose }: { outletId: s
                       <Input inputMode="decimal" className="font-mono" value={r.packs} onChange={(e) => edit(r, { packs: digits(e.target.value, 10) })} />
                     </Field>
                     <Field label={t('Total bayar (Rp)')}>
-                      <Input inputMode="numeric" className="font-mono" value={r.total} onChange={(e) => edit(r, { total: e.target.value.replace(/[^\d.]/g, '').slice(0, 13), src: 'total' })} />
+                      <Input inputMode="numeric" className="font-mono" value={r.total} onChange={(e) => edit(r, { total: groupRupiah(e.target.value).slice(0, 13), src: 'total' })} />
                     </Field>
                     <Field label={t('Harga per {pack} (Rp)', { pack })}>
                       <Input inputMode="decimal" className="font-mono" value={r.unit} onChange={(e) => edit(r, { unit: digits(e.target.value, 13), src: 'unit' })} />

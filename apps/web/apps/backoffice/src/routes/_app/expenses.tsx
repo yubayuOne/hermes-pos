@@ -17,6 +17,7 @@ import { useAction } from '../../lib/useAction';
 import { pageHead } from '../../lang';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
+import { ReasonChips } from '../../components/ReasonChips';
 
 type Search = PeriodSearch & { outlet?: string };
 
@@ -285,6 +286,7 @@ function CancelDialog({ expense: e, item: i, onClose }: { expense: Expense; item
       }
     >
       <form id="cancel-expense" noValidate onSubmit={save} className="grid gap-4">
+        <ReasonChips options={['Salah catat', 'Dicatat dua kali', 'Nominal salah']} onPick={setReason} />
         <Field label={t('Alasan')} help={t('Contoh: dicatat dua kali, nominal salah (catat ulang yang benar dengan Tambah barang).')}>
           <Input autoFocus maxLength={200} value={reason} onChange={(ev) => setReason(ev.target.value)} />
         </Field>

@@ -27,3 +27,9 @@ export function parseCount(s: string): number | null {
   const n = parseRupiah(s, true);
   return n !== null && Math.round(n * 1000) / 1000 === n ? n : null;
 }
+
+/** Whole rupiah as typed, grouped with dots while typing: "18000" -> "18.000". Digits only; decimals are never typed here. */
+export function groupRupiah(s: string): string {
+  const d = s.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+  return d.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
