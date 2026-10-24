@@ -33,7 +33,7 @@ export function FilterBar({
         {search && <div className="min-w-[180px] flex-1 md:max-w-[360px]">{search}</div>}
         {outlet}
         {children && (
-          <Button onClick={() => setOpen(true)} aria-haspopup="dialog">
+          <Button onClick={() => setOpen(true)} aria-haspopup="dialog" className="flex-none">
             {t('Filter')}
             {active > 0 && (
               <span
