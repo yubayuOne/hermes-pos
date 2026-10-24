@@ -69,6 +69,16 @@ function IngredientsAndRecipes() {
           {t('Belanja')}
         </Chip>
       </nav>
+      {!search.product && (
+        <details className="mt-4">
+          <summary className="cursor-pointer font-semibold">{t('Cara pakai')}</summary>
+          <ol className="mt-2 list-decimal pl-6">
+            <li>{t('Catat belanja di tab Belanja saat belanja dengan uang di luar laci.')}</li>
+            <li>{t('Hitung stok sekali di tab Bahan untuk memulai stok, lalu hitung lagi kapan saja.')}</li>
+            <li>{t('Harga bahan naik? Catat belanja barunya, jangan diketik langsung.')}</li>
+          </ol>
+        </details>
+      )}
       {search.product ? (
         data.product && data.outletId ? (
           <RecipePage key={data.product.id} outletId={data.outletId} product={data.product} recipe={data.recipe} onBack={() => set({ product: undefined })} />
@@ -123,6 +133,7 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
           )}
         </div>
       )}
+      {items.some((i) => !i.stockStarted) && <p className="mt-4">{t('Hitung stok sekali untuk memulai stok bahan.')}</p>}
       {items.length === 0 ? (
         <Empty className="mt-6" title={t('Belum ada bahan.')}>
           {t('Tambah bahan pertama di sini, atau buat langsung dari resep sebuah menu di tab Resep.')}
@@ -139,10 +150,6 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
                 <th scope="col" className="num">
                   {t('Harga rata-rata')}
                 </th>
-                <th scope="col">{t('Terakhir dihitung')}</th>
-                <th scope="col" className="num">
-                  {t('Dipakai di')}
-                </th>
                 <th scope="col">
                   <span className="sr-only">{t('Aksi')}</span>
                 </th>
@@ -151,25 +158,28 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
             <tbody>
               {items.map((i) => (
                 <tr key={i.id}>
-                  <td data-l={t('Bahan')} className="font-semibold">
-                    {i.name}
+                  <td data-l={t('Bahan')}>
+                    <span className="font-semibold">{i.name}</span>
+                    <details className="text-[14px] text-mute">
+                      <summary className="cursor-pointer">{t('Lihat detail')}</summary>
+                      <p>
+                        {t('Terakhir dihitung')}: {i.lastCountedAt ? dateShort(i.lastCountedAt, lang) : t('belum pernah')}
+                      </p>
+                      <p>
+                        {t('Dipakai di')}: {i.usedBy === 0 ? t('belum dipakai') : t('{n} menu', { n: i.usedBy })}
+                      </p>
+                    </details>
                   </td>
                   <td data-l={t('Stok')} className="num">
                     {i.stockStarted ? (
                       <span className={i.stock < 0 ? 'font-semibold text-error' : undefined}>{stockText(i.stock, i.baseUnit, lang)}</span>
                     ) : (
-                      <span className="text-mute">{t('Belum dihitung')}</span>
+                      <span className="text-mute">{t('Belum ada stok')}</span>
                     )}
                   </td>
                   <td data-l={t('Harga rata-rata')} className="num">
                     {money(i.price)} / {i.packLabel || t('kemasan')}
                     <span className="block text-[14px] text-mute">{unitCostText(i, lang)}</span>
-                  </td>
-                  <td data-l={t('Terakhir dihitung')}>
-                    {i.lastCountedAt ? dateShort(i.lastCountedAt, lang) : <span className="text-mute">{t('belum pernah')}</span>}
-                  </td>
-                  <td data-l={t('Dipakai di')} className="num">
-                    {i.usedBy === 0 ? <span className="text-mute">{t('belum dipakai')}</span> : t('{n} menu', { n: i.usedBy })}
                   </td>
                   <td data-l={t('Aksi')}>
                     <div className="flex flex-wrap gap-2">
@@ -243,7 +253,7 @@ function RecipeList({ menus, onOpen }: { menus: Product[]; onOpen: (id: string) 
               {t('Harga jual')}
             </th>
             <th scope="col" className="num">
-              HPP
+              {t('Modal (HPP)')}
             </th>
             <th scope="col" className="num">
               {t('Untung per porsi')}
@@ -267,7 +277,7 @@ function RecipeList({ menus, onOpen }: { menus: Product[]; onOpen: (id: string) 
                 <td data-l={t('Harga jual')} className="num">
                   {money(p.price)}
                 </td>
-                <td data-l="HPP" className="num">
+                <td data-l={t('Modal (HPP)')} className="num">
                   {money(p.hpp)}
                 </td>
                 <td data-l={t('Untung per porsi')} className="num">
@@ -382,6 +392,7 @@ function PurchaseList({
   const [viewing, setViewing] = useState<Purchase | null>(null);
   return (
     <>
+      <p className="mt-4">{t('Belanja dengan uang di luar laci. Uang laci dicatat kasir di Pengeluaran.')}</p>
       {outletId && (
         <div className="mt-4">
           <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>

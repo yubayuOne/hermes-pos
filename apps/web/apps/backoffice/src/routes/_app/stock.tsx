@@ -115,7 +115,7 @@ function StockTable({ items }: { items: StockItem[] }) {
               {t('Stok')}
             </th>
             <th scope="col" className="num">
-              {t('Nilai (HPP)')}
+              {t('Modal (HPP)')}
             </th>
             <th scope="col">{t('Hitung terakhir')}</th>
           </tr>
@@ -133,7 +133,7 @@ function StockTable({ items }: { items: StockItem[] }) {
               <td data-l={t('Stok')} className="num">
                 {amount(p.stock)}
               </td>
-              <td data-l={t('Nilai (HPP)')} className="num">
+              <td data-l={t('Modal (HPP)')} className="num">
                 {money(p.value)}
               </td>
               <td data-l={t('Hitung terakhir')} className="text-[15px]">

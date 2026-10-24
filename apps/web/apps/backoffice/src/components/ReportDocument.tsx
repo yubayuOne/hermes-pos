@@ -551,7 +551,7 @@ export function ReportDocument({
                     {t('Penjualan')}
                   </th>
                   <th scope="col" className="n">
-                    HPP
+                    {t('Modal (HPP)')}
                   </th>
                   <th scope="col" className="n">
                     {t('Laba kotor')}

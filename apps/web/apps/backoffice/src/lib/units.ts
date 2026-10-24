@@ -7,6 +7,10 @@ export const sameFamilyUnits = (pack: Unit): Unit[] => [...(FAMILIES.find((f) =>
 
 export const UNIT_LABEL: Record<Unit, string> = { g: 'gram (g)', kg: 'kilogram (kg)', ml: 'mililiter (ml)', l: 'liter (l)', pcs: 'pcs' };
 
+/** "Satu kemasan = 370 g" (`lead` is the translated first words); null while the pack size is empty or not a positive number. */
+export const packSentence = (qty: number, unit: Unit, lead = 'Satu kemasan'): string | null =>
+  Number.isFinite(qty) && qty > 0 ? `${lead} = ${qty} ${unit}` : null;
+
 /** Stock in its base unit, easy to read: 1000 g and up shows as kg, 1000 ml and up as l; negative stays plain ("-300 ml"). */
 export function stockText(base: number, baseUnit: Unit, lang: 'id' | 'en' = 'id'): string {
   const big = Math.abs(base) >= 1000 && (baseUnit === 'g' || baseUnit === 'ml');

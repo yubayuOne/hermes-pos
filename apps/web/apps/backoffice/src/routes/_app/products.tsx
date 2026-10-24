@@ -152,7 +152,7 @@ function Products() {
                   {t('Harga')}
                 </th>
                 <th scope="col" className="num">
-                  HPP
+                  {t('Modal (HPP)')}
                 </th>
                 <th scope="col" className="num">
                   {t('Stok')}
@@ -182,7 +182,7 @@ function Products() {
                   <td data-l={t('Harga')} className="num">
                     {money(p.price)}
                   </td>
-                  <td data-l="HPP" className="num">
+                  <td data-l={t('Modal (HPP)')} className="num">
                     {money(p.hpp)}
                     {p.hppSource === 'recipe' && (
                       <Tag tone="pine" className="ml-2 font-sans">

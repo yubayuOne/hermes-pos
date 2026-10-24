@@ -191,7 +191,6 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
               <tr>
                 <th scope="col">{t('Barang atau biaya')}</th>
                 <th scope="col">{t('Kategori')}</th>
-                <th scope="col">{t('Uang dari')}</th>
                 <th scope="col" className="num">
                   {t('Jumlah|barang')}
                 </th>
@@ -206,9 +205,16 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
             <tbody>
               {e.items.map((i) => (
                 <tr key={i.id}>
-                  <td data-l={t('Barang atau biaya')}>{i.name}</td>
+                  <td data-l={t('Barang atau biaya')}>
+                    {i.name}
+                    <details className="text-[14px] text-mute">
+                      <summary className="cursor-pointer">{t('Lihat detail')}</summary>
+                      <p>
+                        {t('Uang dari')}: {t(PAID_FROM[i.paidFrom])}
+                      </p>
+                    </details>
+                  </td>
                   <td data-l={t('Kategori')}>{t(CATEGORY[i.category])}</td>
-                  <td data-l={t('Uang dari')}>{t(PAID_FROM[i.paidFrom])}</td>
                   <td data-l={t('Jumlah|barang')} className="num">
                     {qty(i.quantity)} {i.unit}
                   </td>

@@ -3,7 +3,7 @@ import { Button, Dialog, Field, FormAlert, Input, Select, money, useI18n } from 
 import { describeError } from '../lib/errors';
 import { ingredientSchema } from '../lib/schemas';
 import type { Ingredient, IngredientImpact } from '../lib/types';
-import { UNITS, UNIT_LABEL, type Unit, sameFamilyUnits } from '../lib/units';
+import { UNITS, UNIT_LABEL, type Unit, packSentence, sameFamilyUnits } from '../lib/units';
 import { useAction } from '../lib/useAction';
 import { useForm } from '../lib/useForm';
 import { previewIngredient, saveIngredient } from '../server/ingredients';
@@ -39,6 +39,8 @@ export function IngredientDialog({
   const priceLocked = ingredient?.stockStarted === true;
   // A used ingredient keeps its unit family: the recipes that use it are written in that family.
   const units = ingredient && ingredient.usedBy > 0 ? sameFamilyUnits(ingredient.packUnit) : [...UNITS];
+
+  const packText = packSentence(toNumber(f.values.packQty), f.values.packUnit as Unit, t('Satu kemasan'));
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -144,6 +146,8 @@ export function IngredientDialog({
                 </Select>
               </Field>
             </div>
+            <p className="-mt-2 text-[15px] text-mute">{t('Isi satu kemasan, dalam satuan di sebelahnya. Contoh: 1 kaleng = 370 g, isi 370, satuan g.')}</p>
+            {packText && <p className="-mt-2 font-semibold">{packText}</p>}
             <Field label={t('Nama kemasan (opsional)')} error={f.errors.packLabel && t(f.errors.packLabel)} help={t('Contoh: kaleng, dus, botol.')}>
               <Input value={f.values.packLabel} maxLength={20} onChange={(e) => f.set('packLabel', e.target.value)} />
             </Field>

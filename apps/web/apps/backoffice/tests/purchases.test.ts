@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { countSchema, ingredientPreviewSchema, ingredientSchema, purchaseCancelSchema, purchaseListSchema, purchaseSchema } from '../src/lib/schemas.ts';
 import { parseCount } from '../src/lib/purchase.ts';
-import { stockText } from '../src/lib/units.ts';
+import { packSentence, stockText } from '../src/lib/units.ts';
 import { pairFromTotal, pairFromUnit, parseRupiah } from '../src/lib/purchase.ts';
 
 const outletId = '00000000-0000-4000-8000-000000000001';
@@ -172,4 +172,25 @@ test('purchase line: expenseItemId from the database, null when absent', async (
   assert.equal(expenseItemIdOf(undefined), null);
   const { EN } = await import('../src/dict.ts');
   assert.equal(EN['dari pengeluaran'], 'from expenses');
+});
+
+test('packSentence: one pack in words, nothing for an empty or invalid size', () => {
+  assert.equal(packSentence(370, 'g'), 'Satu kemasan = 370 g');
+  assert.equal(packSentence(1.5, 'l', 'One pack'), 'One pack = 1.5 l');
+  assert.equal(packSentence(0, 'g'), null);
+  assert.equal(packSentence(-2, 'g'), null);
+  assert.equal(packSentence(Number.NaN, 'g'), null);
+});
+
+const USABILITY_TEXTS = [
+  'Modal (HPP)', 'Lihat detail', 'Belum ada stok', 'Hitung stok sekali untuk memulai stok bahan.', 'Cara pakai',
+  'Catat belanja di tab Belanja saat belanja dengan uang di luar laci.',
+  'Hitung stok sekali di tab Bahan untuk memulai stok, lalu hitung lagi kapan saja.',
+  'Harga bahan naik? Catat belanja barunya, jangan diketik langsung.',
+  'Belanja dengan uang di luar laci. Uang laci dicatat kasir di Pengeluaran.',
+  'Isi satu kemasan, dalam satuan di sebelahnya. Contoh: 1 kaleng = 370 g, isi 370, satuan g.', 'Satu kemasan',
+];
+test('every usability text is translated', async () => {
+  const { EN } = await import('../src/dict.ts');
+  assert.deepEqual(USABILITY_TEXTS.filter((k) => !(k in EN)), []);
 });
