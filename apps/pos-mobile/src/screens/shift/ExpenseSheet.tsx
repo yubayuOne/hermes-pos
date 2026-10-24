@@ -103,6 +103,7 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
     >
       <SheetHeader title={t('Catat pengeluaran')} subtitle={t('Belanja bahan atau biaya operasional outlet.')} onClose={onClose} />
       <SheetBody contentClassName="gap-3.5 pb-8">
+        <Text className="text-[14px] text-mute">{t('Uang dari laci? Catat di sini. Belanja dengan uang lain? Catat di menu Belanja di BackOffice.')}</Text>
         {lines.map((l, i) => {
           const e = errors[i] ?? {};
           return (

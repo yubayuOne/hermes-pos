@@ -517,6 +517,7 @@ export function ShiftScreen({
           }}
         />
       </ButtonRow>
+      <Text className="text-[13px] text-mute">{t('Hitung uang di laci, lalu isi angkanya.')}</Text>
       <Button label={locked ? t('Terkunci: langganan berakhir') : t('Catat pengeluaran')} disabled={locked} onPress={() => setExpenseSheet(true)} />
       {blockers.length ? (
         <View className="rounded-k border-k border-ink bg-fireSoft px-3.5 py-3">

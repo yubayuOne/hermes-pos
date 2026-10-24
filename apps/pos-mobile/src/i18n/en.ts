@@ -703,6 +703,8 @@ export const EN: Record<string, string | [string, string]> = {
   'Tutup pengingat': 'Close reminder',
   // Expenses (migration 040)
   'Catat pengeluaran': 'Record expense',
+  'Uang dari laci? Catat di sini. Belanja dengan uang lain? Catat di menu Belanja di BackOffice.': 'Money from the drawer? Record it here. Paid with other money? Record it under Purchases in the BackOffice.',
+  'Hitung uang di laci, lalu isi angkanya.': 'Count the money in the drawer, then enter the amount.',
   'Belanja bahan atau biaya operasional outlet.': 'Supplies bought or operating costs of the outlet.',
   'Barang {n}': 'Item {n}',
   'Hapus barang {n}': 'Remove item {n}',
