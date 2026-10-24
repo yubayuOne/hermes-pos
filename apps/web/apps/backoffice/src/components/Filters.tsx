@@ -30,7 +30,7 @@ export function FilterBar({
   return (
     <div className="grid gap-2">
       <div className="flex flex-wrap items-center gap-3">
-        {search && <div className="min-w-[180px] flex-1 md:max-w-[360px]">{search}</div>}
+        {search && <div className="w-full md:w-auto md:min-w-[180px] md:max-w-[360px] md:flex-1">{search}</div>}
         {outlet}
         {children && (
           <Button onClick={() => setOpen(true)} aria-haspopup="dialog" className="flex-none">

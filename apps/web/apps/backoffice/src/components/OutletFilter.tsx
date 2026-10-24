@@ -6,7 +6,7 @@ export function OutletFilter({ value, onChange, all = true }: { value: string | 
   const app = useApp();
   const { t } = useI18n();
   return (
-    <Select aria-label="Outlet" className="w-full md:w-[220px]" value={value ?? ''} onChange={(e) => onChange(e.target.value || null)}>
+    <Select aria-label="Outlet" className="min-w-0 flex-1 md:w-[220px] md:flex-none" value={value ?? ''} onChange={(e) => onChange(e.target.value || null)}>
       {all && <option value="">{t('Semua outlet')}</option>}
       {app.outlets.map((o) => (
         <option key={o.id} value={o.id}>
