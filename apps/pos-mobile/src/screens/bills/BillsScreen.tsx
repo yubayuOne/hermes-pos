@@ -676,7 +676,7 @@ export function BillsScreen({
           }
           ListFooterComponent={
             rows.length ? (
-              <Mono className="py-3 text-center text-[13px] text-mute">{t('Menampilkan {n} dari {m} bill.', { n: rows.length, m: total })}</Mono>
+              <Mono className="py-3 text-center text-[14px] text-mute">{t('Menampilkan {n} dari {m} bill.', { n: rows.length, m: total })}</Mono>
             ) : null
           }
         />

@@ -146,7 +146,7 @@ export function TempItemCard({ onPress, disabled, minHeight }: { onPress: () => 
       })}
     >
       <Text className="font-body-700 text-[15px]">+ {t('Menu sementara')}</Text>
-      <Text className="mt-1 text-[13px] text-mute">{t('Sekali pakai, tidak masuk daftar produk')}</Text>
+      <Text className="mt-1 text-[14px] text-mute">{t('Sekali pakai, tidak masuk daftar produk')}</Text>
     </Tap>
   );
 }

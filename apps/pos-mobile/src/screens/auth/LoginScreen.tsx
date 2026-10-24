@@ -157,7 +157,7 @@ export function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
                 <SlipRow sub left={t('Terkirim otomatis saat sinyal kembali. Contoh tampilan.')} />
               </Slip>
             </View>
-            <Text className="text-[13px] text-mute">
+            <Text className="text-[14px] text-mute">
               {BRAND.appName} · Android · v{BRAND.version}
             </Text>
           </View>

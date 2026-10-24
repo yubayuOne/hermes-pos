@@ -92,7 +92,7 @@ export const TextField = forwardRef<TextInput, FieldProps>(function TextField(
           {error}
         </Text>
       ) : help ? (
-        <Text className="mt-1.5 text-[13px] text-mute">{help}</Text>
+        <Text className="mt-1.5 text-[14px] text-mute">{help}</Text>
       ) : null}
     </View>
   );
@@ -133,7 +133,7 @@ export function AmountBox({ label, value, active = true, compact }: { label: str
       className="flex-row items-center justify-between rounded-k bg-slip px-3.5"
       style={{ height: compact ? 54 : 64, borderWidth: 1.5, borderColor: colors.ink, ...(active ? { boxShadow: `inset 0 0 0 1.5px ${colors.fire}` } : null) }}
     >
-      <Mono className="text-[13px] text-mute">{label}</Mono>
+      <Mono className="text-[14px] text-mute">{label}</Mono>
       <Mono className="font-mono-600" style={{ fontSize: compact ? 24 : 28 }} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Mono>

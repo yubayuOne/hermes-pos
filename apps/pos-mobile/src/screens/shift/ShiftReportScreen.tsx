@@ -38,7 +38,7 @@ export function ShiftReportBody({ d }: { d: ShiftReportData }) {
             [t('Bill'), String(r.totalTransactions)],
           ].map(([l, v]) => (
             <View key={l} className="min-w-[30%] flex-1">
-              <Mono className="text-[13px] text-mute">{l}</Mono>
+              <Mono className="text-[14px] text-mute">{l}</Mono>
               <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
                 {v}
               </Mono>

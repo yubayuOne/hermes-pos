@@ -62,7 +62,7 @@ export function Tag({ label, tone = 'neutral', className = '' }: { label: string
   const s = TAG[tone];
   return (
     <View className={`self-start rounded-k px-2 ${className}`} style={{ borderWidth: 1.5, borderColor: s.border, backgroundColor: s.bg, paddingVertical: 1 }}>
-      <Mono numberOfLines={1} className="text-[13px]" style={{ color: s.text }}>
+      <Mono numberOfLines={1} className="text-[14px]" style={{ color: s.text }}>
         {label}
       </Mono>
     </View>
@@ -80,7 +80,7 @@ export function Card({ children, className = '', style, ...rest }: ViewProps & {
 
 /** Small mono label above a value or a group. */
 export function Label({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <Mono className={`text-[13px] text-mute ${className}`}>{children}</Mono>;
+  return <Mono className={`text-[14px] text-mute ${className}`}>{children}</Mono>;
 }
 
 export type BannerTone = 'fire' | 'error' | 'slip' | 'pine';
@@ -166,7 +166,7 @@ export function Tabs<K extends string>({
               {it.label}
             </Text>
             {it.count !== undefined ? (
-              <Mono className="text-[13px]" style={{ color: on ? colors.pineText : colors.mute }}>
+              <Mono className="text-[14px]" style={{ color: on ? colors.pineText : colors.mute }}>
                 {it.count}
               </Mono>
             ) : null}

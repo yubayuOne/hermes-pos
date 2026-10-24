@@ -397,7 +397,7 @@ export function PaymentScreen({
                   </ButtonRow>
                 ) : null}
               </View>
-              <Text className="mt-2 text-[13px] text-mute">{t('Opsional')}</Text>
+              <Text className="mt-2 text-[14px] text-mute">{t('Opsional')}</Text>
             </View>
             <View style={wide ? { flex: 1 } : { marginTop: 16 }}>
               <ReceiptView data={done.receipt} totalBand={false} />
@@ -417,7 +417,7 @@ export function PaymentScreen({
       {phoneLandscape ? null : (
         <>
           <View className="flex-row items-end justify-between">
-            <Mono className="text-[13px] text-mute">{t('Total tagihan')}</Mono>
+            <Mono className="text-[14px] text-mute">{t('Total tagihan')}</Mono>
             <Display size={40} className="ml-3 min-w-0 flex-1 text-right" numberOfLines={1} adjustsFontSizeToFit>
               {money(total)}
             </Display>
@@ -505,7 +505,7 @@ export function PaymentScreen({
           <Display size={phoneLandscape ? 22 : 27} accessibilityRole="header">
             {t('Pembayaran')}
           </Display>
-          <Mono numberOfLines={1} className="mt-0.5 text-[13px] text-mute">
+          <Mono numberOfLines={1} className="mt-0.5 text-[14px] text-mute">
             {sub}
           </Mono>
         </View>

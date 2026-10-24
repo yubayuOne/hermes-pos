@@ -159,7 +159,7 @@ export function RefundSheet({
                       <Text numberOfLines={2} className="font-body-600 text-[15px]">
                         {i.productName}
                       </Text>
-                      <Mono className="text-[13px] text-mute">{t('sisa {n} dari {m}', { n: left(i), m: i.quantity })}</Mono>
+                      <Mono className="text-[14px] text-mute">{t('sisa {n} dari {m}', { n: left(i), m: i.quantity })}</Mono>
                     </View>
                     <Stepper
                       label={i.productName}

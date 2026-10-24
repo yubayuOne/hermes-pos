@@ -106,13 +106,13 @@ export function SplitBillScreen({
             <View className={phoneLandscape ? 'flex-row items-end gap-2.5' : ''}>
               <View className={`flex-row gap-2.5 ${phoneLandscape ? 'flex-1' : ''}`}>
                 <View className="flex-1 rounded-k border-k border-ink bg-slip px-3 py-2.5">
-                  <Mono className="text-[13px] text-mute">{t('Sisa bill')}</Mono>
+                  <Mono className="text-[14px] text-mute">{t('Sisa bill')}</Mono>
                   <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
                     {money(Math.max(0, remaining - partTotal))}
                   </Mono>
                 </View>
                 <View className="flex-1 rounded-k border-k border-ink bg-fireSoft px-3 py-2.5">
-                  <Mono className="text-[13px] text-mute">{t('Bagian {n}', { n: part })}</Mono>
+                  <Mono className="text-[14px] text-mute">{t('Bagian {n}', { n: part })}</Mono>
                   <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
                     {money(partTotal)}
                   </Mono>
@@ -138,12 +138,12 @@ export function SplitBillScreen({
                         <Text numberOfLines={2} className="font-body-600 text-[15px]">
                           {i.name}
                         </Text>
-                        <Mono className="mt-0.5 text-[13px] text-mute">
+                        <Mono className="mt-0.5 text-[14px] text-mute">
                           {t('{n} sisa', { n: i.quantity - q })} · {money(i.unitPrice)}
                         </Mono>
                         {i.note ? (
                           <View className="mt-1 border-l-[3px] border-fire pl-2">
-                            <Text className="text-[13px]">{i.note}</Text>
+                            <Text className="text-[14px]">{i.note}</Text>
                           </View>
                         ) : null}
                       </View>

@@ -53,7 +53,7 @@ function BillDock({ onOpen }: { onOpen: () => void }) {
         <Mono className="font-mono-600 text-[17px]">{count}</Mono>
       </View>
       <View className="min-w-0 flex-1">
-        <Text className="text-[13px] text-pineText" numberOfLines={1}>
+        <Text className="text-[14px] text-pineText" numberOfLines={1}>
           {customer.table ? t('Bill · Meja {n}', { n: customer.table }) : t('Bill')}
         </Text>
         <Mono className="font-mono-600 text-[21px] text-paper">{money(total)}</Mono>

@@ -260,7 +260,7 @@ export function CashierPickerScreen({
                 {outlet.outletName}
               </Display>
             ) : null}
-            <Mono numberOfLines={1} className="mt-1 text-[13px] text-mute">
+            <Mono numberOfLines={1} className="mt-1 text-[14px] text-mute">
               {accountEmail}
             </Mono>
           </View>

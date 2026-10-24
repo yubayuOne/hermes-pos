@@ -27,7 +27,7 @@ function Row({ title, sub, onPress }: { title: string; sub: string; onPress: () 
     >
       <View className="min-w-0 flex-1">
         <Text className="font-body-600 text-[15px]">{title}</Text>
-        <Text className="mt-0.5 text-[13px] text-mute">{sub}</Text>
+        <Text className="mt-0.5 text-[14px] text-mute">{sub}</Text>
       </View>
       <Icon name="chevron-right" size={20} />
     </Tap>
@@ -134,7 +134,7 @@ export function MoreScreen({
       />
       <View className="border-t border-rule py-3">
         <Text className="font-body-600 text-[15px]">{t('Tampilan katalog')}</Text>
-        <Text className="mb-2 mt-0.5 text-[13px] text-mute">
+        <Text className="mb-2 mt-0.5 text-[14px] text-mute">
           {view === 'compact'
             ? t('Teks saja: lebih banyak menu per layar, ringan di HP lama.')
             : t('Foto menu dalam bingkai seragam. Menu tanpa foto memakai inisial.')}
@@ -152,7 +152,7 @@ export function MoreScreen({
       </View>
       <View className="border-t border-rule py-3">
         <Text className="font-body-600 text-[15px]">{t('Bahasa')}</Text>
-        <Text className="mb-2 mt-0.5 text-[13px] text-mute">{t('Indonesia atau English, disimpan di perangkat ini')}</Text>
+        <Text className="mb-2 mt-0.5 text-[14px] text-mute">{t('Indonesia atau English, disimpan di perangkat ini')}</Text>
         <View style={{ maxWidth: 140 }}>
           <Tabs
             items={[
@@ -180,7 +180,7 @@ export function MoreScreen({
     <Card>
       <Label>{t('Tentang')}</Label>
       <Text className="mt-1 font-body-600 text-[15px]">{BRAND.appName}</Text>
-      <Text className="mt-0.5 text-[13px] text-mute">{t('Versi {v} · pembaruan otomatis lewat udara', { v: BRAND.version })}</Text>
+      <Text className="mt-0.5 text-[14px] text-mute">{t('Versi {v} · pembaruan otomatis lewat udara', { v: BRAND.version })}</Text>
     </Card>
   );
 

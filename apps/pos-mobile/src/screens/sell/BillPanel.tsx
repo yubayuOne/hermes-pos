@@ -132,7 +132,7 @@ function BillLine({
         </Text>
         <Mono className="font-mono-600 text-[15px]">{money(lineGross(item) - cut)}</Mono>
       </View>
-      <Mono className="mt-0.5 text-[13px] text-mute">
+      <Mono className="mt-0.5 text-[14px] text-mute">
         {item.quantity} × {money(item.unitPrice)}
       </Mono>
       {item.note ? (
@@ -141,7 +141,7 @@ function BillLine({
         </View>
       ) : null}
       {cut > 0 ? (
-        <Mono className="mt-1 text-[13px] text-pine">
+        <Mono className="mt-1 text-[14px] text-pine">
           {t('Diskon {label} · -{amount}', { label: discountLabel(item.discount, money), amount: money(cut) })}
         </Mono>
       ) : null}
@@ -239,14 +239,14 @@ function BillFooter({ onPay, onSplit, onOpenShift, onVoucher }: FooterProps) {
         <View className="flex-row items-center gap-2.5">
           {voucherButtons}
           <View className="items-end">
-            <Text className="font-body-700 text-[13px]">{t('Total')}</Text>
+            <Text className="font-body-700 text-[14px]">{t('Total')}</Text>
             <Display size={24} numberOfLines={1} adjustsFontSizeToFit style={{ maxWidth: activeHeldBillId ? 110 : 140 }}>
               {money(totals.total)}
             </Display>
           </View>
         </View>
       ) : null}
-      {phoneLandscape && totals.voucherError ? <Text className="font-body-600 text-[13px] text-error">{totals.voucherError}</Text> : null}
+      {phoneLandscape && totals.voucherError ? <Text className="font-body-600 text-[14px] text-error">{totals.voucherError}</Text> : null}
       {phoneLandscape ? null : (
         <>
           {voucherButtons}
@@ -360,7 +360,7 @@ export const BillPanel = memo(function BillPanel(handlers: BillHandlers) {
           <Display size={phoneLandscape ? 22 : 30} accessibilityRole="header">
             {t('Bill')}
           </Display>
-          <Mono numberOfLines={1} className="mt-0.5 text-[13px] text-mute">
+          <Mono numberOfLines={1} className="mt-0.5 text-[14px] text-mute">
             {[
               t('{n} item', { n: count }),
               customer.table ? t('Meja {n}', { n: customer.table }) : null,

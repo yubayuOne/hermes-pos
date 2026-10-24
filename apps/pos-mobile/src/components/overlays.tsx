@@ -144,7 +144,7 @@ export function QueueSheet({ visible, onClose }: { visible: boolean; onClose: ()
                     : t('Ditolak server: {reason} Tinjau bersama pemilik.', { reason: e.lastError })}
                 </Text>
               ) : e.attempts > 0 ? (
-                <Mono className="text-[13px] text-mute">
+                <Mono className="text-[14px] text-mute">
                   {t('Dicoba {n}× · terakhir {time}', { n: e.attempts, time: e.lastAttemptAt ? fmtTime(e.lastAttemptAt) : '-' })}
                 </Mono>
               ) : null}
@@ -244,7 +244,7 @@ export function BellSheet({ visible, onClose }: { visible: boolean; onClose: () 
             <View className="mt-1.5 h-[10px] w-[10px] border-k border-ink" style={{ backgroundColor: n.readAt ? colors.disabledLine : colors.fire }} />
             <View className="min-w-0 flex-1">
               <Text className={`text-[15px] ${n.readAt ? '' : 'font-body-600'}`}>{notificationText(n)}</Text>
-              <Mono className="mt-1 text-[13px] text-mute">{fmtDateTime(n.createdAt)}</Mono>
+              <Mono className="mt-1 text-[14px] text-mute">{fmtDateTime(n.createdAt)}</Mono>
             </View>
           </View>
         ))}

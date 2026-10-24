@@ -162,7 +162,7 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
             {money(total)}
           </Mono>
         </View>
-        <Text className="text-[13px] text-mute">
+        <Text className="text-[14px] text-mute">
           {t('Langsung masuk laporan shift ini tanpa persetujuan. Pemilik bisa mengubahnya di backoffice. Tanpa internet, disimpan dulu di perangkat.')}
         </Text>
         {formError ? (

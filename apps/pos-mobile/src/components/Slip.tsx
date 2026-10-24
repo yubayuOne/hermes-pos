@@ -51,7 +51,7 @@ export function SlipRow({
   sub?: boolean;
 }) {
   const color = tone === 'pine' ? colors.pine : tone === 'error' ? colors.error : tone === 'mute' ? colors.mute : colors.ink;
-  const cls = strong ? 'font-mono-600 text-[15px]' : sub ? 'text-[13px]' : 'text-[14px]';
+  const cls = strong ? 'font-mono-600 text-[15px]' : sub ? 'text-[14px]' : 'text-[14px]';
   return (
     <View className="flex-row items-start justify-between gap-3 py-[3px]">
       <Mono className={`min-w-0 flex-1 ${cls}`} style={{ color: sub ? colors.mute : color }}>

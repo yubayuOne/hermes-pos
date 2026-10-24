@@ -156,7 +156,7 @@ export function ShiftHistoryScreen({ onBack, onQueue, onBell }: { onBack: () => 
           renderSectionHeader={({ section }) => (
             <View className="flex-row items-baseline justify-between gap-3 bg-paper px-3.5 pb-2 pt-3" accessibilityRole="header">
               <Text className="font-body-700 text-[15px]">{fmtBusinessDate(section.title)}</Text>
-              <Mono className="text-[13px] text-mute">{money(section.total)}</Mono>
+              <Mono className="text-[14px] text-mute">{money(section.total)}</Mono>
             </View>
           )}
           ListHeaderComponent={
@@ -177,7 +177,7 @@ export function ShiftHistoryScreen({ onBack, onQueue, onBell }: { onBack: () => 
             more ? (
               <ActivityIndicator className="py-4" color={colors.ink} />
             ) : rows.length && !hasMore ? (
-              <Mono className="py-3 text-center text-[13px] text-mute">{t('Sudah semua · {n} shift', { n: rows.length })}</Mono>
+              <Mono className="py-3 text-center text-[14px] text-mute">{t('Sudah semua · {n} shift', { n: rows.length })}</Mono>
             ) : null
           }
           renderItem={({ item }) => <ShiftRow s={item} onPress={() => setOpen(item)} />}

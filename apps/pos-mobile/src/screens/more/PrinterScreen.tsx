@@ -144,7 +144,7 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
             <Display size={22} numberOfLines={1}>
               {p.name}
             </Display>
-            <Mono className="mt-0.5 text-[13px] text-mute">
+            <Mono className="mt-0.5 text-[14px] text-mute">
               {[p.brand && p.brand !== 'generic' ? p.brand : t('generik'), `${p.paperWidth} mm`, 'ESC/POS', 'Bluetooth'].join(' · ')}
             </Mono>
           </View>
@@ -179,7 +179,7 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
             style={{ borderWidth: 1.5, borderColor: res.ok ? colors.ink : colors.errorLine, backgroundColor: res.ok ? colors.pineSoft : colors.errorSoft }}
           >
             <Text className="text-[14px]" style={{ color: res.ok ? colors.ink : colors.error }}>
-              {res.text} <Mono className="text-[13px] text-mute">{fmtTime(res.at)}</Mono>
+              {res.text} <Mono className="text-[14px] text-mute">{fmtTime(res.at)}</Mono>
             </Text>
           </View>
         ) : null}
@@ -209,7 +209,7 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
         >
           <View className="min-w-0 flex-1">
             <Text className="font-body-600 text-[15px]">{d.name || t('Printer Bluetooth')}</Text>
-            <Mono className="text-[13px] text-mute">{d.address}</Mono>
+            <Mono className="text-[14px] text-mute">{d.address}</Mono>
           </View>
           <Icon name="plus" size={20} />
         </Tap>
@@ -232,7 +232,7 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
             {printers.map(card)}
           </>
         )}
-        <Text className="text-[13px] text-mute">
+        <Text className="text-[14px] text-mute">
           {t(
             'Isi struk diatur pemilik di backoffice, menu Outlet.',
           )}

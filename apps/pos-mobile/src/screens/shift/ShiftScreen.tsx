@@ -82,7 +82,7 @@ function HourBars({ hourly }: { hourly: DashboardSummary['hourly'] }) {
           </Mono>
         ))}
       </View>
-      <Text className="mt-2 text-[13px] text-mute">{t('Dalam ribu rupiah. Batang oranye adalah jam tersibuk shift ini.')}</Text>
+      <Text className="mt-2 text-[14px] text-mute">{t('Dalam ribu rupiah. Batang oranye adalah jam tersibuk shift ini.')}</Text>
     </View>
   );
 }
@@ -469,13 +469,13 @@ export function ShiftScreen({
         <Dashed className="my-3" />
         <View className="flex-row gap-4">
           <View className="min-w-0 flex-1">
-            <Mono className="text-[13px] text-mute">{t('Cash')}</Mono>
+            <Mono className="text-[14px] text-mute">{t('Cash')}</Mono>
             <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
               {money(report?.cashRevenue ?? 0)}
             </Mono>
           </View>
           <View className="min-w-0 flex-1">
-            <Mono className="text-[13px] text-mute">{t('QRIS')}</Mono>
+            <Mono className="text-[14px] text-mute">{t('QRIS')}</Mono>
             <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
               {money(report?.qrisRevenue ?? 0)}
             </Mono>
@@ -489,7 +489,7 @@ export function ShiftScreen({
             [t('Void'), String(report?.voidedCount ?? 0)],
           ].map(([l, v]) => (
             <View key={l} className="min-w-0 flex-1 px-1">
-              <Mono className="text-[13px] text-mute" numberOfLines={1}>
+              <Mono className="text-[14px] text-mute" numberOfLines={1}>
                 {l}
               </Mono>
               <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
@@ -500,7 +500,7 @@ export function ShiftScreen({
         </View>
         {report?.refundCount ? (
           <View className="mt-3 flex-row items-center justify-between gap-3">
-            <Mono className="text-[13px] text-mute">{t('Refund ({n})', { n: report.refundCount })}</Mono>
+            <Mono className="text-[14px] text-mute">{t('Refund ({n})', { n: report.refundCount })}</Mono>
             <Mono className="font-mono-600 min-w-0 flex-1 text-right text-[16px] text-error" numberOfLines={1} adjustsFontSizeToFit>
               -{money(report.refundTotal)}
             </Mono>
@@ -519,7 +519,7 @@ export function ShiftScreen({
           }}
         />
       </ButtonRow>
-      <Text className="text-[13px] text-mute">{t('Hitung uang di laci, lalu isi angkanya.')}</Text>
+      <Text className="text-[14px] text-mute">{t('Hitung uang di laci, lalu isi angkanya.')}</Text>
       <Button label={locked ? t('Terkunci: langganan berakhir') : t('Catat pengeluaran')} disabled={locked} onPress={() => setExpenseSheet(true)} />
       {blockers.length ? (
         <View className="rounded-k border-k border-ink bg-fireSoft px-3.5 py-3">
@@ -559,7 +559,7 @@ export function ShiftScreen({
       <Card>
         <View className="flex-row items-center justify-between">
           <Display size={22}>{t('Penjualan per jam')}</Display>
-          <Mono className="text-[13px] text-mute">{t('ribu rupiah')}</Mono>
+          <Mono className="text-[14px] text-mute">{t('ribu rupiah')}</Mono>
         </View>
         {dash ? (
           <HourBars hourly={dash.hourly} />
@@ -604,7 +604,7 @@ export function ShiftScreen({
                   <Mono className="font-mono-600 text-[15px]">{money(x.amount)}</Mono>
                 </View>
                 <View className="flex-row flex-wrap items-center gap-2">
-                  <Mono className="text-[13px] text-mute">
+                  <Mono className="text-[14px] text-mute">
                     {String(x.quantity).replace('.', ',')} {x.unit}
                   </Mono>
                   <Tag label={x.paidFrom === 'drawer' ? t('kas laci') : t('bukan dari laci')} />
@@ -620,7 +620,7 @@ export function ShiftScreen({
           <Text className="mt-2 text-[14px] text-mute">{t('Belum ada pengeluaran di shift ini.')}</Text>
         )}
         {queuedExpenses.length ? (
-          <Text className="mt-2 text-[13px] text-mute">{t('Belum terkirim.')}</Text>
+          <Text className="mt-2 text-[14px] text-mute">{t('Belum terkirim.')}</Text>
         ) : null}
       </Card>
       <Card>
@@ -660,19 +660,19 @@ export function ShiftScreen({
               <Text className="font-body-600 text-[15px]">
                 {t('Shift {n}', { n: s.shiftNumber })} · {session?.cashierName}
               </Text>
-              <Text className="mt-0.5 text-[13px] text-mute">
+              <Text className="mt-0.5 text-[14px] text-mute">
                 {s.closedAt
                   ? t('{a} sampai {b}', { a: fmtTime(s.openedAt), b: fmtTime(s.closedAt) })
                   : t('Dibuka {time} · kas awal {amount}', { time: fmtTime(s.openedAt), amount: money(s.openingCash) })}
               </Text>
             </View>
-            <Mono className="text-[13px]" style={{ color: (s.variance ?? 0) < 0 ? colors.error : colors.ink }}>
+            <Mono className="text-[14px]" style={{ color: (s.variance ?? 0) < 0 ? colors.error : colors.ink }}>
               {s.status === 'open' ? t('berjalan') : t('selisih {amount}', { amount: money(s.variance ?? 0) })}
             </Mono>
           </View>
         ))
       )}
-      {today[0] ? <Mono className="mt-1 text-[13px] text-mute">{fmtBusinessDate(today[0].businessDate)}</Mono> : null}
+      {today[0] ? <Mono className="mt-1 text-[14px] text-mute">{fmtBusinessDate(today[0].businessDate)}</Mono> : null}
       <Button className="mt-3" icon="chevron-right" label={t('Riwayat laporan shift')} onPress={onOpenHistory} />
     </Card>
   );

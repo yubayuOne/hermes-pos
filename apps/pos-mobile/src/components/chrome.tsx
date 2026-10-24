@@ -47,7 +47,7 @@ export function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => v
               <Icon name={it.icon} size={22} color={on ? colors.ink : colors.mute} />
               {it.key === 'bills' && heldCount > 0 ? <Badge n={heldCount} /> : null}
             </View>
-            <Text className={`mt-1 text-[13px] ${on ? 'font-body-700 text-ink' : 'font-body-600 text-mute'}`}>{t(it.label)}</Text>
+            <Text className={`mt-1 text-[14px] ${on ? 'font-body-700 text-ink' : 'font-body-600 text-mute'}`}>{t(it.label)}</Text>
           </Tap>
         );
       })}
@@ -92,7 +92,7 @@ export function Rail({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }
               <Icon name={it.icon} size={22} color={on ? colors.ink : colors.mute} />
               {it.key === 'bills' && heldCount > 0 ? <Badge n={heldCount} /> : null}
             </View>
-            <Text className={`mt-1 text-[13px] ${on ? 'font-body-700 text-ink' : 'font-body-600 text-mute'}`}>{t(it.label)}</Text>
+            <Text className={`mt-1 text-[14px] ${on ? 'font-body-700 text-ink' : 'font-body-600 text-mute'}`}>{t(it.label)}</Text>
           </Tap>
         );
       })}
@@ -149,7 +149,7 @@ export function NetChip({ onPress }: { onPress: () => void }) {
       })}
     >
       <Icon name={error ? 'alert' : syncing ? 'sync' : 'offline'} size={18} color={error ? colors.error : colors.ink} />
-      <Mono className="font-mono-600 text-[13px]" style={{ color: error ? colors.error : colors.ink }}>
+      <Mono className="font-mono-600 text-[14px]" style={{ color: error ? colors.error : colors.ink }}>
         {short ? (error ? String(rejected) : waiting ? String(waiting) : '') : full}
       </Mono>
     </Tap>
@@ -203,7 +203,7 @@ export function Header({
           <Display size={phoneLandscape ? 22 : 30} numberOfLines={1} accessibilityRole="header">
             {title}
           </Display>
-          <Mono numberOfLines={1} className="mt-0.5 text-[13px] text-mute">
+          <Mono numberOfLines={1} className="mt-0.5 text-[14px] text-mute">
             {sub}
           </Mono>
         </View>
