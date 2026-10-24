@@ -16,6 +16,7 @@ import { useApp, useLock } from '../../lib/app';
 import { useAction } from '../../lib/useAction';
 import { pageHead } from '../../lang';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
+import { FilterBar } from '../../components/Filters';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
 import { ReasonChips } from '../../components/ReasonChips';
 
@@ -68,6 +69,7 @@ function Expenses() {
   const data = Route.useLoaderData();
   const navigate = useNavigate({ from: '/expenses' });
   const set = (patch: Partial<Search>) => navigate({ search: (s: Search) => ({ ...s, ...patch }) });
+  const app = useApp();
   const periodLabel = usePeriodLabel(search, data.range);
   const lock = useLock();
   const [recording, setRecording] = useState(false);
@@ -108,16 +110,21 @@ function Expenses() {
   }, []);
 
   return (
-    <Page title={t('Pengeluaran')} tools={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}>
-      <div className="flex justify-end">
-        <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
-          {lock.label(t('Catat pengeluaran'))}
-        </Button>
-      </div>
-      {recording && <AddDialog outletId={search.outlet ?? null} today={data.today} onClose={() => setRecording(false)} />}
-      <div className="mt-5">
+    <Page title={t('Pengeluaran')}>
+      <FilterBar
+        outlet={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}
+        active={search.period ? 1 : 0}
+        summary={[app.outlets.find((o) => o.id === search.outlet)?.name ?? t('Semua outlet'), periodLabel].join(' · ')}
+        onReset={() => set({ period: undefined, from: undefined, to: undefined })}
+        action={
+          <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
+            {lock.label(t('Catat pengeluaran'))}
+          </Button>
+        }
+      >
         <PeriodFilter value={search} range={data.range} today={data.today} onChange={set} />
-      </div>
+      </FilterBar>
+      {recording && <AddDialog outletId={search.outlet ?? null} today={data.today} onClose={() => setRecording(false)} />}
 
       <Card className="mt-5" aria-label={t('Total pengeluaran')}>
         <p className="font-mono text-small text-mute">{t('Total pengeluaran · {period}', { period: periodLabel })}</p>

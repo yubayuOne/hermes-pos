@@ -3,7 +3,8 @@ import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button, Chip, Dialog, Empty, Field, FormAlert, Input, Tag, dateShort, decimal, money, useI18n } from '@hermes-pos/ui';
 import { CountDialog } from '../../components/CountDialog';
 import { IngredientDialog } from '../../components/IngredientDialog';
-import { OutletField } from '../../components/Filters';
+import { FilterBar } from '../../components/Filters';
+import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination } from '../../components/Pagination';
@@ -90,10 +91,8 @@ function IngredientsAndRecipes() {
         )
       ) : (
         <>
-          <div className="mt-5 flex flex-wrap items-end gap-4">
-            <div className="min-w-[200px] flex-1 sm:max-w-[280px]">
-              <OutletField all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, product: undefined, page: undefined })} />
-            </div>
+          <div className="mt-5">
+            <FilterBar outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, product: undefined, page: undefined })} />} />
           </div>
           {search.tab === 'resep' ? (
             <RecipeList menus={data.menus} onOpen={(id) => set({ product: id })} />

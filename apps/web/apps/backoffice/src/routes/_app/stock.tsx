@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button, Card, Chip, Dialog, Empty, Field, FormAlert, Input, Select, Tag, amount, dateShort, isoDay, money, time, useI18n } from '@hermes-pos/ui';
-import { OutletField } from '../../components/Filters';
+import { FilterBar } from '../../components/Filters';
+import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination } from '../../components/Pagination';
-import { PeriodFilter } from '../../components/PeriodFilter';
+import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { useApp, useLock } from '../../lib/app';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
 import { stockDocumentSchema } from '../../lib/schemas';
@@ -52,8 +53,10 @@ function Stock() {
   const { t } = useI18n();
   const search = Route.useSearch();
   const data = Route.useLoaderData();
+  const app = useApp();
   const lock = useLock();
   const navigate = useNavigate({ from: '/stock' });
+  const periodLabel = usePeriodLabel(search, data.range);
   const set = (patch: Partial<Search>) => navigate({ search: (s: Search) => ({ ...s, ...patch }), replace: true });
   const [kind, setKind] = useState<Kind | null>(null);
   return (
@@ -66,13 +69,17 @@ function Stock() {
           {t('Riwayat')}
         </Chip>
       </nav>
-      <div className="mt-5 flex flex-wrap items-end gap-4">
-        <div className="min-w-[200px] flex-1 sm:max-w-[280px]">
-          <OutletField all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />
-        </div>
-        {search.tab === 'history' && (
-          <PeriodFilter value={search} range={data.range} today={data.today} onChange={(patch) => set({ ...patch, page: undefined })} />
-        )}
+      <div className="mt-5">
+        <FilterBar
+          outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />}
+          active={search.tab === 'history' && search.period ? 1 : 0}
+          summary={[app.outlets.find((o) => o.id === data.outletId)?.name, search.tab === 'history' ? periodLabel : undefined].filter(Boolean).join(' · ')}
+          onReset={() => set({ period: undefined, from: undefined, to: undefined, page: undefined })}
+        >
+          {search.tab === 'history' ? (
+            <PeriodFilter value={search} range={data.range} today={data.today} onChange={(patch) => set({ ...patch, page: undefined })} />
+          ) : undefined}
+        </FilterBar>
       </div>
 
       {search.tab === 'history' ? (

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button, Dialog, Empty, Field, FormAlert, Input, Switch, Tag, time, useI18n } from '@hermes-pos/ui';
-import { OutletField } from '../../components/Filters';
+import { FilterBar } from '../../components/Filters';
+import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { useApp, useLock } from '../../lib/app';
@@ -52,16 +53,16 @@ function Tables() {
 
   return (
     <Page title={t('Meja|menu')}>
-      {app.outlets.length > 1 && (
-        <OutletField all={false} value={outletId} onChange={(id) => navigate({ search: { outlet: id ?? undefined }, replace: true })} />
-      )}
+      <FilterBar
+        outlet={<OutletFilter all={false} value={outletId} onChange={(id) => navigate({ search: { outlet: id ?? undefined }, replace: true })} />}
+        action={add}
+      />
       {tables.length === 0 ? (
         <Empty className="mt-6" title={t('Belum ada meja.')} action={add}>
           {t('Kasir memilih meja untuk setiap bill makan di tempat. Bill yang ditahan wajib punya meja.')}
         </Empty>
       ) : (
         <>
-          <div className="mt-6 flex justify-end">{add}</div>
           <div className="tbl-wrap mt-6">
             <table className="tbl tbl-card">
               <thead>

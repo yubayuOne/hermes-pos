@@ -20,6 +20,7 @@ import {
 } from '@hermes-pos/ui';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { OutletFilter } from '../../components/OutletFilter';
+import { FilterBar } from '../../components/Filters';
 import { Stat } from '../../components/Stat';
 import { Page } from '../../components/Page';
 import { useApp } from '../../lib/app';
@@ -96,14 +97,22 @@ function Summary() {
           : t('Sama dengan {n} hari sebelumnya ({amount}).', vars);
 
   return (
-    <Page title={t('Ringkasan')} tools={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}>
-      <PeriodFilter value={search} range={data.range} today={data.today} onChange={set}>
-        <p className="w-full pt-1 text-small text-mute sm:ml-2 sm:w-auto sm:pt-0">{t('Grafik selalu 7 hari terakhir dan jam hari ini.')}</p>
-        {/* The full report (A4, print or PDF) for the same period and outlet as this page. */}
-        <Link to="/reports" search={search} className={`${btn('plain')} w-full sm:ml-auto sm:w-auto`}>
-          {t('Laporan')}
-        </Link>
-      </PeriodFilter>
+    <Page title={t('Ringkasan')}>
+      <FilterBar
+        outlet={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}
+        active={search.period ? 1 : 0}
+        summary={[app.outlets.find((o) => o.id === search.outlet)?.name ?? t('Semua outlet'), periodLabel].join(' · ')}
+        onReset={() => set({ period: undefined, from: undefined, to: undefined })}
+        action={
+          /* The full report (A4, print or PDF) for the same period and outlet as this page. */
+          <Link to="/reports" search={search} className={btn('plain')}>
+            {t('Laporan')}
+          </Link>
+        }
+      >
+        <PeriodFilter value={search} range={data.range} today={data.today} onChange={set} />
+      </FilterBar>
+      <p className="mt-3 text-small text-mute">{t('Grafik selalu 7 hari terakhir dan jam hari ini.')}</p>
       {nothingYet ? (
         <Empty
           className="mt-5"

@@ -1,7 +1,7 @@
 import { Select, useI18n } from '@hermes-pos/ui';
 import { useApp } from '../lib/app';
 
-/** Outlet filter in the content header; full width on phones (D12). */
+/** Outlet filter on the toolbar of a list page. It is always visible, never inside the Filter dialog; full width on phones (D12). */
 export function OutletFilter({ value, onChange, all = true }: { value: string | null; onChange: (id: string | null) => void; all?: boolean }) {
   const app = useApp();
   const { t } = useI18n();

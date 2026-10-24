@@ -19,7 +19,8 @@ import {
   toast,
   useI18n,
 } from '@hermes-pos/ui';
-import { FilterBar, OutletField, SearchBox } from '../../components/Filters';
+import { FilterBar, SearchBox } from '../../components/Filters';
+import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination, pageOf } from '../../components/Pagination';
@@ -111,30 +112,30 @@ function Transactions() {
   );
 }
 
-/** Outlet and period, the first two fields of both tabs' Filter dialog. */
-function CommonFilters({ set, all }: { set: (p: Partial<Search>) => void; all: boolean }) {
-  const search = Route.useSearch();
+/** The outlet, on the toolbar of both tabs (always visible, not in the Filter dialog). */
+function TxOutlet({ all, set }: { all: boolean; set: (p: Partial<Search>) => void }) {
   const data = Route.useLoaderData();
-  return (
-    <>
-      <OutletField all={all} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />
-      <PeriodFilter value={search} range={data.range} today={data.today} onChange={(patch) => set({ ...patch, page: undefined })} />
-    </>
-  );
+  return <OutletFilter all={all} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />;
 }
 
-/** Filters that differ from the default, and the outlet and period part of the summary line. */
-function useCommon(all: boolean) {
+/** The period, the filter both tabs keep in their Filter dialog. */
+function PeriodField({ set }: { set: (p: Partial<Search>) => void }) {
+  const search = Route.useSearch();
+  const data = Route.useLoaderData();
+  return <PeriodFilter value={search} range={data.range} today={data.today} onChange={(patch) => set({ ...patch, page: undefined })} />;
+}
+
+/** Dialog filters that differ from the default, and the outlet and period part of the summary line. */
+function useCommon() {
   const { t } = useI18n();
   const app = useApp();
   const search = Route.useSearch();
   const data = Route.useLoaderData();
   const outletName = app.outlets.find((o) => o.id === data.outletId)?.name ?? t('Semua outlet');
-  const outletSet = all ? !!search.outlet : !!search.outlet && search.outlet !== app.outlets[0]?.id;
   return {
-    active: (outletSet ? 1 : 0) + (search.period ? 1 : 0),
+    active: search.period ? 1 : 0,
     summary: [outletName, usePeriodLabel(search, data.range)],
-    reset: { outlet: undefined, period: undefined, from: undefined, to: undefined, page: undefined } satisfies Partial<Search>,
+    reset: { period: undefined, from: undefined, to: undefined, page: undefined } satisfies Partial<Search>,
   };
 }
 
@@ -146,7 +147,7 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
   const [open, setOpen] = useState<Bill | null>(null);
   const tz = app.business.timezone;
   const pages = Math.max(1, Math.ceil(bills.total / BILL_PAGE));
-  const common = useCommon(true);
+  const common = useCommon();
   const status = search.status ?? 'completed';
   return (
     <>
@@ -160,11 +161,12 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
             onSubmit={() => (q.trim() || undefined) !== search.q && set({ q: q.trim() || undefined, page: undefined })}
           />
         }
+        outlet={<TxOutlet all set={set} />}
         active={common.active + (search.status ? 1 : 0)}
         summary={[...common.summary, t(STATUSES.find((s) => s.value === status)?.label ?? ''), t('{n} bill', { n: bills.total })].join(' · ')}
         onReset={() => set({ ...common.reset, status: undefined })}
       >
-        <CommonFilters set={set} all />
+        <PeriodField set={set} />
         <Field label={t('Status bill')}>
           <Select
             value={status}
@@ -596,7 +598,7 @@ function ProductsTab({
 }) {
   const { t } = useI18n();
   const search = Route.useSearch();
-  const common = useCommon(false);
+  const common = useCommon();
   // Searched in the browser: the tab already holds every product of the outlet.
   const [q, setQ] = useState('');
   const sort: Sort = search.sort ?? 'qty';
@@ -620,11 +622,12 @@ function ProductsTab({
             }}
           />
         }
+        outlet={<TxOutlet all={false} set={set} />}
         active={common.active + (search.sort ? 1 : 0)}
         summary={[...common.summary, t(SORTS.find((s) => s.value === sort)?.label ?? ''), t('{n} produk', { n: sorted.length })].join(' · ')}
         onReset={() => set({ ...common.reset, sort: undefined })}
       >
-        <CommonFilters set={set} all={false} />
+        <PeriodField set={set} />
         <Field label={t('Urutkan')}>
           <Select value={sort} onChange={(e) => set({ sort: e.target.value === 'qty' ? undefined : (e.target.value as Search['sort']), page: undefined })}>
             {SORTS.map((s) => (

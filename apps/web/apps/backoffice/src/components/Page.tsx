@@ -8,12 +8,12 @@ import { Bell } from './Bell';
  * Content header (DESIGN.md D1 .hd): mono date (hidden on phones), page title, then ID/EN, optional filter,
  * and the bell. Under it: the subscription banner and the toasts, then the page.
  */
-export function Page({ title, tools, children }: { title: string; tools?: ReactNode; children: ReactNode }) {
+export function Page({ title, children }: { title: string; children: ReactNode }) {
   const app = useApp();
   const { lang } = useI18n();
   return (
     <main id="content" className="px-4 pb-[72px] pt-[22px] md:px-5 md:pt-6 lg:px-10 lg:pt-[30px] print:!p-0">
-      {/* Phone: the bell is in the top bar (AppShell), the page's filter takes the full second row. */}
+      {/* Phone: the bell is in the top bar (AppShell). Filters sit under the title, in the FilterBar. */}
       <header className="relative flex flex-wrap items-end gap-x-6 gap-y-4 border-b-[1.5px] border-ink pb-5 print:hidden">
         <div className="min-w-0 flex-1">
           <p className="hidden font-mono text-small text-mute md:block">{dateLong(new Date(), lang, app.business.timezone)}</p>
@@ -22,7 +22,6 @@ export function Page({ title, tools, children }: { title: string; tools?: ReactN
         <div className="hidden flex-none md:order-last md:block">
           <Bell />
         </div>
-        {tools && <div className="w-full min-w-0 md:w-auto">{tools}</div>}
       </header>
       <div className="mt-5 grid gap-3 empty:hidden print:hidden">
         <SubscriptionBanner />

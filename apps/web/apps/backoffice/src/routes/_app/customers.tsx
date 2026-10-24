@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Empty, dateShort, isoDay, money, useI18n } from '@hermes-pos/ui';
-import { FilterBar, OutletField, SearchBox } from '../../components/Filters';
+import { FilterBar, SearchBox } from '../../components/Filters';
+import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination } from '../../components/Pagination';
@@ -58,11 +59,11 @@ function Customers() {
             onSubmit={() => (q.trim() || undefined) !== search.q && set({ q: q.trim() || undefined, page: undefined })}
           />
         }
-        active={(search.outlet ? 1 : 0) + (search.period ? 1 : 0)}
+        outlet={<OutletFilter all value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />}
+        active={search.period ? 1 : 0}
         summary={[outletName, usePeriodLabel(search, data.range), t('{n} pelanggan', { n: data.list.total })].join(' · ')}
-        onReset={() => set({ outlet: undefined, period: undefined, from: undefined, to: undefined, page: undefined })}
+        onReset={() => set({ period: undefined, from: undefined, to: undefined, page: undefined })}
       >
-        <OutletField all value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />
         <PeriodFilter value={search} range={data.range} today={data.today} onChange={(patch) => set({ ...patch, page: undefined })} />
       </FilterBar>
       {data.list.rows.length === 0 ? (

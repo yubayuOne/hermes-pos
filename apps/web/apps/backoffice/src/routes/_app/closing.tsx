@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button, Card, Dialog, Empty, Field, FormAlert, Input, Tag, cn, dateLong, isoDay, money, time, useI18n } from '@hermes-pos/ui';
-import { OutletField } from '../../components/Filters';
+import { FilterBar } from '../../components/Filters';
+import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { useApp, useLock } from '../../lib/app';
@@ -45,14 +46,16 @@ function Closing() {
   const [moving, setMoving] = useState<{ shift: DayShift; direction: 'in' | 'out' } | null>(null);
   return (
     <Page title={t('Shift|menu')}>
-      <div className="flex flex-wrap items-end gap-4">
-        <div className="min-w-[200px] flex-1 sm:max-w-[280px]">
-          <OutletField all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined })} />
-        </div>
-        <Field label={t('Tanggal')} className="w-full sm:w-[200px]">
+      <FilterBar
+        outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined })} />}
+        active={data.date !== data.today ? 1 : 0}
+        summary={dateLong(`${data.date}T12:00:00Z`, lang, 'UTC')}
+        onReset={() => set({ date: undefined })}
+      >
+        <Field label={t('Tanggal')}>
           <Input type="date" max={data.today} value={data.date} onChange={(e) => e.target.value && set({ date: e.target.value })} />
         </Field>
-      </div>
+      </FilterBar>
       {!data.day ? null : (
         <>
           <Checks failures={data.day.checks} shifts={data.day.shifts} />

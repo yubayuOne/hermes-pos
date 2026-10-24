@@ -4,7 +4,8 @@ import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Swit
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
 import { listProductSales } from '../../server/summary';
-import { FilterBar, OutletField, SearchBox } from '../../components/Filters';
+import { FilterBar, SearchBox } from '../../components/Filters';
+import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination, pageOf } from '../../components/Pagination';
@@ -75,7 +76,7 @@ function Products() {
 
   return (
     <Page title={t('Produk|menu')}>
-      {/* Search, one Filter button (outlet, period of the Terjual column, category), and the main action. A new category
+      {/* Search, the outlet, one Filter button (period of the Terjual column, category), and the main action. A new category
           is made from the product dialog. */}
       <FilterBar
         search={
@@ -90,7 +91,8 @@ function Products() {
             onSubmit={() => set({ q: q.trim() || undefined })}
           />
         }
-        active={(search.outlet && search.outlet !== app.outlets[0]?.id ? 1 : 0) + (search.period ? 1 : 0) + (search.cat ? 1 : 0)}
+        outlet={<OutletFilter all={false} value={outletId} onChange={(id) => set({ outlet: id ?? undefined, cat: undefined, page: undefined })} />}
+        active={(search.period ? 1 : 0) + (search.cat ? 1 : 0)}
         summary={[
           app.outlets.find((o) => o.id === outletId)?.name,
           t('Terjual {period}', { period: periodLabel }),
@@ -99,7 +101,7 @@ function Products() {
         ]
           .filter(Boolean)
           .join(' · ')}
-        onReset={() => set({ outlet: undefined, period: undefined, from: undefined, to: undefined, cat: undefined, page: undefined })}
+        onReset={() => set({ period: undefined, from: undefined, to: undefined, cat: undefined, page: undefined })}
         action={
           products.length > 0 && (
             <Button variant="fire" className="w-full sm:w-auto" onClick={() => setEditing('new')} {...lock.props}>
@@ -108,7 +110,6 @@ function Products() {
           )
         }
       >
-        <OutletField all={false} value={outletId} onChange={(id) => set({ outlet: id ?? undefined, cat: undefined, page: undefined })} />
         <PeriodFilter value={search} range={range} today={today} onChange={(patch) => set({ ...patch, page: undefined })} />
         <p className="-mt-2 text-small text-mute">{t('Periode untuk kolom Terjual, dari bill selesai.')}</p>
         {/* A dropdown, not a row of chips: an outlet can have many categories (owner's request, 17 Oct 2026). */}
