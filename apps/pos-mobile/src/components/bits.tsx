@@ -43,7 +43,7 @@ export function Chip({
         grow ? { flex: 1 } : null,
       ]}
     >
-      <Text numberOfLines={1} className="font-body-600 text-[15px]" style={{ color: selected ? colors.paper : disabled ? colors.mute : colors.ink }}>
+      <Text numberOfLines={1} className="font-body-600 text-body" style={{ color: selected ? colors.paper : disabled ? colors.mute : colors.ink }}>
         {label}
       </Text>
     </Tap>
@@ -62,7 +62,7 @@ export function Tag({ label, tone = 'neutral', className = '' }: { label: string
   const s = TAG[tone];
   return (
     <View className={`self-start rounded-k px-2 ${className}`} style={{ borderWidth: 1.5, borderColor: s.border, backgroundColor: s.bg, paddingVertical: 1 }}>
-      <Mono numberOfLines={1} className="text-[14px]" style={{ color: s.text }}>
+      <Mono numberOfLines={1} className="text-small" style={{ color: s.text }}>
         {label}
       </Mono>
     </View>
@@ -80,7 +80,7 @@ export function Card({ children, className = '', style, ...rest }: ViewProps & {
 
 /** Small mono label above a value or a group. */
 export function Label({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <Mono className={`text-[14px] text-mute ${className}`}>{children}</Mono>;
+  return <Mono className={`text-small text-mute ${className}`}>{children}</Mono>;
 }
 
 export type BannerTone = 'fire' | 'error' | 'slip' | 'pine';
@@ -113,10 +113,10 @@ export function Banner({
     >
       <View className={`flex-row items-start gap-3 ${compact ? 'min-w-0 flex-1' : ''}`}>
         <View className="min-w-0 flex-1">
-          <Text numberOfLines={compact ? 2 : undefined} className="font-body-700 text-[15px]" style={{ color: tone === 'error' ? colors.error : colors.ink }}>
+          <Text numberOfLines={compact ? 2 : undefined} className="font-body-700 text-body" style={{ color: tone === 'error' ? colors.error : colors.ink }}>
             {title}
           </Text>
-          {message ? <Text className="mt-0.5 text-[14px] text-mute">{message}</Text> : null}
+          {message ? <Text className="mt-0.5 text-small text-mute">{message}</Text> : null}
         </View>
         {onClose ? (
           <Tap
@@ -162,11 +162,11 @@ export function Tabs<K extends string>({
               borderColor: colors.ink,
             })}
           >
-            <Text numberOfLines={1} className="font-body-600 text-[15px]" style={{ color: on ? colors.paper : colors.ink }}>
+            <Text numberOfLines={1} className="font-body-600 text-body" style={{ color: on ? colors.paper : colors.ink }}>
               {it.label}
             </Text>
             {it.count !== undefined ? (
-              <Mono className="text-[14px]" style={{ color: on ? colors.pineText : colors.mute }}>
+              <Mono className="text-small" style={{ color: on ? colors.pineText : colors.mute }}>
                 {it.count}
               </Mono>
             ) : null}
@@ -209,7 +209,7 @@ export function Stepper({
     <View className="flex-row items-center overflow-hidden rounded-k border-k border-ink bg-slip">
       {btn('minus', onMinus, minusDisabled, `${label} −`)}
       <View className="h-[44px] min-w-[36px] items-center justify-center border-x-k border-ink px-1">
-        <Mono className="text-[15px]">{value}</Mono>
+        <Mono className="text-body">{value}</Mono>
       </View>
       {btn('plus', onPlus, plusDisabled, `${label} +`)}
     </View>

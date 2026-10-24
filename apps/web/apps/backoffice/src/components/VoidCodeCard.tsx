@@ -38,7 +38,7 @@ export function VoidCodeCard() {
       <CardTitle sub={t('Dibutuhkan untuk membatalkan bill yang sudah dibayar.')}>
         {t('Kode persetujuan void')}
       </CardTitle>
-      <p className="mt-3 flex items-center gap-2 text-[15px]">
+      <p className="mt-3 flex items-center gap-2 text-body">
         {has === null ? (
           <span className="text-mute">{t('Status kode belum dimuat.')}</span>
         ) : has ? (

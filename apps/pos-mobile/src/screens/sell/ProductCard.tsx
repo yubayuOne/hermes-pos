@@ -107,11 +107,11 @@ function ProductCardBase({
       ) : null}
       {/* Foto: sized by its text. flex-1 there (no card height to fill) let the name and price collapse under a loaded photo. */}
       <View className={photo ? 'px-2.5 pb-2.5 pt-2' : `flex-1 justify-between ${landscape ? 'p-2.5' : 'p-3'}`}>
-        <Text numberOfLines={photo && landscape ? 1 : 2} className="font-body-600 text-[15px]" style={{ color: soldOut ? colors.mute : colors.ink }}>
+        <Text numberOfLines={photo && landscape ? 1 : 2} className="font-body-600 text-body" style={{ color: soldOut ? colors.mute : colors.ink }}>
           {product.name}
         </Text>
         <View className={`flex-row items-center justify-between gap-1 ${photo || landscape ? 'mt-1' : 'mt-3'}`}>
-          <Mono className="text-[15px]" style={{ color: soldOut ? colors.mute : colors.ink }}>
+          <Mono className="text-body" style={{ color: soldOut ? colors.mute : colors.ink }}>
             {num(product.price)}
           </Mono>
           <StockTag product={product} />
@@ -119,7 +119,7 @@ function ProductCardBase({
       </View>
       {qty > 0 ? (
         <View className="absolute right-0 top-0 h-[32px] min-w-[32px] items-center justify-center border-b-k border-l-k border-ink bg-fire px-1">
-          <Mono className="font-mono-600 text-[15px]">{qty}</Mono>
+          <Mono className="font-mono-600 text-body">{qty}</Mono>
         </View>
       ) : null}
     </Tap>
@@ -145,8 +145,8 @@ export function TempItemCard({ onPress, disabled, minHeight }: { onPress: () => 
         opacity: disabled ? 0.55 : 1,
       })}
     >
-      <Text className="font-body-700 text-[15px]">+ {t('Menu sementara')}</Text>
-      <Text className="mt-1 text-[14px] text-mute">{t('Sekali pakai, tidak masuk daftar produk')}</Text>
+      <Text className="font-body-700 text-body">+ {t('Menu sementara')}</Text>
+      <Text className="mt-1 text-small text-mute">{t('Sekali pakai, tidak masuk daftar produk')}</Text>
     </Tap>
   );
 }

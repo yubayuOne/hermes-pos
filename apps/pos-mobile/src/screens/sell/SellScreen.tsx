@@ -50,15 +50,15 @@ function BillDock({ onOpen }: { onOpen: () => void }) {
       style={({ pressed }) => ({ backgroundColor: pressed ? colors.pineHover : colors.pine })}
     >
       <View className="h-[44px] min-w-[44px] items-center justify-center rounded-k border-k border-ink bg-fire px-1">
-        <Mono className="font-mono-600 text-[17px]">{count}</Mono>
+        <Mono className="font-mono-600 text-title">{count}</Mono>
       </View>
       <View className="min-w-0 flex-1">
-        <Text className="text-[14px] text-pineText" numberOfLines={1}>
+        <Text className="text-small text-pineText" numberOfLines={1}>
           {customer.table ? t('Bill · Meja {n}', { n: customer.table }) : t('Bill')}
         </Text>
-        <Mono className="font-mono-600 text-[21px] text-paper">{money(total)}</Mono>
+        <Mono className="font-mono-600 text-heading text-paper">{money(total)}</Mono>
       </View>
-      <Text className="font-body-600 text-[15px] text-paper">{t('Lihat bill')}</Text>
+      <Text className="font-body-600 text-body text-paper">{t('Lihat bill')}</Text>
       <Icon name="chevron-up" size={20} color={colors.paper} />
     </Tap>
   );
@@ -134,7 +134,7 @@ const ProductGrid = memo(function ProductGrid({
         </View>
       )}
       ListEmptyComponent={
-        <Text className="py-10 text-center text-[15px] text-mute">
+        <Text className="py-10 text-center text-body text-mute">
           {hasProducts ? t('Menu tidak ditemukan. Coba kata lain.') : t('Belum ada menu. Pemilik menambahkannya di backoffice, menu Produk.')}
         </Text>
       }

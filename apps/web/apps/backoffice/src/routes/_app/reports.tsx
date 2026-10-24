@@ -65,7 +65,7 @@ function Reports() {
         <Link to="/" search={search} className={btn('plain')}>
           {t('Kembali ke Ringkasan')}
         </Link>
-        <p className="text-[14px] text-mute">{dateRange(range.from, range.to, lang)}</p>
+        <p className="text-small text-mute">{dateRange(range.from, range.to, lang)}</p>
         {!empty && (
           <Button className="sm:ml-auto" onClick={() => window.print()}>
             {t('Cetak / simpan PDF')}
@@ -73,7 +73,7 @@ function Reports() {
         )}
       </div>
       {!empty && (
-        <p className="mt-3 text-[14px] text-mute print:hidden">
+        <p className="mt-3 text-small text-mute print:hidden">
           {t('Di jendela cetak, pilih "Simpan sebagai PDF".')}
         </p>
       )}

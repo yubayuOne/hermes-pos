@@ -70,7 +70,7 @@ function Register() {
           title={t('Cek email Anda.')}
           sub={t('Buka tautan yang kami kirim ke {email} untuk melanjutkan.', { email: sent })}
         />
-        <p className="text-[15px] text-mute">{t('Tidak ada email? Lihat folder spam, atau daftar lagi dengan email yang benar.')}</p>
+        <p className="text-body text-mute">{t('Tidak ada email? Lihat folder spam, atau daftar lagi dengan email yang benar.')}</p>
         <Button className="mt-6" onClick={() => setSent(null)}>
           {t('Ubah email')}
         </Button>
@@ -125,7 +125,7 @@ function Register() {
             aria-invalid={f.errors.terms ? true : undefined}
             onChange={(e) => f.set('terms', e.target.checked)}
           />
-          <p className="mt-1 flex gap-4 pl-8 text-[14px]">
+          <p className="mt-1 flex gap-4 pl-8 text-small">
             <a href={TERMS_URL} target="_blank" rel="noopener" className="underline underline-offset-4">
               {t('Baca syarat layanan')}
             </a>
@@ -150,7 +150,7 @@ function Register() {
         busy={busy !== null}
         busyLabel={busy === 'google' ? t('Membuka Google...') : undefined}
       />
-      <p className="mt-6 text-[15px] text-mute">
+      <p className="mt-6 text-body text-mute">
         {t('Sudah punya akun?')}{' '}
         <Link to="/login" className="lnk lnk-inline text-ink">
           {t('Masuk')}

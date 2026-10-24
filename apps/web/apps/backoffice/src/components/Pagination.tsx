@@ -19,7 +19,7 @@ export function Pagination({ page, pages, onPage, busy }: { page: number; pages:
       <Button disabled={page <= 1 || busy} onClick={() => onPage(page - 1)}>
         {t('Sebelumnya')}
       </Button>
-      <p className="font-mono text-[14px]" aria-live="polite">
+      <p className="font-mono text-small" aria-live="polite">
         {t('Halaman {n} dari {m}', { n: page, m: pages })}
       </p>
       <Button disabled={page >= pages || busy} onClick={() => onPage(page + 1)}>

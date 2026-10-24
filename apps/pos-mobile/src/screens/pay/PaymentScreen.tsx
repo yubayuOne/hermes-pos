@@ -357,13 +357,13 @@ export function PaymentScreen({
               <Display size={34} className="mt-2" accessibilityRole="header">
                 {done.queued ? t('Tersimpan di perangkat.') : t('Pembayaran tercatat.')}
               </Display>
-              <Text className="mt-1.5 text-[14px] text-mute">
+              <Text className="mt-1.5 text-small text-mute">
                 {done.queued
                   ? t('Nomor resmi terbit setelah sinkron. Jangan tutup shift sebelum antrean kosong.')
                   : t('{number} · stok dan kas laci diperbarui.', { number: done.number })}
               </Text>
               <View accessibilityLiveRegion="polite" className="mt-4 flex-row items-center justify-between rounded-k border-k border-ink bg-pine px-4 py-3.5">
-                <Text className="font-body-600 text-[15px] text-paper">{done.receipt.paymentMethod === 'qris' ? t('Pembayaran QRIS') : t('Kembalian')}</Text>
+                <Text className="font-body-600 text-body text-paper">{done.receipt.paymentMethod === 'qris' ? t('Pembayaran QRIS') : t('Kembalian')}</Text>
                 <Display size={44} className="ml-3 min-w-0 flex-1 text-right" numberOfLines={1} adjustsFontSizeToFit style={{ color: colors.paper }}>
                   {money(done.receipt.paymentMethod === 'qris' ? done.receipt.total : done.change)}
                 </Display>
@@ -397,7 +397,7 @@ export function PaymentScreen({
                   </ButtonRow>
                 ) : null}
               </View>
-              <Text className="mt-2 text-[14px] text-mute">{t('Opsional')}</Text>
+              <Text className="mt-2 text-small text-mute">{t('Opsional')}</Text>
             </View>
             <View style={wide ? { flex: 1 } : { marginTop: 16 }}>
               <ReceiptView data={done.receipt} totalBand={false} />
@@ -417,7 +417,7 @@ export function PaymentScreen({
       {phoneLandscape ? null : (
         <>
           <View className="flex-row items-end justify-between">
-            <Mono className="text-[14px] text-mute">{t('Total tagihan')}</Mono>
+            <Mono className="text-small text-mute">{t('Total tagihan')}</Mono>
             <Display size={40} className="ml-3 min-w-0 flex-1 text-right" numberOfLines={1} adjustsFontSizeToFit>
               {money(total)}
             </Display>
@@ -463,8 +463,8 @@ export function PaymentScreen({
         </>
       ) : (
         <View className="rounded-k border-k border-ink bg-fireSoft px-3.5 py-3">
-          <Text className="font-body-600 text-[15px]">{t('Nominal QRIS: {amount}', { amount: money(total) })}</Text>
-          <Text className="mt-1 text-[14px] text-mute">{t('Cek QRIS masuk dulu.')}</Text>
+          <Text className="font-body-600 text-body">{t('Nominal QRIS: {amount}', { amount: money(total) })}</Text>
+          <Text className="mt-1 text-small text-mute">{t('Cek QRIS masuk dulu.')}</Text>
         </View>
       )}
     </View>
@@ -473,8 +473,8 @@ export function PaymentScreen({
   const summary = (
     <Slip>
       <View className="flex-row justify-between">
-        <Mono className="font-mono-600 text-[14px]">BILL</Mono>
-        <Mono className="text-[14px] text-mute">{cust.table ? t('Meja {n}', { n: cust.table }) : ''}</Mono>
+        <Mono className="font-mono-600 text-small">BILL</Mono>
+        <Mono className="text-small text-mute">{cust.table ? t('Meja {n}', { n: cust.table }) : ''}</Mono>
       </View>
       <SlipRule />
       {items.map((i) => (
@@ -505,7 +505,7 @@ export function PaymentScreen({
           <Display size={phoneLandscape ? 22 : 27} accessibilityRole="header">
             {t('Pembayaran')}
           </Display>
-          <Mono numberOfLines={1} className="mt-0.5 text-[14px] text-mute">
+          <Mono numberOfLines={1} className="mt-0.5 text-small text-mute">
             {sub}
           </Mono>
         </View>

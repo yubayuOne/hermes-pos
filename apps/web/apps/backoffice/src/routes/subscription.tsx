@@ -68,7 +68,7 @@ function Checkout() {
       <header className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b-[1.5px] border-ink px-4 py-4 md:px-10">
         <Link to="/" className="flex items-baseline gap-3" aria-label={t('Ke backoffice')}>
           <Wordmark size={30} />
-          <span className="hidden font-mono text-[13px] text-mute sm:inline">
+          <span className="hidden font-mono text-small text-mute sm:inline">
             {t('langganan')} · {app.business.name}
           </span>
         </Link>
@@ -132,7 +132,7 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
           </div>
         )}
         <StepsBar steps={STEP_NAMES.map((s) => t(s))} current={step} label={t('Langkah pembayaran')} />
-        <p className="mt-7 font-mono text-[14px] text-mute">{t('Langkah {n} dari 4', { n: step + 1 })}</p>
+        <p className="mt-7 font-mono text-small text-mute">{t('Langkah {n} dari 4', { n: step + 1 })}</p>
         {step === 0 && (
           <section aria-labelledby="s-t" className="animate-pop">
             <h1 id="s-t" className="page-t mt-1">
@@ -160,11 +160,11 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
                       on ? 'border-l-[12px] border-l-pine bg-pine-soft' : 'bg-slip hover:bg-tint-3',
                     )}
                   >
-                    <span className="block font-mono text-[14px]">{t(x.name)}</span>
+                    <span className="block font-mono text-small">{t(x.name)}</span>
                     <span className="mt-1 block font-display text-[clamp(26px,2.4vw,30px)] font-extrabold leading-none tracking-[-0.03em]">
                       {money(x.price)}
                     </span>
-                    <span className="mt-2 block font-mono text-[13px] text-mute">
+                    <span className="mt-2 block font-mono text-small text-mute">
                       {x.months === 1 ? t('per bulan') : t('{amount} per bulan', { amount: money(perMonth(x)) })}
                     </span>
                     {saving(x) > 0 && (
@@ -189,7 +189,7 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
               <Button variant="fire" onClick={() => setStep(1)}>
                 {t('Lanjut ke pembayaran')}
               </Button>
-              <span className="font-mono text-[15px] text-mute">Total {money(total)}</span>
+              <span className="font-mono text-body text-mute">Total {money(total)}</span>
             </div>
           </section>
         )}
@@ -233,7 +233,7 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
           <RCut />
           <RRow l={t('Setara per bulan')} r={money(Math.round(total / p.months))} className="border-0 py-1.5" />
           <RRow l={expired ? t('Berlaku sampai (perkiraan)') : t('Berlaku sampai')} r={dateShort(newEnd, lang, tz)} className="border-0 py-1.5" />
-          <p className="mt-2 text-[13px] text-mute">
+          <p className="mt-2 text-small text-mute">
             {expired ? t('Masa aktif dihitung dari hari paket diaktifkan.') : t('Sisa waktu sekarang ditambahkan, tidak ada hari yang hilang.')}{' '}
             {extraOutlets > 0 && t('Outlet tambahan adalah perkiraan, jumlah akhir kami cocokkan saat verifikasi.')}
           </p>
@@ -259,7 +259,7 @@ function Transfer({ total, onBack, onNext }: { total: number; onBack: () => void
         {t('Transfer ke rekening kami.')}
       </h1>
       <div className="slipc mt-7">
-        <p className="font-mono text-[14px] text-mute">{t('Jumlah yang ditransfer')}</p>
+        <p className="font-mono text-small text-mute">{t('Jumlah yang ditransfer')}</p>
         <div className="mt-2 flex flex-wrap items-center gap-4">
           <p className="big-num">{money(total)}</p>
           <Button onClick={() => copy(String(total), 'Jumlah disalin.')}>{t('Salin jumlah')}</Button>
@@ -271,7 +271,7 @@ function Transfer({ total, onBack, onNext }: { total: number; onBack: () => void
             ['Atas nama', BANK.holder],
           ].map(([k, v]) => (
             <div key={k}>
-              <dt className="font-mono text-[14px] text-mute">{t(k)}</dt>
+              <dt className="font-mono text-small text-mute">{t(k)}</dt>
               <dd className="mt-1 break-words font-mono font-semibold">{v}</dd>
             </div>
           ))}
@@ -287,7 +287,7 @@ function Transfer({ total, onBack, onNext }: { total: number; onBack: () => void
       </ol>
       <div className="mt-5 rounded border-[1.5px] border-ink bg-fire-soft p-4">
         <p className="font-semibold">{t('Belum ada pembayaran otomatis.')}</p>
-        <p className="mt-1 text-[15px]">
+        <p className="mt-1 text-body">
           {t('Transfer diperiksa manual pada {hours}.', { hours: t(SUPPORT.hours) })}
         </p>
       </div>
@@ -420,7 +420,7 @@ function Verify({ payment }: { payment: Payment }) {
             <StepNum n={i + 1} state={s} />
             <span className="pt-0.5">
               <span className={cn('block font-semibold', s === 'todo' && 'text-mute')}>{title}</span>
-              <span className="block text-[14px] text-mute">{sub}</span>
+              <span className="block text-small text-mute">{sub}</span>
             </span>
           </li>
         ))}
@@ -474,11 +474,11 @@ function History({ payments, selected, onSelect }: { payments: Payment[]; select
               {payments.map((p) => (
                 <tr key={p.id} className={p.id === current?.id ? 'bg-tint-3' : ''}>
                   <td data-l={t('Faktur')}>
-                    <button type="button" className="lnk font-mono text-[15px]" aria-pressed={p.id === current?.id} onClick={() => onSelect(p.id)}>
+                    <button type="button" className="lnk font-mono text-body" aria-pressed={p.id === current?.id} onClick={() => onSelect(p.id)}>
                       {p.invoiceNumber}
                     </button>
                   </td>
-                  <td data-l={t('Tanggal')} className="font-mono text-[15px]">
+                  <td data-l={t('Tanggal')} className="font-mono text-body">
                     {dateShort(p.createdAt, lang, tz)}
                   </td>
                   <td data-l={t('Paket')}>{t(PLAN_NAME[p.planCode])}</td>
@@ -498,7 +498,7 @@ function History({ payments, selected, onSelect }: { payments: Payment[]; select
         <Receipt ink torn label={t('Faktur {inv}', { inv: current.invoiceNumber })}>
           <div className="head">
             <Wordmark size={22} />
-            <p className="mt-1 text-[13px] uppercase text-mute">
+            <p className="mt-1 text-small uppercase text-mute">
               {t('Faktur')} · {current.invoiceNumber}
             </p>
           </div>
@@ -520,7 +520,7 @@ function History({ payments, selected, onSelect }: { payments: Payment[]; select
           <RRow l="Status" r={t(STATUS[current.status][0])} className="border-0 py-1.5" />
           {current.newExpiresAt && <RRow l={t('Berlaku sampai')} r={dateShort(current.newExpiresAt, lang, tz)} className="border-0 py-1.5" />}
           {current.rejectReason && (
-            <p className="mt-2 text-[13px]">
+            <p className="mt-2 text-small">
               {t('Alasan')}: {current.rejectReason}
             </p>
           )}

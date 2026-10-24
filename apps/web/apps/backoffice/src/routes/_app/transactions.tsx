@@ -209,12 +209,12 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
                       >
                         {b.number}
                       </button>
-                      <span className="block text-[14px] text-mute">
+                      <span className="block text-small text-mute">
                         {[b.customerName, b.tableNumber && t('Meja {n}', { n: b.tableNumber }), !search.outlet && b.outletName].filter(Boolean).join(' · ')}
                       </span>
                       <BillTags bill={b} />
                     </td>
-                    <td data-l={t('Waktu')} className="font-mono text-[14px]">
+                    <td data-l={t('Waktu')} className="font-mono text-small">
                       {dateShort(b.createdAt, lang, tz)} {time(b.createdAt, tz)}
                     </td>
                     <td data-l={t('Kasir')}>{b.cashierName}</td>
@@ -268,7 +268,7 @@ function EditHistory({ edits }: { edits: BillEdit[] }) {
   const tz = useApp().business.timezone;
   if (!edits.length) return null;
   return (
-    <section aria-labelledby="bill-edits" className="grid gap-2 border-t-[1.5px] border-ink pt-4 text-[14px]">
+    <section aria-labelledby="bill-edits" className="grid gap-2 border-t-[1.5px] border-ink pt-4 text-small">
       <h3 id="bill-edits" className="font-semibold">
         {t('Riwayat perubahan')}
       </h3>
@@ -303,7 +303,7 @@ function PastNote({ bill: b }: { bill: Bill }) {
   const tz = useApp().business.timezone;
   if (isoDay(new Date(b.createdAt), tz) >= isoDay(new Date(), tz)) return null;
   return (
-    <p role="note" className="rounded border-[1.5px] border-fire bg-tint p-3 text-[14px]">
+    <p role="note" className="rounded border-[1.5px] border-fire bg-tint p-3 text-small">
       {t('Bill ini dari {date}. Laporan dan kas shift hari itu ikut berubah.', {
         date: dateShort(b.createdAt, lang, tz),
       })}
@@ -339,9 +339,9 @@ function BillDialog({ bill: b, onClose }: { bill: Bill; onClose: () => void }) {
       footer={<Button onClick={onClose}>{t('Tutup')}</Button>}
     >
       <BillTags bill={b} />
-      {b.status === 'voided' && b.voidReason && <p className="text-[15px]">{t('Alasan batal: {reason}', { reason: b.voidReason })}</p>}
+      {b.status === 'voided' && b.voidReason && <p className="text-body">{t('Alasan batal: {reason}', { reason: b.voidReason })}</p>}
       {(b.customerName || b.tableNumber) && (
-        <p className="text-[15px]">{[b.customerName, b.tableNumber && t('Meja {n}', { n: b.tableNumber })].filter(Boolean).join(' · ')}</p>
+        <p className="text-body">{[b.customerName, b.tableNumber && t('Meja {n}', { n: b.tableNumber })].filter(Boolean).join(' · ')}</p>
       )}
       {loadError ? (
         <FormAlert>{t(loadError)}</FormAlert>
@@ -358,18 +358,18 @@ function BillDialog({ bill: b, onClose }: { bill: Bill; onClose: () => void }) {
                   <span className="font-semibold">
                     {amount(i.quantity)} × {i.productName}
                   </span>
-                  <span className="block font-mono text-[13px] text-mute">@ {money(i.unitPrice)}</span>
-                  {i.note && <span className="block text-[14px] text-mute">{i.note}</span>}
-                  {i.refundedQty > 0 && <span className="block text-[14px] text-fire">{t('Direfund {n}', { n: amount(i.refundedQty) })}</span>}
+                  <span className="block font-mono text-small text-mute">@ {money(i.unitPrice)}</span>
+                  {i.note && <span className="block text-small text-mute">{i.note}</span>}
+                  {i.refundedQty > 0 && <span className="block text-small text-fire">{t('Direfund {n}', { n: amount(i.refundedQty) })}</span>}
                 </span>
                 <span className="text-right font-mono">
                   {money(i.subtotal)}
-                  {i.discount > 0 && <span className="block text-[13px] text-mute">−{money(i.discount)}</span>}
+                  {i.discount > 0 && <span className="block text-small text-mute">−{money(i.discount)}</span>}
                 </span>
               </li>
             ))}
           </ul>
-          <dl className="grid gap-1 font-mono text-[15px]">
+          <dl className="grid gap-1 font-mono text-body">
             {b.discount > 0 && (
               <div className="flex justify-between">
                 <dt>{t('Diskon')}</dt>
@@ -398,7 +398,7 @@ function BillDialog({ bill: b, onClose }: { bill: Bill; onClose: () => void }) {
             )}
           </dl>
           {detail.refunds.length > 0 && (
-            <section aria-label={t('Refund')} className="grid gap-1 text-[14px]">
+            <section aria-label={t('Refund')} className="grid gap-1 text-small">
               {detail.refunds.map((r) => (
                 <p key={r.id}>
                   {dateShort(r.createdAt, lang, tz)} {time(r.createdAt, tz)} · {r.cashierName} · {money(r.amount)} · {r.reason}
@@ -634,10 +634,10 @@ function ProductsTab({
             ))}
           </Select>
         </Field>
-        <p className="text-[14px] text-mute">{t('Dari bill selesai. Penjualan setelah semua diskon, refund belum dikurangi.')}</p>
+        <p className="text-small text-mute">{t('Dari bill selesai. Penjualan setelah semua diskon, refund belum dikurangi.')}</p>
       </FilterBar>
       {sold === null && (
-        <p role="status" className="mt-3 text-[14px] font-semibold text-error">
+        <p role="status" className="mt-3 text-small font-semibold text-error">
           {t('Jumlah terjual belum bisa dimuat. Muat ulang halaman sebentar lagi.')}
         </p>
       )}
@@ -666,7 +666,7 @@ function ProductsTab({
                 <tr key={p.id}>
                   <td data-l={t('Produk')}>
                     <span className="font-semibold">{p.name}</span>
-                    {!p.isActive && <span className="block text-[14px] text-mute">{t('nonaktif')}</span>}
+                    {!p.isActive && <span className="block text-small text-mute">{t('nonaktif')}</span>}
                   </td>
                   <td data-l={t('Terjual')} className="num">
                     {amount(of(p.id).qty)}

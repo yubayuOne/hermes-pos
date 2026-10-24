@@ -81,12 +81,12 @@ export function ReportDocument({
             {outlet?.logoUrl ? (
               <img src={outlet.logoUrl} alt={t('Logo {name}', { name: outlet.name })} className="h-12 w-24 object-contain object-left" />
             ) : (
-              <span className="grid h-12 w-24 place-items-center border border-dashed border-mute font-mono text-[12px] text-mute">[LOGO]</span>
+              <span className="grid h-12 w-24 place-items-center border border-dashed border-mute font-mono text-caption text-mute">[LOGO]</span>
             )}
-            <p className="mt-3 font-display text-[17px] font-extrabold tracking-[-0.02em]">{business}</p>
+            <p className="mt-3 font-display text-title font-extrabold tracking-[-0.02em]">{business}</p>
             <p className="text-[12.5px] text-mute">{outlet ? outlet.name : t('Semua outlet: {list}', { list: r.outlets.join(', ') })}</p>
           </div>
-          <div className="text-right font-mono text-[12px] leading-[1.7] text-mute">
+          <div className="text-right font-mono text-caption leading-[1.7] text-mute">
             <p>No. {number}</p>
             <p>{t('Periode {range}', { range: period })}</p>
             <p>{t('Dibuat {date}', { date: created })}</p>
@@ -191,7 +191,7 @@ export function ReportDocument({
               </tbody>
             </table>
           </Scroll>
-          <p className="mt-3 text-[12px] text-mute">
+          <p className="mt-3 text-caption text-mute">
             {t(
               'Angka dalam kurung adalah pengurang. Pembelian bahan ({amount}) tidak masuk laba rugi karena sudah ada di HPP.',
               { amount: money(cur.inventoryPurchases) },
@@ -275,7 +275,7 @@ export function ReportDocument({
                   )}
                 </tbody>
               </table>
-              <p className="mt-3 text-[12px] text-mute">
+              <p className="mt-3 text-caption text-mute">
                 {/* Counted on the server: the shift list stops at 500 rows. */}
                 {r.cash.shortCount + r.cash.overCount > 12 &&
                   `${t('Dan {n} shift lainnya dengan selisih.', { n: r.cash.shortCount + r.cash.overCount - 12 })} `}
@@ -371,7 +371,7 @@ export function ReportDocument({
                   </tr>
                 </tbody>
               </table>
-              <p className="mt-2 text-[12px] text-mute">{t('QRIS masuk ke rekening outlet, bukan ke laci.')}</p>
+              <p className="mt-2 text-caption text-mute">{t('QRIS masuk ke rekening outlet, bukan ke laci.')}</p>
             </div>
             <div>
               <table className="rp-tbl">
@@ -434,7 +434,7 @@ export function ReportDocument({
               </table>
             </Scroll>
           )}
-          <p className="mt-2 text-[12px] text-mute">{t('Rincian lengkap ada di menu Pengeluaran.')}</p>
+          <p className="mt-2 text-caption text-mute">{t('Rincian lengkap ada di menu Pengeluaran.')}</p>
         </Section>
       </Sheet>
 
@@ -479,7 +479,7 @@ export function ReportDocument({
               </tbody>
             </table>
           </Scroll>
-          <p className="mt-2 text-[12px] text-mute">{t('Penjualan bersih setelah refund, pada tanggal refund.')}</p>
+          <p className="mt-2 text-caption text-mute">{t('Penjualan bersih setelah refund, pada tanggal refund.')}</p>
         </Section>
 
         <div className="grid items-start gap-x-6 md:grid-cols-2 print:grid-cols-2">
@@ -568,7 +568,7 @@ export function ReportDocument({
                     <tr key={p.name}>
                       <td>
                         {p.name}
-                        <span className="block text-[12px] text-mute">{p.category || t('Tanpa kategori')}</span>
+                        <span className="block text-caption text-mute">{p.category || t('Tanpa kategori')}</span>
                       </td>
                       <td className="n">{qty(p.qty)}</td>
                       <td className="n">{amount(p.sales)}</td>
@@ -589,7 +589,7 @@ export function ReportDocument({
               </tbody>
             </table>
           </Scroll>
-          <p className="mt-2 text-[12px] text-mute">
+          <p className="mt-2 text-caption text-mute">
             {t('Setelah semua diskon, sebelum refund. Margin di bawah {x}% ditandai merah.', {
               x: decimal(redBelow, lang),
             })}
@@ -746,10 +746,10 @@ function Section({ n, title, sub, children }: { n: number; title: string; sub?: 
   return (
     <section className="mt-7" aria-labelledby={`rp-${n}`}>
       <div className="rp-keep flex items-center gap-2.5">
-        <span aria-hidden className="grid h-6 min-w-6 place-items-center rounded-[3px] border-[1.5px] border-pine-line px-1 font-mono text-[12px] text-pine">
+        <span aria-hidden className="grid h-6 min-w-6 place-items-center rounded-[3px] border-[1.5px] border-pine-line px-1 font-mono text-caption text-pine">
           {n}
         </span>
-        <h2 id={`rp-${n}`} className="font-display text-[19px] font-extrabold tracking-[-0.02em]">
+        <h2 id={`rp-${n}`} className="font-display text-title font-extrabold tracking-[-0.02em]">
           {title}
         </h2>
       </div>
@@ -774,9 +774,9 @@ function Coming({ n, title, text }: { n: number; title: string; text: string }) 
 function Kpi({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
     <div className="min-w-0 bg-slip p-3.5">
-      <dt className="text-[12px] text-mute">{label}</dt>
-      <dd className="mt-1 break-words font-display text-[22px] font-extrabold tracking-[-0.03em]">{value}</dd>
-      <dd className="mt-1 font-mono text-[12px] text-pine">{sub}</dd>
+      <dt className="text-caption text-mute">{label}</dt>
+      <dd className="mt-1 break-words font-display text-heading font-extrabold tracking-[-0.03em]">{value}</dd>
+      <dd className="mt-1 font-mono text-caption text-pine">{sub}</dd>
     </div>
   );
 }
@@ -836,12 +836,12 @@ function Sheet({
     <article className="rp-sheet flex flex-col" aria-label={t('Halaman {n} dari {m}', { n, m: pages })}>
       {n > 1 && (
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b-2 border-ink pb-3">
-          <p className="font-display text-[17px] font-extrabold tracking-[-0.02em]">{head.business}</p>
-          <p className="font-mono text-[12px] text-mute">{head.meta}</p>
+          <p className="font-display text-title font-extrabold tracking-[-0.02em]">{head.business}</p>
+          <p className="font-mono text-caption text-mute">{head.meta}</p>
         </div>
       )}
       <div className="flex-1">{children}</div>
-      <p className="mt-8 flex flex-wrap justify-between gap-2 border-t border-rule pt-3 text-[12px] text-mute print:hidden">
+      <p className="mt-8 flex flex-wrap justify-between gap-2 border-t border-rule pt-3 text-caption text-mute print:hidden">
         <span>
           {footer}
           {last ? ` · ${t('Rahasia, untuk internal')}` : ''}
@@ -863,14 +863,14 @@ function DayBars({ days }: { days: { date: string; total: number }[] }) {
       <div className="flex h-[170px] items-end gap-[3px] border-b-[1.5px] border-ink" role="img" aria-label={t('Penjualan bersih per hari')}>
         {days.map((d, i) => (
           <div key={d.date} className="flex h-full min-w-0 flex-1 flex-col justify-end">
-            {few && <span className="mb-1 text-center font-mono text-[12px]">{decimal(d.total / 1_000_000, lang)}</span>}
+            {few && <span className="mb-1 text-center font-mono text-caption">{decimal(d.total / 1_000_000, lang)}</span>}
             <div className={i === top ? 'bg-fire' : 'bg-pine'} style={{ height: `${Math.max(0, d.total / max) * (few ? 82 : 100)}%` }} />
           </div>
         ))}
       </div>
       <div className="mt-1 flex gap-[3px]" aria-hidden>
         {days.map((d, i) => (
-          <span key={d.date} className="min-w-0 flex-1 truncate text-center font-mono text-[12px] text-mute">
+          <span key={d.date} className="min-w-0 flex-1 truncate text-center font-mono text-caption text-mute">
             {few ? weekday(d.date, lang, 'UTC') : i % Math.ceil(days.length / 10) === 0 ? d.date.slice(8, 10) : ''}
           </span>
         ))}
@@ -887,8 +887,8 @@ function Scroll({ children }: { children: ReactNode }) {
 function Sign({ title, text }: { title: string; text: string }) {
   return (
     <div className="border-t-[1.5px] border-ink pt-2">
-      <p className="text-[13px] font-semibold">{title}</p>
-      <p className="text-[12px] text-mute">{text}</p>
+      <p className="text-small font-semibold">{title}</p>
+      <p className="text-caption text-mute">{text}</p>
     </div>
   );
 }

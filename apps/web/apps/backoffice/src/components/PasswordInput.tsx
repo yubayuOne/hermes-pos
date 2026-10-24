@@ -18,7 +18,7 @@ export function PasswordInput({
   return (
     <div className="in-group">
       <Input {...rest} type={show ? 'text' : 'password'} value={value} onChange={(e) => onChange(e.target.value)} />
-      <button type="button" className="in-act lnk px-2 text-[15px]" aria-pressed={show} onClick={onToggle}>
+      <button type="button" className="in-act lnk px-2 text-body" aria-pressed={show} onClick={onToggle}>
         {show ? t('Sembunyikan') : t('Lihat')}
       </button>
     </div>

@@ -120,7 +120,7 @@ export function QueueSheet({ visible, onClose }: { visible: boolean; onClose: ()
       />
       <SheetBody contentClassName="gap-2.5">
         {queue.length === 0 ? (
-          <Text className="py-6 text-center text-[15px] text-mute">{t('Antrean kosong. Semua penjualan sudah tercatat di server.')}</Text>
+          <Text className="py-6 text-center text-body text-mute">{t('Antrean kosong. Semua penjualan sudah tercatat di server.')}</Text>
         ) : null}
         {queue.map((e) => {
           const rejected = e.status === 'conflict';
@@ -131,20 +131,20 @@ export function QueueSheet({ visible, onClose }: { visible: boolean; onClose: ()
               style={{ borderWidth: 1.5, borderColor: rejected ? colors.errorLine : colors.ink, backgroundColor: rejected ? colors.errorSoft : colors.slip }}
             >
               <View className="flex-row items-center justify-between gap-2">
-                <Mono className="font-mono-600 min-w-0 flex-1 text-[15px]" numberOfLines={1}>
+                <Mono className="font-mono-600 min-w-0 flex-1 text-body" numberOfLines={1}>
                   {entryTitle(e)} · {fmtTime(e.queuedAt)}
                 </Mono>
                 <Tag label={rejected ? t('ditolak') : t('menunggu')} tone={rejected ? 'error' : 'fire'} />
               </View>
-              <Text className="text-[14px] text-mute">{entryDetail(e)}</Text>
+              <Text className="text-small text-mute">{entryDetail(e)}</Text>
               {rejected && e.lastError ? (
-                <Text className="font-body-600 text-[14px] text-error">
+                <Text className="font-body-600 text-small text-error">
                   {(e.kind ?? 'checkout') !== 'checkout'
                     ? t('Ditolak server: {reason} Entri tidak dihapus otomatis. Tinjau bersama pemilik.', { reason: e.lastError })
                     : t('Ditolak server: {reason} Tinjau bersama pemilik.', { reason: e.lastError })}
                 </Text>
               ) : e.attempts > 0 ? (
-                <Mono className="text-[14px] text-mute">
+                <Mono className="text-small text-mute">
                   {t('Dicoba {n}× · terakhir {time}', { n: e.attempts, time: e.lastAttemptAt ? fmtTime(e.lastAttemptAt) : '-' })}
                 </Mono>
               ) : null}
@@ -232,8 +232,8 @@ export function BellSheet({ visible, onClose }: { visible: boolean; onClose: () 
             <ActivityIndicator color={colors.ink} />
           </View>
         ) : null}
-        {error ? <Text className="pb-3 text-[14px] text-error">{t('Notifikasi belum bisa dimuat. Periksa internet.')}</Text> : null}
-        {items && items.length === 0 && !error ? <Text className="py-6 text-center text-[15px] text-mute">{t('Belum ada notifikasi.')}</Text> : null}
+        {error ? <Text className="pb-3 text-small text-error">{t('Notifikasi belum bisa dimuat. Periksa internet.')}</Text> : null}
+        {items && items.length === 0 && !error ? <Text className="py-6 text-center text-body text-mute">{t('Belum ada notifikasi.')}</Text> : null}
         {(items ?? []).map((n, i) => (
           <View
             key={n.id}
@@ -243,13 +243,13 @@ export function BellSheet({ visible, onClose }: { visible: boolean; onClose: () 
           >
             <View className="mt-1.5 h-[10px] w-[10px] border-k border-ink" style={{ backgroundColor: n.readAt ? colors.disabledLine : colors.fire }} />
             <View className="min-w-0 flex-1">
-              <Text className={`text-[15px] ${n.readAt ? '' : 'font-body-600'}`}>{notificationText(n)}</Text>
-              <Mono className="mt-1 text-[14px] text-mute">{fmtDateTime(n.createdAt)}</Mono>
+              <Text className={`text-body ${n.readAt ? '' : 'font-body-600'}`}>{notificationText(n)}</Text>
+              <Mono className="mt-1 text-small text-mute">{fmtDateTime(n.createdAt)}</Mono>
             </View>
           </View>
         ))}
         <Card className="mt-3 bg-paper">
-          <Text className="text-[14px] text-mute">
+          <Text className="text-small text-mute">
             {t('Pemilik memperpanjang paket di backoffice.')}
           </Text>
         </Card>

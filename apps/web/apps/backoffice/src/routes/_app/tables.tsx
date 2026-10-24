@@ -95,7 +95,7 @@ function Tables() {
                           disabled={lock.locked || toggle.busy}
                           onChange={(v) => setActive(tb, v)}
                         />
-                        <span className="w-16 text-left text-[15px]">{tb.isActive ? t('Aktif') : t('Nonaktif')}</span>
+                        <span className="w-16 text-left text-body">{tb.isActive ? t('Aktif') : t('Nonaktif')}</span>
                       </span>
                     </td>
                     <td>

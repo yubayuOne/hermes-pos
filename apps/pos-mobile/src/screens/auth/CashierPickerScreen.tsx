@@ -47,13 +47,13 @@ function CashierRow({ cashier, onPress }: { cashier: DeviceCashier; onPress: () 
       style={({ pressed }) => ({ backgroundColor: pressed ? colors.tint : colors.slip })}
     >
       <View className="h-[44px] w-[44px] items-center justify-center rounded-k bg-pine">
-        <Text className="font-body-700 text-[20px] text-paper">{cashier.cashierName.slice(0, 1).toUpperCase()}</Text>
+        <Text className="font-body-700 text-heading text-paper">{cashier.cashierName.slice(0, 1).toUpperCase()}</Text>
       </View>
       <View className="min-w-0 flex-1 gap-0.5">
-        <Text numberOfLines={1} className="font-body-600 text-[17px]">
+        <Text numberOfLines={1} className="font-body-600 text-title">
           {cashier.cashierName}
         </Text>
-        <Text numberOfLines={1} className="text-[14px] text-mute">
+        <Text numberOfLines={1} className="text-small text-mute">
           {cashier.outletName} · {cashier.terminalName}
         </Text>
         {!cashier.hasPin ? (
@@ -76,7 +76,7 @@ function OutletRow({ cashier, onPress }: { cashier: DeviceCashier; onPress: () =
       className="min-h-[76px] flex-row items-center gap-3 rounded-k border-k border-ink px-3 py-2.5"
       style={({ pressed }) => ({ backgroundColor: pressed ? colors.tint : colors.slip })}
     >
-      <Text numberOfLines={2} className="min-w-0 flex-1 font-body-600 text-[17px]">
+      <Text numberOfLines={2} className="min-w-0 flex-1 font-body-600 text-title">
         {cashier.outletName}
       </Text>
       <Icon name="chevron-right" size={22} />
@@ -216,9 +216,9 @@ export function CashierPickerScreen({
   const status = (
     <View className="min-h-[44px] items-center justify-center px-2" accessibilityLiveRegion="polite">
       {checking ? (
-        <Text className="font-body-600 text-[14px] text-mute">{t('Memeriksa PIN...')}</Text>
+        <Text className="font-body-600 text-small text-mute">{t('Memeriksa PIN...')}</Text>
       ) : pinError ? (
-        <Text accessibilityRole="alert" className="text-center font-body-600 text-[14px] text-error">
+        <Text accessibilityRole="alert" className="text-center font-body-600 text-small text-error">
           {pinError}
         </Text>
       ) : null}
@@ -260,7 +260,7 @@ export function CashierPickerScreen({
                 {outlet.outletName}
               </Display>
             ) : null}
-            <Mono numberOfLines={1} className="mt-1 text-[14px] text-mute">
+            <Mono numberOfLines={1} className="mt-1 text-small text-mute">
               {accountEmail}
             </Mono>
           </View>

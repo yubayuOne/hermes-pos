@@ -116,7 +116,7 @@ export function HermesSplash({ ready, step, progress, onDone }: Props) {
           />
         </View>
         {/* System monospace: the app fonts are still loading while the splash shows. */}
-        <Text accessibilityLiveRegion="polite" style={{ marginTop: 10, textAlign: 'center', fontFamily: 'monospace', fontWeight: '700', fontSize: 13, letterSpacing: 0.8, color: INK, textTransform: 'uppercase' }}>
+        <Text accessibilityLiveRegion="polite" style={{ marginTop: 10, textAlign: 'center', fontFamily: 'monospace', fontWeight: '700', fontSize: 14, letterSpacing: 0.8, color: INK, textTransform: 'uppercase' }}>
           {step}
         </Text>
       </Animated.View>

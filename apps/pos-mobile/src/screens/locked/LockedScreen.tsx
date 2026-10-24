@@ -49,12 +49,12 @@ export function LockedScreen({ onOpenBills }: { onOpenBills: () => void }) {
       <Display size={34} className="mt-3" accessibilityRole="header">
         {t('Penjualan baru dikunci.')}
       </Display>
-      <Text className="mt-2 text-[15px] leading-[22px] text-mute">
+      <Text className="mt-2 text-body leading-[22px] text-mute">
         {t('Data aman. Riwayat bill dan laporan shift tetap bisa dibuka.')}
       </Text>
       <Slip className="mt-4 w-full max-w-[400px]">
         <View className="flex-row items-center justify-between">
-          <Mono className="font-mono-600 text-[14px]">{t('LANGGANAN')}</Mono>
+          <Mono className="font-mono-600 text-small">{t('LANGGANAN')}</Mono>
           <Tag tone="error" label={t('berakhir')} />
         </View>
         <SlipRule />
@@ -71,13 +71,13 @@ export function LockedScreen({ onOpenBills }: { onOpenBills: () => void }) {
         {steps.map((s, i) => (
           <View key={i} className="flex-row items-start gap-2.5">
             <View className="h-[28px] w-[28px] items-center justify-center rounded-k border-k border-ink bg-slip">
-              <Mono className="text-[14px]">{i + 1}</Mono>
+              <Mono className="text-small">{i + 1}</Mono>
             </View>
-            <Text className="min-w-0 flex-1 pt-0.5 text-[15px]">{s}</Text>
+            <Text className="min-w-0 flex-1 pt-0.5 text-body">{s}</Text>
           </View>
         ))}
       </View>
-      <Text className="mt-3 text-[14px] text-mute">{t('Perlu bantuan? WhatsApp {wa}.', { wa: BRAND.whatsapp })}</Text>
+      <Text className="mt-3 text-small text-mute">{t('Perlu bantuan? WhatsApp {wa}.', { wa: BRAND.whatsapp })}</Text>
       <ButtonRow className="mt-4">
         <Button label={t('Lihat riwayat bill')} onPress={onOpenBills} />
         <Button variant="pine" label={checking ? t('Memeriksa...') : t('Periksa status langganan')} loading={checking} onPress={() => void check()} />

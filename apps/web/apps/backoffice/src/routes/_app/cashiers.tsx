@@ -92,7 +92,7 @@ function Cashiers() {
                           disabled={lock.locked || toggle.busy}
                           onChange={(v) => setActive(c, v)}
                         />
-                        <span className="w-16 text-left text-[15px]">{c.isActive ? t('Aktif') : t('Nonaktif')}</span>
+                        <span className="w-16 text-left text-body">{c.isActive ? t('Aktif') : t('Nonaktif')}</span>
                       </span>
                     </td>
                     <td data-l="PIN">

@@ -131,7 +131,7 @@ function ProfileTab() {
           </span>
           <div className="min-w-0">
             <p className="card-t truncate">{f.values.fullName || t('Pemilik')}</p>
-            <p className="mt-1 font-mono text-[14px] text-mute">
+            <p className="mt-1 font-mono text-small text-mute">
               {t('pemilik')} · @{p?.username ?? f.values.username}
             </p>
           </div>
@@ -178,7 +178,7 @@ function LanguageCard() {
         <CardTitle>{t('Bahasa')}</CardTitle>
         <LangToggle />
       </div>
-      <p className="mt-3 text-[15px] text-mute">{t('Bahasa tampilan backoffice. Pilihan diingat di perangkat ini.')}</p>
+      <p className="mt-3 text-body text-mute">{t('Bahasa tampilan backoffice. Pilihan diingat di perangkat ini.')}</p>
     </Card>
   );
 }
@@ -265,7 +265,7 @@ function SessionCard() {
         </div>
       ) : (
         <>
-          <p className="mt-3 text-[15px] text-mute">{t('Aplikasi kasir tidak ikut keluar.')}</p>
+          <p className="mt-3 text-body text-mute">{t('Aplikasi kasir tidak ikut keluar.')}</p>
           <Button className="mt-4" onClick={() => setConfirm(true)}>
             {t('Keluar dari akun')}
           </Button>
@@ -362,7 +362,7 @@ function ReceiptTab() {
         <CardTitle sub={t('Nomor bill, waktu, item, dan total selalu tercetak. Lebar kertas mengikuti printer.')}>{t('Isi struk')}</CardTitle>
         <div className="mt-4 rounded border-[1.5px] border-ink bg-paper p-4">
           <p className="font-semibold">{t('Diatur per outlet')}</p>
-          <p className="mt-1 text-[15px] text-mute">
+          <p className="mt-1 text-body text-mute">
             {t(
               'Isinya diatur per outlet di halaman Outlet.',
             )}{' '}
@@ -390,7 +390,7 @@ function ReceiptTab() {
                 {t('segera hadir')}
               </Tag>
             </p>
-            <p className="mt-1 text-[15px] text-mute">
+            <p className="mt-1 text-body text-mute">
               {t('Pajak dan biaya layanan belum dihitung.')}
             </p>
           </div>
@@ -442,7 +442,7 @@ function ReceiptPreview({ r }: { r: ReceiptSettings }) {
             (outlet?.logoUrl ? (
               <img src={outlet.logoUrl} alt="" className="mx-auto mb-2 h-10 w-20 object-contain" />
             ) : (
-              <span className="mx-auto mb-2 grid h-10 w-20 place-items-center border border-dashed border-ink text-[12px] text-mute">[LOGO]</span>
+              <span className="mx-auto mb-2 grid h-10 w-20 place-items-center border border-dashed border-ink text-caption text-mute">[LOGO]</span>
             ))}
           <span className="font-semibold uppercase">{app.business.name}</span>
           {outlet && <span className="uppercase">{outlet.name}</span>}
@@ -500,7 +500,7 @@ function NotifyCard() {
           <li key={key} className="flex items-center justify-between gap-3 border-b border-rule py-1.5">
             <span>
               <span className="block font-medium">{t(label)}</span>
-              <span className="block text-[13px] text-mute">{t(sub)}</span>
+              <span className="block text-small text-mute">{t(sub)}</span>
             </span>
             <Switch checked={n[key]} label={t(label)} disabled={act.busy} onChange={(v) => toggle(key, v)} />
           </li>
@@ -526,7 +526,7 @@ function SubscriptionTab() {
           className={cn('slipc border-l-[12px]', sub.state === 'active' ? 'border-l-pine' : 'border-l-fire bg-fire-soft')}
         >
           <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-[14px]">
+            <p className="font-mono text-small">
               {t('Paket saat ini')} · {t(PLAN_NAME[sub.plan])}
             </p>
             <Tag tone={expired ? 'fire' : sub.state === 'trial' ? 'fire' : 'pine'}>
@@ -575,10 +575,10 @@ function SubscriptionTab() {
               />
             ))}
           </ul>
-          <p className="mt-4 text-[14px] text-mute">{t('Outlet tambahan {price} per bulan, dihitung proporsional.', { price: money(EXTRA_OUTLET) })}</p>
+          <p className="mt-4 text-small text-mute">{t('Outlet tambahan {price} per bulan, dihitung proporsional.', { price: money(EXTRA_OUTLET) })}</p>
         </Card>
       </div>
-      <Receipt torn className={cn('border-[1.5px] border-ink font-sans text-[16px]', expired && 'bg-fire-soft')}>
+      <Receipt torn className={cn('border-[1.5px] border-ink font-sans text-body', expired && 'bg-fire-soft')}>
         <h2 className="text-[clamp(30px,3vw,38px)]">{expired ? t('Perpanjang untuk membuka kunci.') : t('Perpanjang atau ganti paket.')}</h2>
         <p className="mt-3 text-mute">{t('Perpanjangan menambah sisa waktu Anda, bukan mulai dari hari bayar.')}</p>
         <ul className="mt-5">
@@ -589,7 +589,7 @@ function SubscriptionTab() {
             </li>
           ))}
         </ul>
-        <p className="mt-4 text-[15px] text-mute">
+        <p className="mt-4 text-body text-mute">
           {t('Bayar lewat transfer bank, kami periksa manual.')}
         </p>
         <Link to="/subscription" className={`${btn('fire')} mt-5`}>

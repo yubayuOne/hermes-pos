@@ -51,7 +51,7 @@ export function SlipRow({
   sub?: boolean;
 }) {
   const color = tone === 'pine' ? colors.pine : tone === 'error' ? colors.error : tone === 'mute' ? colors.mute : colors.ink;
-  const cls = strong ? 'font-mono-600 text-[15px]' : sub ? 'text-[14px]' : 'text-[14px]';
+  const cls = strong ? 'font-mono-600 text-body' : sub ? 'text-small' : 'text-small';
   return (
     <View className="flex-row items-start justify-between gap-3 py-[3px]">
       <Mono className={`min-w-0 flex-1 ${cls}`} style={{ color: sub ? colors.mute : color }}>
@@ -79,10 +79,10 @@ export function SlipBand({ left, right, tone = 'fire' }: { left: string; right: 
       className="-mx-4 my-2 flex-row items-center justify-between px-4 py-2.5"
       style={{ backgroundColor: bg, borderTopWidth: 1.5, borderBottomWidth: 1.5, borderColor: colors.ink }}
     >
-      <Mono className="font-mono-600 text-[15px]" style={{ color: fg }}>
+      <Mono className="font-mono-600 text-body" style={{ color: fg }}>
         {left}
       </Mono>
-      <Mono className="font-mono-600 text-[15px]" style={{ color: fg }}>
+      <Mono className="font-mono-600 text-body" style={{ color: fg }}>
         {right}
       </Mono>
     </View>

@@ -121,12 +121,12 @@ function SidebarBody({ close }: { close?: ReactNode }) {
           <Wordmark size={close ? 26 : 32} />
           {close}
         </div>
-        <p className="mt-2 truncate font-mono text-[13px] text-mute">backoffice · {app.business.name || '[NAMA BISNIS]'}</p>
+        <p className="mt-2 truncate font-mono text-small text-mute">backoffice · {app.business.name || '[NAMA BISNIS]'}</p>
       </div>
       <nav aria-label={t('Menu utama')} className="mt-7 grid gap-6">
         {groups.map((g, i) => (
           <section key={g.label} aria-labelledby={`${id}-${i}`}>
-            <h2 id={`${id}-${i}`} className="px-2.5 pb-1.5 text-[13px] font-semibold text-mute">
+            <h2 id={`${id}-${i}`} className="px-2.5 pb-1.5 text-small font-semibold text-mute">
               {t(`${g.label}|menu`)}
             </h2>
             <ul className="grid gap-1">
@@ -156,11 +156,11 @@ function NavLink({ to, children, meta }: { to: NavItem['to'] | '/settings'; chil
       preload="intent"
       preloadDelay={0}
       activeOptions={{ exact: to === '/', includeSearch: false }}
-      className="group flex min-h-11 items-center gap-2.5 rounded border-[1.5px] border-transparent px-2.5 text-[16px] font-medium transition-[background-color,transform] duration-150 hover:translate-x-[3px] hover:bg-tint aria-[current=page]:translate-x-0 aria-[current=page]:border-ink aria-[current=page]:bg-slip"
+      className="group flex min-h-11 items-center gap-2.5 rounded border-[1.5px] border-transparent px-2.5 text-body font-medium transition-[background-color,transform] duration-150 hover:translate-x-[3px] hover:bg-tint aria-[current=page]:translate-x-0 aria-[current=page]:border-ink aria-[current=page]:bg-slip"
     >
       <span aria-hidden className="hidden size-2.5 flex-none bg-fire group-aria-[current=page]:block" />
       <span className="flex-1 truncate">{children}</span>
-      {meta !== undefined && <span className={cn('font-mono text-[13px] text-mute')}>{meta}</span>}
+      {meta !== undefined && <span className={cn('font-mono text-small text-mute')}>{meta}</span>}
     </Link>
   );
 }

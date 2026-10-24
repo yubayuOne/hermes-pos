@@ -31,9 +31,9 @@ export const TextField = forwardRef<TextInput, FieldProps>(function TextField(
   return (
     <View className={containerClassName}>
       {label ? (
-        <Text className="mb-1.5 font-body-600 text-[14px]">
+        <Text className="mb-1.5 font-body-600 text-small">
           {label}
-          {optional ? <Text className="text-[14px] text-mute"> {t('(opsional)')}</Text> : null}
+          {optional ? <Text className="text-small text-mute"> {t('(opsional)')}</Text> : null}
         </Text>
       ) : null}
       <View
@@ -68,7 +68,7 @@ export const TextField = forwardRef<TextInput, FieldProps>(function TextField(
               paddingVertical: multiline ? 10 : 0,
               minHeight: multiline ? 72 : 46,
               fontFamily: mono ? fonts.mono : fonts.body500,
-              fontSize: 15,
+              fontSize: 16,
               color: colors.ink,
               textAlignVertical: multiline ? 'top' : 'center',
             },
@@ -83,17 +83,20 @@ export const TextField = forwardRef<TextInput, FieldProps>(function TextField(
             onPress={() => setShown((v) => !v)}
             className="h-[46px] justify-center px-3"
           >
-            <Text className="font-body-600 text-[14px] underline">{shown ? t('Sembunyikan') : t('Lihat|sandi')}</Text>
+            <Text className="font-body-600 text-small underline">{shown ? t('Sembunyikan') : t('Lihat|sandi')}</Text>
           </Tap>
         ) : null}
       </View>
-      {error ? (
-        <Text accessibilityRole="alert" className="mt-1.5 font-body-600 text-[14px] text-error">
-          {error}
-        </Text>
-      ) : help ? (
-        <Text className="mt-1.5 text-[14px] text-mute">{help}</Text>
-      ) : null}
+      {/* A slot that is always there, so a message appearing or going never moves the fields below it. */}
+      <View className="mt-1.5 min-h-[20px]">
+        {error ? (
+          <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
+            {error}
+          </Text>
+        ) : help ? (
+          <Text className="text-small text-mute">{help}</Text>
+        ) : null}
+      </View>
     </View>
   );
 });
@@ -109,7 +112,7 @@ export function SearchInput({ value, onChangeText, placeholder }: { value: strin
         placeholderTextColor={colors.mute}
         returnKeyType="search"
         accessibilityLabel={placeholder}
-        style={{ flex: 1, minWidth: 0, height: 46, paddingHorizontal: 10, fontFamily: fonts.body500, fontSize: 15, color: colors.ink }}
+        style={{ flex: 1, minWidth: 0, height: 46, paddingHorizontal: 10, fontFamily: fonts.body500, fontSize: 16, color: colors.ink }}
       />
       {value ? (
         <Tap
@@ -133,7 +136,7 @@ export function AmountBox({ label, value, active = true, compact }: { label: str
       className="flex-row items-center justify-between rounded-k bg-slip px-3.5"
       style={{ height: compact ? 54 : 64, borderWidth: 1.5, borderColor: colors.ink, ...(active ? { boxShadow: `inset 0 0 0 1.5px ${colors.fire}` } : null) }}
     >
-      <Mono className="text-[14px] text-mute">{label}</Mono>
+      <Mono className="text-small text-mute">{label}</Mono>
       <Mono className="font-mono-600" style={{ fontSize: compact ? 24 : 28 }} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Mono>
@@ -151,10 +154,10 @@ export function ChangeBox({ state, label, value }: { state: 'change' | 'short' |
       className="h-[48px] flex-row items-center justify-between rounded-k px-3.5"
       style={{ backgroundColor: bg, borderWidth: 1.5, borderColor: state === 'short' ? colors.errorLine : colors.ink }}
     >
-      <Text className="font-body-600 text-[15px]" style={{ color: fg }}>
+      <Text className="font-body-600 text-body" style={{ color: fg }}>
         {label}
       </Text>
-      <Mono className="font-mono-600 ml-3 min-w-0 flex-1 text-right text-[16px]" style={{ color: fg }} numberOfLines={1} adjustsFontSizeToFit>
+      <Mono className="font-mono-600 ml-3 min-w-0 flex-1 text-right text-body" style={{ color: fg }} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Mono>
     </View>

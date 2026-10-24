@@ -129,12 +129,12 @@ export function SheetHeader({
     <View className="flex-row items-start gap-3 border-b-k border-ink px-4 pb-3 pt-3">
       {onBack ? <IconButton icon="chevron-left" label={t('Kembali')} onPress={onBack} /> : null}
       <View className="min-w-0 flex-1">
-        {eyebrow ? <Text className="font-mono text-[14px] text-mute">{eyebrow}</Text> : null}
+        {eyebrow ? <Text className="font-mono text-small text-mute">{eyebrow}</Text> : null}
         <Display size={titleSize} numberOfLines={2}>
           {title}
         </Display>
         {subtitle ? (
-          <Text className="mt-1 text-[14px] text-mute" numberOfLines={2}>
+          <Text className="mt-1 text-small text-mute" numberOfLines={2}>
             {subtitle}
           </Text>
         ) : null}

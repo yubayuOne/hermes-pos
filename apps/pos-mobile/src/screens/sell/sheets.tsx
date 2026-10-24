@@ -74,12 +74,12 @@ export function VoucherSheet({ visible, onClose }: { visible: boolean; onClose: 
       <SheetBody contentClassName="gap-2.5">
         {voucher ? (
           <Card className="bg-pineSoft">
-            <Mono className="font-mono-600 text-[15px]">{voucher.code}</Mono>
-            <Text className="mt-1 text-[14px] text-mute">{describe(voucher)}</Text>
+            <Mono className="font-mono-600 text-body">{voucher.code}</Mono>
+            <Text className="mt-1 text-small text-mute">{describe(voucher)}</Text>
           </Card>
         ) : error ? (
           <>
-            <Text accessibilityRole="alert" className="font-body-600 text-[14px] text-error">
+            <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
               {error}
             </Text>
             <Button label={t('Coba lagi')} onPress={() => void load()} />
@@ -89,9 +89,9 @@ export function VoucherSheet({ visible, onClose }: { visible: boolean; onClose: 
             <ActivityIndicator color={colors.ink} />
           </View>
         ) : stale && list.length === 0 ? (
-          <Text className="py-6 text-center text-[15px] text-mute">{t('Tidak ada voucher di daftar terakhir. Coba lagi saat online.')}</Text>
+          <Text className="py-6 text-center text-body text-mute">{t('Tidak ada voucher di daftar terakhir. Coba lagi saat online.')}</Text>
         ) : list.length === 0 ? (
-          <Text className="py-6 text-center text-[15px] text-mute">{t('Belum ada voucher aktif. Pemilik membuatnya di backoffice, menu Voucher.')}</Text>
+          <Text className="py-6 text-center text-body text-mute">{t('Belum ada voucher aktif. Pemilik membuatnya di backoffice, menu Voucher.')}</Text>
         ) : (
           <>
             {stale ? (
@@ -118,13 +118,13 @@ export function VoucherSheet({ visible, onClose }: { visible: boolean; onClose: 
                     backgroundColor: bad ? colors.errorSoft : on ? colors.pineSoft : pressed ? colors.tint : colors.slip,
                   })}
                 >
-                  <Mono className="font-mono-600 text-[15px]">{v.code}</Mono>
-                  <Text className="mt-0.5 text-[14px] text-mute">{describe(v)}</Text>
+                  <Mono className="font-mono-600 text-body">{v.code}</Mono>
+                  <Text className="mt-0.5 text-small text-mute">{describe(v)}</Text>
                   {on ? (
                     preview?.error ? (
-                      <Text className="mt-1.5 font-body-600 text-[14px] text-error">{preview.error}</Text>
+                      <Text className="mt-1.5 font-body-600 text-small text-error">{preview.error}</Text>
                     ) : (
-                      <Text className="mt-1.5 font-body-600 text-[15px]">
+                      <Text className="mt-1.5 font-body-600 text-body">
                         {t('Potongan {amount}', { amount: money(preview?.cut ?? 0) })}
                         {manual ? ` · ${t('Diskon lama di bill ini diganti voucher.')}` : ''}
                       </Text>
@@ -272,7 +272,7 @@ export function TempMenuSheet({ visible, onClose }: { visible: boolean; onClose:
           error={errors.price}
         />
         <View>
-          <Text className="mb-1.5 font-body-600 text-[14px]">{t('Jumlah')}</Text>
+          <Text className="mb-1.5 font-body-600 text-small">{t('Jumlah')}</Text>
           <View className="flex-row gap-2">
             {[1, 2, 3, 4].map((n) => (
               <Chip key={n} label={String(n)} selected={qty === n} onPress={() => setQty(n)} />
@@ -280,7 +280,7 @@ export function TempMenuSheet({ visible, onClose }: { visible: boolean; onClose:
           </View>
         </View>
         <View>
-          <Text className="mb-1.5 font-body-600 text-[14px]">{t('Dicetak di')}</Text>
+          <Text className="mb-1.5 font-body-600 text-small">{t('Dicetak di')}</Text>
           <View className="flex-row gap-2">
             <Chip label={t('Dapur')} selected={station === 'kitchen'} onPress={() => setStation('kitchen')} />
             <Chip label={t('Bar')} selected={station === 'bar'} onPress={() => setStation('bar')} />

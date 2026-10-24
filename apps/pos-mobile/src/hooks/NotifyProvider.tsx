@@ -106,11 +106,11 @@ function Toast({ item, onDone }: { item: ToastItem; onDone: () => void }) {
         style={{ backgroundColor: TOAST_BG[item.tone], borderWidth: 1.5, borderColor: colors.ink, ...shadow.toast }}
       >
         <View className="min-w-0 flex-1">
-          <Text className="font-body-700 text-[15px]" numberOfLines={2}>
+          <Text className="font-body-700 text-body" numberOfLines={2}>
             {item.title}
           </Text>
           {item.message ? (
-            <Text className="mt-0.5 text-[14px] text-mute" numberOfLines={3}>
+            <Text className="mt-0.5 text-small text-mute" numberOfLines={3}>
               {item.message}
             </Text>
           ) : null}
@@ -124,11 +124,11 @@ function Toast({ item, onDone }: { item: ToastItem; onDone: () => void }) {
             }}
             className="h-[44px] justify-center rounded-k border-k border-ink bg-slip px-3"
           >
-            <Text className="font-body-600 text-[14px]">{item.action.label}</Text>
+            <Text className="font-body-600 text-small">{item.action.label}</Text>
           </Tap>
         ) : null}
         <Tap accessibilityRole="button" accessibilityLabel={t('Tutup')} onPress={close} className="h-[44px] justify-center px-1.5">
-          <Text className="font-body-600 text-[14px] underline">{t('Tutup')}</Text>
+          <Text className="font-body-600 text-small underline">{t('Tutup')}</Text>
         </Tap>
       </View>
     </Animated.View>
@@ -155,14 +155,14 @@ function DialogCard({ options, onAction }: { options: DialogOptions; onAction: (
         <Display size={26} accessibilityRole="header">
           {options.title}
         </Display>
-        {options.message ? <Text className="mt-2 text-[15px] leading-[22px] text-mute">{options.message}</Text> : null}
+        {options.message ? <Text className="mt-2 text-body leading-[22px] text-mute">{options.message}</Text> : null}
         {options.details?.length ? (
           <View className="mt-3 rounded-k border-k border-ink bg-paper px-3 py-2">
             {options.details.map((d, i) => (
               <View key={i} className="flex-row justify-between gap-3 py-1">
-                <Mono className="text-[14px] text-mute">{d.label}</Mono>
+                <Mono className="text-small text-mute">{d.label}</Mono>
                 <Mono
-                  className="font-mono-600 text-[14px]"
+                  className="font-mono-600 text-small"
                   style={{ color: d.tone === 'error' ? colors.error : d.tone === 'success' ? colors.pine : colors.ink }}
                 >
                   {d.value}
@@ -181,7 +181,7 @@ function DialogCard({ options, onAction }: { options: DialogOptions; onAction: (
               borderColor: colors.ink,
             }}
           >
-            <Text className="text-[14px] leading-[20px]">{options.hint}</Text>
+            <Text className="text-small leading-[20px]">{options.hint}</Text>
           </View>
         ) : null}
       </ScrollView>

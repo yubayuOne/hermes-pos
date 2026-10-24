@@ -16,7 +16,7 @@ export function Page({ title, tools, children }: { title: string; tools?: ReactN
       {/* Phone: the bell is in the top bar (AppShell), the page's filter takes the full second row. */}
       <header className="relative flex flex-wrap items-end gap-x-6 gap-y-4 border-b-[1.5px] border-ink pb-5 print:hidden">
         <div className="min-w-0 flex-1">
-          <p className="hidden font-mono text-[14px] text-mute md:block">{dateLong(new Date(), lang, app.business.timezone)}</p>
+          <p className="hidden font-mono text-small text-mute md:block">{dateLong(new Date(), lang, app.business.timezone)}</p>
           <h1 className="page-t mt-1 break-words">{title}</h1>
         </div>
         <div className="hidden flex-none md:order-last md:block">

@@ -91,7 +91,7 @@ function Trail({ entries }: { entries: TrailEntry[] }) {
   return (
     <Card as="section" aria-label={t('Koreksi dan pembatalan')} className="mt-5">
       <h2 className="font-semibold">{t('Koreksi dan pembatalan')}</h2>
-      <ul className="mt-2 grid gap-1.5 text-[14px]">
+      <ul className="mt-2 grid gap-1.5 text-small">
         {entries.map((e, i) => (
           <li key={i} className="flex flex-wrap gap-x-2">
             <span className="font-semibold">{label[e.kind]}</span>
@@ -147,12 +147,12 @@ function Checks({ failures, shifts }: { failures: CheckFailure[]; shifts: DayShi
   return (
     <section role="alert" className="mt-5 rounded border-[1.5px] border-ink bg-fire-soft px-4 py-3">
       <p className="font-semibold">{t('Ada angka yang tidak cocok. Laporan hari ini belum bisa dipercaya penuh.')}</p>
-      <ul className="mt-2 grid list-disc gap-1 pl-5 text-[15px]">
+      <ul className="mt-2 grid list-disc gap-1 pl-5 text-body">
         {failures.map((f, i) => (
           <li key={i}>{text(f)}</li>
         ))}
       </ul>
-      <p className="mt-2 text-[14px] text-mute">{t('Hubungi dukungan HERMES POS dan sebutkan tanggal serta outlet ini.')}</p>
+      <p className="mt-2 text-small text-mute">{t('Hubungi dukungan HERMES POS dan sebutkan tanggal serta outlet ini.')}</p>
     </section>
   );
 }
@@ -186,7 +186,7 @@ function ShiftCard({ shift: s, onMove }: { shift: DayShift; onMove: (direction: 
           <p className="font-semibold">
             {t('Shift {n}', { n: s.shiftNumber })} · {s.cashierName}
           </p>
-          <p className="font-mono text-[14px] text-mute">
+          <p className="font-mono text-small text-mute">
             {time(s.openedAt, tz)} – {s.closedAt ? time(s.closedAt, tz) : t('masih buka')} · {t('{n} bill', { n: s.bills })} ·{' '}
             {t('omzet {amount}', { amount: money(s.netSales) })}
           </p>
@@ -196,8 +196,8 @@ function ShiftCard({ shift: s, onMove }: { shift: DayShift; onMove: (direction: 
 
       <div className="mt-4 grid gap-6 md:grid-cols-2">
         <section aria-label={t('Kas laci')}>
-          <h3 className="font-mono text-[13px] uppercase tracking-[0.04em] text-mute">{t('Kas laci')}</h3>
-          <dl className="mt-1 text-[15px]">
+          <h3 className="font-mono text-small uppercase tracking-[0.04em] text-mute">{t('Kas laci')}</h3>
+          <dl className="mt-1 text-body">
             <Row label={t('Kas awal')} value={s.opening} />
             <Row label={t('Penjualan tunai')} value={s.cashSales} />
             <Row label={t('Refund tunai')} value={s.cashRefunds} minus />
@@ -210,8 +210,8 @@ function ShiftCard({ shift: s, onMove }: { shift: DayShift; onMove: (direction: 
           {s.variance !== null && <Difference value={s.variance} />}
         </section>
         <section aria-label="QRIS">
-          <h3 className="font-mono text-[13px] uppercase tracking-[0.04em] text-mute">QRIS</h3>
-          <dl className="mt-1 text-[15px]">
+          <h3 className="font-mono text-small uppercase tracking-[0.04em] text-mute">QRIS</h3>
+          <dl className="mt-1 text-body">
             <Row label={t('Penjualan QRIS')} value={s.qrisSales} />
             <Row label={t('Refund QRIS')} value={s.qrisRefunds} minus />
             <Row label={t('QRIS seharusnya masuk')} value={s.qrisExpected} strong />
@@ -222,7 +222,7 @@ function ShiftCard({ shift: s, onMove }: { shift: DayShift; onMove: (direction: 
       </div>
 
       {(s.movements.length > 0 || s.oldCorrections.length > 0) && (
-        <ul className="mt-4 grid gap-1.5 border-t border-rule pt-3 text-[14px]" aria-label={t('Catatan uang laci')}>
+        <ul className="mt-4 grid gap-1.5 border-t border-rule pt-3 text-small" aria-label={t('Catatan uang laci')}>
           {s.movements.map((m) => (
             <li key={m.id} className="flex flex-wrap gap-x-2">
               <span className="font-semibold">{m.direction === 'in' ? t('Uang masuk') : t('Uang keluar')}</span>

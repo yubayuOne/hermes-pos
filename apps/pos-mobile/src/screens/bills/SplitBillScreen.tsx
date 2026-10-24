@@ -99,21 +99,21 @@ export function SplitBillScreen({
             <ActivityIndicator color={colors.ink} />
           </View>
         ) : items.length === 0 ? (
-          <Text className="py-8 text-center text-[15px] text-mute">{t('Semua porsi bill ini sudah dibayar.')}</Text>
+          <Text className="py-8 text-center text-body text-mute">{t('Semua porsi bill ini sudah dibayar.')}</Text>
         ) : (
           <>
             {/* Short landscape screen: totals and the name share one row so the portions start higher. */}
             <View className={phoneLandscape ? 'flex-row items-end gap-2.5' : ''}>
               <View className={`flex-row gap-2.5 ${phoneLandscape ? 'flex-1' : ''}`}>
                 <View className="flex-1 rounded-k border-k border-ink bg-slip px-3 py-2.5">
-                  <Mono className="text-[14px] text-mute">{t('Sisa bill')}</Mono>
-                  <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
+                  <Mono className="text-small text-mute">{t('Sisa bill')}</Mono>
+                  <Mono className="font-mono-600 mt-0.5 text-body" numberOfLines={1} adjustsFontSizeToFit>
                     {money(Math.max(0, remaining - partTotal))}
                   </Mono>
                 </View>
                 <View className="flex-1 rounded-k border-k border-ink bg-fireSoft px-3 py-2.5">
-                  <Mono className="text-[14px] text-mute">{t('Bagian {n}', { n: part })}</Mono>
-                  <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
+                  <Mono className="text-small text-mute">{t('Bagian {n}', { n: part })}</Mono>
+                  <Mono className="font-mono-600 mt-0.5 text-body" numberOfLines={1} adjustsFontSizeToFit>
                     {money(partTotal)}
                   </Mono>
                 </View>
@@ -135,15 +135,15 @@ export function SplitBillScreen({
                   <View key={i.productId} className="py-3">
                     <View className="flex-row items-center gap-3">
                       <View className="min-w-0 flex-1">
-                        <Text numberOfLines={2} className="font-body-600 text-[15px]">
+                        <Text numberOfLines={2} className="font-body-600 text-body">
                           {i.name}
                         </Text>
-                        <Mono className="mt-0.5 text-[14px] text-mute">
+                        <Mono className="mt-0.5 text-small text-mute">
                           {t('{n} sisa', { n: i.quantity - q })} · {money(i.unitPrice)}
                         </Mono>
                         {i.note ? (
                           <View className="mt-1 border-l-[3px] border-fire pl-2">
-                            <Text className="text-[14px]">{i.note}</Text>
+                            <Text className="text-small">{i.note}</Text>
                           </View>
                         ) : null}
                       </View>

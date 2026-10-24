@@ -50,7 +50,7 @@ function Onboarding() {
           <Wordmark size={32} />
           <LangToggle />
         </div>
-        <p className="mt-2 font-mono text-[13px] text-mute">{t('data awal · trial 3 hari')}</p>
+        <p className="mt-2 font-mono text-small text-mute">{t('data awal · trial 3 hari')}</p>
         <ol className="mt-8 hidden gap-2 md:grid">
           {STEPS.map(([title, sub], i) => {
             const n = i + 1;
@@ -64,14 +64,14 @@ function Onboarding() {
                 <StepNum n={n} state={s} />
                 <span>
                   <span className="block font-semibold leading-tight">{t(title)}</span>
-                  <span className="block text-[14px] text-mute">{t(sub)}</span>
+                  <span className="block text-small text-mute">{t(sub)}</span>
                 </span>
               </li>
             );
           })}
         </ol>
         <div className="mt-5 md:mt-auto" role="status">
-          <p className="font-mono text-[13px]">{t('Langkah {n} dari 5', { n: step })}</p>
+          <p className="font-mono text-small">{t('Langkah {n} dari 5', { n: step })}</p>
           <div className="mt-2 h-2 border-[1.5px] border-ink bg-slip" aria-hidden>
             <div className="h-full bg-fire transition-[width] duration-300" style={{ width: `${(step / 5) * 100}%` }} />
           </div>
@@ -103,7 +103,7 @@ function StepCard({ n, title, sub, children }: { n: number; title: string; sub: 
   const { t } = useI18n();
   return (
     <section aria-labelledby="step-t" className="slipc animate-pop">
-      <p className="font-mono text-[14px] text-mute">{t('langkah {n} dari 5', { n })}</p>
+      <p className="font-mono text-small text-mute">{t('langkah {n} dari 5', { n })}</p>
       <h1 id="step-t" className="mt-2 text-[clamp(36px,4vw,48px)]">
         {title}
       </h1>

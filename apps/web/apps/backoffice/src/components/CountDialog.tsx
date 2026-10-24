@@ -64,7 +64,7 @@ export function CountDialog({ outletId, items, onClose }: { outletId: string; it
             return (
               <li key={r.ingredientId} className="flex flex-wrap justify-between gap-x-4 rounded border border-rule bg-slip px-3 py-2">
                 <span className="font-semibold">{r.name}</span>
-                <span className={`font-mono text-[15px] ${r.kind === 'count' && r.diff < 0 ? 'text-error' : ''}`}>
+                <span className={`font-mono text-body ${r.kind === 'count' && r.diff < 0 ? 'text-error' : ''}`}>
                   {r.kind === 'opening'
                     ? t('stok awal {n}', { n: stockText(r.after, base, lang) })
                     : r.diff === 0
@@ -87,7 +87,7 @@ export function CountDialog({ outletId, items, onClose }: { outletId: string; it
                 <div key={i.id} className="flex flex-wrap items-center gap-3 rounded border border-rule bg-slip px-3 py-2">
                   <div className="min-w-0 flex-1 basis-[160px]">
                     <span className="block truncate font-semibold">{i.name}</span>
-                    <span className="block font-mono text-[13px] text-mute">
+                    <span className="block font-mono text-small text-mute">
                       {i.stockStarted ? t('Stok sistem {n}', { n: stockText(i.stock, i.baseUnit, lang) }) : t('Belum dihitung: ini jadi stok awal')}
                     </span>
                   </div>

@@ -82,7 +82,7 @@ export function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
       <Display size={tablet ? 30 : 34} accessibilityRole="header">
         {t('Masuk dengan akun pemilik.')}
       </Display>
-      <Text className="mt-3 text-[15px] leading-[22px] text-mute">
+      <Text className="mt-3 text-body leading-[22px] text-mute">
         {t('HP ini tetap masuk sampai Anda memilih Keluar akun.')}
       </Text>
       <View className="mt-5 gap-4">
@@ -118,12 +118,12 @@ export function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
           error={error?.field === 'password' ? error.text : null}
         />
         {error?.field === 'form' ? (
-          <Text accessibilityRole="alert" className="font-body-600 text-[14px] text-error">
+          <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
             {error.text}
           </Text>
         ) : null}
         <Button size="lg" variant="fire" label={loading ? t('Masuk...') : t('Masuk')} loading={loading} onPress={() => void submit()} />
-        <Text className="text-[14px] leading-[20px] text-mute">
+        <Text className="text-small leading-[20px] text-mute">
           {t('Belum punya akun? Mulai trial 3 hari di {host} dari HP atau laptop.', { host: BRAND.backofficeHost })}
         </Text>
       </View>
@@ -147,7 +147,7 @@ export function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
               </Display>
               <Slip className="mt-5 w-[260px]">
                 <View className="flex-row items-center justify-between">
-                  <Mono className="font-mono-600 text-[14px]">TUNDA-7F3A2C</Mono>
+                  <Mono className="font-mono-600 text-small">TUNDA-7F3A2C</Mono>
                   <Tag label={t('offline')} tone="fire" />
                 </View>
                 <SlipRule />
@@ -157,7 +157,7 @@ export function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
                 <SlipRow sub left={t('Terkirim otomatis saat sinyal kembali. Contoh tampilan.')} />
               </Slip>
             </View>
-            <Text className="text-[14px] text-mute">
+            <Text className="text-small text-mute">
               {BRAND.appName} · Android · v{BRAND.version}
             </Text>
           </View>

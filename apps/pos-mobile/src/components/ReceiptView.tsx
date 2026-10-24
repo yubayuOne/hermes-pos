@@ -53,13 +53,13 @@ export function ReceiptView({
             style={{ width: 72, height: 72, marginBottom: 6 }}
           />
         ) : null}
-        {s?.businessName ? <Mono className="font-mono-600 text-[14px]">{s.businessName.toUpperCase()}</Mono> : null}
-        <Mono className="text-center text-[14px] text-mute">
+        {s?.businessName ? <Mono className="font-mono-600 text-small">{s.businessName.toUpperCase()}</Mono> : null}
+        <Mono className="text-center text-small text-mute">
           {data.outlet}
           {data.outletPhone && s?.showPhone !== false ? ` · ${data.outletPhone}` : ''}
         </Mono>
-        {text?.address ? <Mono className="text-center text-[14px] text-mute">{text.address}</Mono> : null}
-        {text?.header[0] ? <Mono className="text-center text-[14px] text-mute">{text.header[0]}</Mono> : null}
+        {text?.address ? <Mono className="text-center text-small text-mute">{text.address}</Mono> : null}
+        {text?.header[0] ? <Mono className="text-center text-small text-mute">{text.header[0]}</Mono> : null}
       </View>
       <SlipRule />
       <SlipRow left={data.number} right={data.date} />
@@ -97,7 +97,7 @@ export function ReceiptView({
         </>
       ) : null}
       <SlipRule />
-      <Mono className="text-center text-[14px] text-mute">{text?.footer[0] ?? t('Terima kasih')}</Mono>
+      <Mono className="text-center text-small text-mute">{text?.footer[0] ?? t('Terima kasih')}</Mono>
     </Slip>
   );
 }

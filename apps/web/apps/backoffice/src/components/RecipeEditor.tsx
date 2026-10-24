@@ -122,7 +122,7 @@ export function RecipeEditor({
                 ))}
               </Select>
               {line && (
-                <span className="ml-auto font-mono text-[14px]">
+                <span className="ml-auto font-mono text-small">
                   {money(line.cost)}
                   {line.incomplete && <span className="ml-1 font-sans text-mute">{t('perkiraan')}</span>}
                 </span>
@@ -140,14 +140,14 @@ export function RecipeEditor({
         </Button>
       </div>
       <div aria-live="polite" className="grid gap-1 border-t border-rule pt-3">
-        {pending && <p className="text-[14px] text-mute">{t('Menghitung...')}</p>}
+        {pending && <p className="text-small text-mute">{t('Menghitung...')}</p>}
         {cost && (
           <>
             <p className="flex flex-wrap items-baseline justify-between gap-x-4">
               <span>{t('HPP (modal per porsi)')}</span>
               <span className="font-mono font-semibold">
                 {money(cost.hpp)}
-                {cost.incomplete && <span className="ml-1 font-sans text-[14px] font-normal text-mute">{t('perkiraan')}</span>}
+                {cost.incomplete && <span className="ml-1 font-sans text-small font-normal text-mute">{t('perkiraan')}</span>}
               </span>
             </p>
             {profit !== null && (
@@ -155,26 +155,26 @@ export function RecipeEditor({
                 <p className="flex flex-wrap items-baseline justify-between gap-x-4">
                   <span>{t('Untung per porsi')}</span>
                   <span className="font-mono font-semibold">
-                    {money(profit)} <span className="font-sans text-[14px] font-normal text-mute">({decimal((profit / price) * 100, lang, 0)}%)</span>
+                    {money(profit)} <span className="font-sans text-small font-normal text-mute">({decimal((profit / price) * 100, lang, 0)}%)</span>
                   </span>
                 </p>
-                <p className="text-[14px] text-mute">{t('Modal {pct}% dari harga jual', { pct: decimal((cost.hpp / price) * 100, lang, 0) })}</p>
+                <p className="text-small text-mute">{t('Modal {pct}% dari harga jual', { pct: decimal((cost.hpp / price) * 100, lang, 0) })}</p>
               </>
             )}
             {price > 0 && cost.hpp > price && (
-              <p role="status" className="text-[15px] font-semibold text-error">
+              <p role="status" className="text-body font-semibold text-error">
                 {t('Modal lebih besar dari harga jual. Cek jumlah atau harga bahan.')}
               </p>
             )}
             {cost.incomplete && (
-              <p role="status" className="text-[15px]">
+              <p role="status" className="text-body">
                 {t('Ada bahan berharga Rp0, angka ini perkiraan.')}
               </p>
             )}
           </>
         )}
         {error && (
-          <p role="alert" className="text-[15px] text-error">
+          <p role="alert" className="text-body text-error">
             {t(error)}
           </p>
         )}

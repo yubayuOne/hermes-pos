@@ -47,7 +47,7 @@ export function TablePicker({ outletId, current, onPick }: { outletId: string; c
         className="h-[44px] flex-row items-center gap-2 rounded-k px-3"
         style={({ pressed }) => ({ borderWidth: 1.5, borderColor: colors.ink, backgroundColor: pressed ? colors.tint : colors.slip })}
       >
-        <Text numberOfLines={1} className={`min-w-0 flex-1 text-[15px] ${current ? 'font-body-600' : 'text-mute'}`}>
+        <Text numberOfLines={1} className={`min-w-0 flex-1 text-body ${current ? 'font-body-600' : 'text-mute'}`}>
           {current ? t('Meja {n}', { n: current }) : t('Pilih meja')}
         </Text>
         <Icon name="chevron-down" size={18} />
@@ -56,11 +56,11 @@ export function TablePicker({ outletId, current, onPick }: { outletId: string; c
         <SheetHeader title={t('Pilih meja')} onClose={() => setOpen(false)} />
         <SheetBody>
           {fromCache && rows ? (
-            <Text className="mb-2 text-[14px] text-mute">{t('Daftar dari perangkat. Keadaan meja bisa sudah berubah.')}</Text>
+            <Text className="mb-2 text-small text-mute">{t('Daftar dari perangkat. Keadaan meja bisa sudah berubah.')}</Text>
           ) : null}
-          {failed ? <Text className="py-6 text-center text-[15px] text-mute">{t('Daftar meja butuh internet. Buka sekali saat ada internet.')}</Text> : null}
+          {failed ? <Text className="py-6 text-center text-body text-mute">{t('Daftar meja butuh internet. Buka sekali saat ada internet.')}</Text> : null}
           {rows && rows.length === 0 ? (
-            <Text className="py-6 text-center text-[15px] text-mute">{t('Belum ada meja. Minta pemilik menambah meja di BackOffice.')}</Text>
+            <Text className="py-6 text-center text-body text-mute">{t('Belum ada meja. Minta pemilik menambah meja di BackOffice.')}</Text>
           ) : null}
           <View className="flex-row flex-wrap justify-between gap-y-2.5 pb-2">
             {(rows ?? []).map((r) => {
@@ -82,10 +82,10 @@ export function TablePicker({ outletId, current, onPick }: { outletId: string; c
                     backgroundColor: own ? colors.pine : blocked ? colors.tint : pressed ? colors.tint : colors.slip,
                   })}
                 >
-                  <Text numberOfLines={1} className={`font-body-600 text-[16px] ${own ? 'text-slip' : blocked ? 'text-mute' : ''}`}>
+                  <Text numberOfLines={1} className={`font-body-600 text-body ${own ? 'text-slip' : blocked ? 'text-mute' : ''}`}>
                     {t('Meja {n}', { n: r.name })}
                   </Text>
-                  <Text numberOfLines={1} className={`text-[13px] ${own ? 'text-slip' : 'text-mute'}`}>
+                  <Text numberOfLines={1} className={`text-small ${own ? 'text-slip' : 'text-mute'}`}>
                     {blocked ? t('Terisi sejak {n}', { n: r.since ? fmtTime(r.since) : '-' }) : own ? t('Bill ini') : t('Kosong')}
                   </Text>
                 </Tap>

@@ -105,7 +105,7 @@ export function IngredientDialog({
               {impact.map((p) => (
                 <li key={p.productId} className="flex flex-wrap justify-between gap-x-4 rounded border border-rule bg-slip px-3 py-2">
                   <span className="font-semibold">{p.name}</span>
-                  <span className="font-mono text-[15px]">{t('HPP dari {old} menjadi {now}', { old: money(p.oldHpp), now: money(p.newHpp) })}</span>
+                  <span className="font-mono text-body">{t('HPP dari {old} menjadi {now}', { old: money(p.oldHpp), now: money(p.newHpp) })}</span>
                 </li>
               ))}
             </ul>
@@ -147,7 +147,7 @@ export function IngredientDialog({
                 </Select>
               </Field>
             </div>
-            <p className="-mt-2 text-[15px] text-mute">{t('Isi satu kemasan, dalam satuan di sebelahnya. Contoh: 1 kaleng = 370 g, isi 370, satuan g.')}</p>
+            <p className="-mt-2 text-body text-mute">{t('Isi satu kemasan, dalam satuan di sebelahnya. Contoh: 1 kaleng = 370 g, isi 370, satuan g.')}</p>
             {packText && <p className="-mt-2 font-semibold">{packText}</p>}
             <Field label={t('Nama kemasan (opsional)')} error={f.errors.packLabel && t(f.errors.packLabel)} help={t('Contoh: kaleng, dus, botol.')}>
               <Input value={f.values.packLabel} maxLength={20} onChange={(e) => f.set('packLabel', e.target.value)} />

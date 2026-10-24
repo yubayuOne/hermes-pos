@@ -33,7 +33,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             <RRow l="TUNDA-3F9A2K" r="11:42" className="border-0" />
             <RRow l={t('2 item')} r="Rp40.000" className="border-0" />
             <RCut />
-            <p className="text-[13px] text-mute">{t('Tersimpan di perangkat. Terkirim saat online.')}</p>
+            <p className="text-small text-mute">{t('Tersimpan di perangkat. Terkirim saat online.')}</p>
           </Receipt>
         </div>
         <ul className="mt-auto hidden flex-wrap gap-2.5 pt-12 lg:flex">
@@ -67,13 +67,13 @@ export function GoogleButton({ label, onClick, busy, busyLabel }: { label: strin
   const { t } = useI18n();
   return (
     <>
-      <div className="my-5 flex items-center gap-3 font-mono text-[13px] text-mute" aria-hidden>
+      <div className="my-5 flex items-center gap-3 font-mono text-small text-mute" aria-hidden>
         <span className="h-0 flex-1 border-t border-dashed border-ink" />
         {t('atau')}
         <span className="h-0 flex-1 border-t border-dashed border-ink" />
       </div>
       <button type="button" className="btn btn-block" onClick={onClick} disabled={busy}>
-        <span aria-hidden className="grid size-6 place-items-center rounded-[3px] border-[1.5px] border-ink bg-tint-2 font-mono text-[13px] font-semibold">
+        <span aria-hidden className="grid size-6 place-items-center rounded-[3px] border-[1.5px] border-ink bg-tint-2 font-mono text-small font-semibold">
           G
         </span>
         {busy && busyLabel ? busyLabel : label}

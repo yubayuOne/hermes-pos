@@ -144,7 +144,7 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
             <Display size={22} numberOfLines={1}>
               {p.name}
             </Display>
-            <Mono className="mt-0.5 text-[14px] text-mute">
+            <Mono className="mt-0.5 text-small text-mute">
               {[p.brand && p.brand !== 'generic' ? p.brand : t('generik'), `${p.paperWidth} mm`, 'ESC/POS', 'Bluetooth'].join(' · ')}
             </Mono>
           </View>
@@ -152,7 +152,7 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
         </View>
         {p.lastError && p.status === 'error' ? (
           <View className="mt-3 rounded-k px-3 py-2" style={{ borderWidth: 1.5, borderColor: colors.errorLine, backgroundColor: colors.errorSoft }}>
-            <Text className="text-[14px] text-error">{p.lastError}</Text>
+            <Text className="text-small text-error">{p.lastError}</Text>
           </View>
         ) : null}
         <Label className="mt-3">{t('Dipakai untuk')}</Label>
@@ -178,8 +178,8 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
             className="mt-3 rounded-k px-3 py-2"
             style={{ borderWidth: 1.5, borderColor: res.ok ? colors.ink : colors.errorLine, backgroundColor: res.ok ? colors.pineSoft : colors.errorSoft }}
           >
-            <Text className="text-[14px]" style={{ color: res.ok ? colors.ink : colors.error }}>
-              {res.text} <Mono className="text-[14px] text-mute">{fmtTime(res.at)}</Mono>
+            <Text className="text-small" style={{ color: res.ok ? colors.ink : colors.error }}>
+              {res.text} <Mono className="text-small text-mute">{fmtTime(res.at)}</Mono>
             </Text>
           </View>
         ) : null}
@@ -194,7 +194,7 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
   const addCard = (
     <Card>
       <Display size={22}>{t('Tambah printer')}</Display>
-      <Text className="mt-1.5 text-[14px] text-mute">
+      <Text className="mt-1.5 text-small text-mute">
         {t('Pair printer di Bluetooth Android dulu, lalu cari di sini.')}
       </Text>
       <Button className="mt-3" variant="pine" label={scanning ? t('Mencari...') : t('Cari printer Bluetooth')} loading={scanning} onPress={() => void scan()} />
@@ -208,8 +208,8 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
           style={({ pressed }) => ({ backgroundColor: pressed ? colors.tint : colors.paper })}
         >
           <View className="min-w-0 flex-1">
-            <Text className="font-body-600 text-[15px]">{d.name || t('Printer Bluetooth')}</Text>
-            <Mono className="text-[14px] text-mute">{d.address}</Mono>
+            <Text className="font-body-600 text-body">{d.name || t('Printer Bluetooth')}</Text>
+            <Mono className="text-small text-mute">{d.address}</Mono>
           </View>
           <Icon name="plus" size={20} />
         </Tap>
@@ -232,7 +232,7 @@ export function PrinterScreen({ onBack, onQueue, onBell }: { onBack: () => void;
             {printers.map(card)}
           </>
         )}
-        <Text className="text-[14px] text-mute">
+        <Text className="text-small text-mute">
           {t(
             'Isi struk diatur pemilik di backoffice, menu Outlet.',
           )}

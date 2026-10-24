@@ -57,7 +57,7 @@ function Forgot() {
           {t('Kirim tautan')}
         </Button>
       </form>
-      <p className="mt-6 text-[15px] text-mute">
+      <p className="mt-6 text-body text-mute">
         {t('Ingat kata sandinya?')}{' '}
         <Link to="/login" className="lnk lnk-inline text-ink">
           {t('Masuk')}

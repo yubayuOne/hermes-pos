@@ -9,6 +9,13 @@
 @import '@fontsource/ibm-plex-mono/latin-600.css';
 
 @theme {
+  /* Text sizes: 12, 14, 16, 18, 22 px. Display numbers above 22 keep their own sizes. */
+  --text-caption: 12px;
+  --text-small: 14px;
+  --text-body: 16px;
+  --text-title: 18px;
+  --text-heading: 22px;
+
   /* A2. Color */
   --color-paper: #eef0ea;
   --color-slip: #fbfbf8;
@@ -120,7 +127,7 @@
     background: var(--color-paper);
     color: var(--color-ink);
     font-family: var(--font-sans);
-    font-size: 16px;
+    font-size: var(--text-body);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
@@ -159,12 +166,12 @@
   }
   .label {
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: var(--text-small);
     color: var(--color-mute);
   }
   .cap {
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: var(--text-small);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -228,7 +235,7 @@
   .btn-sm {
     min-height: 44px;
     padding: 0 16px;
-    font-size: 15px;
+    font-size: var(--text-body);
   }
   .btn-block {
     width: 100%;
@@ -307,7 +314,7 @@
     align-content: start;
   }
   .fld-l {
-    font-size: 14px;
+    font-size: var(--text-small);
     font-weight: 600;
   }
   .fld-l .opt {
@@ -356,11 +363,11 @@
     background: var(--color-error-soft);
   }
   .help {
-    font-size: 13px;
+    font-size: var(--text-small);
     color: var(--color-mute);
   }
   .ferr {
-    font-size: 14px;
+    font-size: var(--text-small);
     font-weight: 600;
     color: var(--color-error);
   }
@@ -383,7 +390,7 @@
     min-height: 44px;
     padding-top: 10px;
     cursor: pointer;
-    font-size: 15px;
+    font-size: var(--text-body);
   }
   .check input {
     appearance: none;
@@ -511,7 +518,7 @@
     border: 1px solid var(--color-line);
     padding: 22px;
     font-family: var(--font-mono);
-    font-size: 13.5px;
+    font-size: var(--text-small);
     font-variant-numeric: tabular-nums;
   }
   .slip-ink {
@@ -621,7 +628,7 @@
       padding: 0;
       border: 0;
       text-align: left;
-      font-size: 15px;
+      font-size: var(--text-body);
       min-width: 0;
       overflow-wrap: anywhere;
     }
@@ -636,7 +643,7 @@
       grid-column: 1 / -1;
       padding-bottom: 10px;
       border-bottom: 1px solid var(--color-rule);
-      font-size: 16px;
+      font-size: var(--text-body);
     }
     .tbl-card td:first-child::before {
       content: none;

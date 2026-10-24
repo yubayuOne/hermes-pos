@@ -32,7 +32,7 @@ export function FilterBar({
           {t('Filter')}
           {active > 0 && (
             <span
-              className="ml-2 grid size-6 place-items-center rounded-full bg-ink font-mono text-[13px] text-paper"
+              className="ml-2 grid size-6 place-items-center rounded-full bg-ink font-mono text-small text-paper"
               aria-label={t('{n} aktif', { n: active })}
             >
               {active}
@@ -41,7 +41,7 @@ export function FilterBar({
         </Button>
         {action && <div className="w-full sm:ml-auto sm:w-auto">{action}</div>}
       </div>
-      <p className="text-[14px] text-mute" role="status">
+      <p className="text-small text-mute" role="status">
         {summary}
       </p>
       <Dialog

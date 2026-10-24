@@ -38,15 +38,15 @@ export function ShiftReportBody({ d }: { d: ShiftReportData }) {
             [t('Bill'), String(r.totalTransactions)],
           ].map(([l, v]) => (
             <View key={l} className="min-w-[30%] flex-1">
-              <Mono className="text-[14px] text-mute">{l}</Mono>
-              <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
+              <Mono className="text-small text-mute">{l}</Mono>
+              <Mono className="font-mono-600 mt-0.5 text-body" numberOfLines={1} adjustsFontSizeToFit>
                 {v}
               </Mono>
             </View>
           ))}
         </View>
         {r.discountTotal > 0 || r.voidedCount > 0 ? (
-          <Text className="mt-3 text-[14px] text-mute">
+          <Text className="mt-3 text-small text-mute">
             {[
               r.discountTotal > 0 ? t('Diskon {amount}', { amount: money(r.discountTotal) }) : null,
               r.voidedCount > 0 ? t('Void {n} bill, {amount}', { n: r.voidedCount, amount: money(r.voidedTotal) }) : null,
@@ -236,7 +236,7 @@ export function ShiftReportScreen({ shift, onBack, onQueue, onBell }: { shift: S
       <Header title={t('Laporan shift {n}', { n: shift.shiftNumber })} onBack={onBack} onQueue={onQueue} onBell={onBell} />
       <ScrollView contentContainerClassName="gap-3 px-3.5 pb-8 pt-3">
         <View className="flex-row flex-wrap items-center justify-between gap-2">
-          <Text className="min-w-0 flex-1 font-body-600 text-[15px]">
+          <Text className="min-w-0 flex-1 font-body-600 text-body">
             {fmtBusinessDate(shift.businessDate)} · {shift.cashierName}
           </Text>
           <Tag
@@ -250,7 +250,7 @@ export function ShiftReportScreen({ shift, onBack, onQueue, onBell }: { shift: S
         </View>
         {stale ? (
           <View className="flex-row items-center gap-3 rounded-k border-k border-ink bg-fireSoft px-3.5 py-3">
-            <Text className="min-w-0 flex-1 text-[14px]">{t('Belum tersambung. Ini laporan yang terakhir tersimpan di perangkat.')}</Text>
+            <Text className="min-w-0 flex-1 text-small">{t('Belum tersambung. Ini laporan yang terakhir tersimpan di perangkat.')}</Text>
             <Button size="sm" label={t('Coba lagi')} onPress={() => void load()} />
           </View>
         ) : null}
@@ -258,8 +258,8 @@ export function ShiftReportScreen({ shift, onBack, onQueue, onBell }: { shift: S
           <ShiftReportBody d={d} />
         ) : error ? (
           <Card>
-            <Text className="font-body-700 text-[15px]">{t('Laporan shift belum dimuat')}</Text>
-            <Text className="mt-1 text-[14px] text-mute">{t('Periksa internet, lalu coba lagi.')}</Text>
+            <Text className="font-body-700 text-body">{t('Laporan shift belum dimuat')}</Text>
+            <Text className="mt-1 text-small text-mute">{t('Periksa internet, lalu coba lagi.')}</Text>
             <Button className="mt-3" label={t('Coba lagi')} onPress={() => void load()} />
           </Card>
         ) : (

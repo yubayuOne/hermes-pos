@@ -10,7 +10,7 @@ export function ReasonChips({ options, onPick }: { options: string[]; onPick: (r
           key={o}
           type="button"
           onClick={() => onPick(t(o))}
-          className="min-h-11 rounded-full border border-rule px-4 text-[15px] hover:bg-tint"
+          className="min-h-11 rounded-full border border-rule px-4 text-body hover:bg-tint"
         >
           {t(o)}
         </button>

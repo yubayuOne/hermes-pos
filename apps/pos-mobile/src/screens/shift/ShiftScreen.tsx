@@ -60,7 +60,7 @@ type Closed = {
 /** Hourly bars, busiest hour orange, values in thousands (DESIGN B, bar chart). */
 function HourBars({ hourly }: { hourly: DashboardSummary['hourly'] }) {
   const data = hourly.filter((h) => h.total > 0);
-  if (!data.length) return <Text className="py-4 text-[14px] text-mute">{t('Belum ada penjualan di shift ini.')}</Text>;
+  if (!data.length) return <Text className="py-4 text-small text-mute">{t('Belum ada penjualan di shift ini.')}</Text>;
   const max = Math.max(...data.map((h) => h.total));
   const peak = data.find((h) => h.total === max)?.hour;
   return (
@@ -68,7 +68,7 @@ function HourBars({ hourly }: { hourly: DashboardSummary['hourly'] }) {
       <View className="mt-2 flex-row items-end justify-between" style={{ height: 120, gap: 6 }} accessibilityLabel={t('Penjualan per jam')}>
         {data.map((h) => (
           <View key={h.hour} className="flex-1 items-center justify-end">
-            <Mono className="mb-1 text-[12px] text-mute">{Math.round(h.total / 1000)}</Mono>
+            <Mono className="mb-1 text-caption text-mute">{Math.round(h.total / 1000)}</Mono>
             <View
               style={{ width: '70%', maxWidth: 28, height: Math.max(4, (h.total / max) * 90), backgroundColor: h.hour === peak ? colors.fire : colors.pine }}
             />
@@ -77,12 +77,12 @@ function HourBars({ hourly }: { hourly: DashboardSummary['hourly'] }) {
       </View>
       <View className="mt-1 flex-row justify-between" style={{ gap: 6 }}>
         {data.map((h) => (
-          <Mono key={h.hour} className="flex-1 text-center text-[12px] text-mute">
+          <Mono key={h.hour} className="flex-1 text-center text-caption text-mute">
             {String(h.hour).padStart(2, '0')}
           </Mono>
         ))}
       </View>
-      <Text className="mt-2 text-[14px] text-mute">{t('Dalam ribu rupiah. Batang oranye adalah jam tersibuk shift ini.')}</Text>
+      <Text className="mt-2 text-small text-mute">{t('Dalam ribu rupiah. Batang oranye adalah jam tersibuk shift ini.')}</Text>
     </View>
   );
 }
@@ -452,8 +452,8 @@ export function ShiftScreen({
         // Sales still on this phone: a preview from the queue, the server's figures below take them in once sent.
         <Card className="bg-fireSoft">
           <Label>{t('Belum terkirim · {n} bill', { n: pendingSales.length })}</Label>
-          <Mono className="font-mono-600 mt-1 text-[16px]">{money(pendingCash + pendingQris)}</Mono>
-          <Text className="mt-1 text-[14px] text-mute">
+          <Mono className="font-mono-600 mt-1 text-body">{money(pendingCash + pendingQris)}</Mono>
+          <Text className="mt-1 text-small text-mute">
             {t('Tunai {cash} · QRIS {qris}. Perkiraan dari HP ini; masuk ke laporan setelah terkirim.', { cash: money(pendingCash), qris: money(pendingQris) })}
           </Text>
         </Card>
@@ -469,14 +469,14 @@ export function ShiftScreen({
         <Dashed className="my-3" />
         <View className="flex-row gap-4">
           <View className="min-w-0 flex-1">
-            <Mono className="text-[14px] text-mute">{t('Cash')}</Mono>
-            <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
+            <Mono className="text-small text-mute">{t('Cash')}</Mono>
+            <Mono className="font-mono-600 mt-0.5 text-body" numberOfLines={1} adjustsFontSizeToFit>
               {money(report?.cashRevenue ?? 0)}
             </Mono>
           </View>
           <View className="min-w-0 flex-1">
-            <Mono className="text-[14px] text-mute">{t('QRIS')}</Mono>
-            <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
+            <Mono className="text-small text-mute">{t('QRIS')}</Mono>
+            <Mono className="font-mono-600 mt-0.5 text-body" numberOfLines={1} adjustsFontSizeToFit>
               {money(report?.qrisRevenue ?? 0)}
             </Mono>
           </View>
@@ -489,10 +489,10 @@ export function ShiftScreen({
             [t('Void'), String(report?.voidedCount ?? 0)],
           ].map(([l, v]) => (
             <View key={l} className="min-w-0 flex-1 px-1">
-              <Mono className="text-[14px] text-mute" numberOfLines={1}>
+              <Mono className="text-small text-mute" numberOfLines={1}>
                 {l}
               </Mono>
-              <Mono className="font-mono-600 mt-0.5 text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
+              <Mono className="font-mono-600 mt-0.5 text-body" numberOfLines={1} adjustsFontSizeToFit>
                 {v}
               </Mono>
             </View>
@@ -500,8 +500,8 @@ export function ShiftScreen({
         </View>
         {report?.refundCount ? (
           <View className="mt-3 flex-row items-center justify-between gap-3">
-            <Mono className="text-[14px] text-mute">{t('Refund ({n})', { n: report.refundCount })}</Mono>
-            <Mono className="font-mono-600 min-w-0 flex-1 text-right text-[16px] text-error" numberOfLines={1} adjustsFontSizeToFit>
+            <Mono className="text-small text-mute">{t('Refund ({n})', { n: report.refundCount })}</Mono>
+            <Mono className="font-mono-600 min-w-0 flex-1 text-right text-body text-error" numberOfLines={1} adjustsFontSizeToFit>
               -{money(report.refundTotal)}
             </Mono>
           </View>
@@ -519,14 +519,14 @@ export function ShiftScreen({
           }}
         />
       </ButtonRow>
-      <Text className="text-[14px] text-mute">{t('Hitung uang di laci, lalu isi angkanya.')}</Text>
+      <Text className="text-small text-mute">{t('Hitung uang di laci, lalu isi angkanya.')}</Text>
       <Button label={locked ? t('Terkunci: langganan berakhir') : t('Catat pengeluaran')} disabled={locked} onPress={() => setExpenseSheet(true)} />
       {blockers.length ? (
         <View className="rounded-k border-k border-ink bg-fireSoft px-3.5 py-3">
-          <Text className="font-body-700 text-[15px]">{t('Shift belum bisa ditutup')}</Text>
+          <Text className="font-body-700 text-body">{t('Shift belum bisa ditutup')}</Text>
           {blockers.map((b, i) => (
             <View key={i} className="mt-2 flex-row items-center gap-3">
-              <Text className="min-w-0 flex-1 text-[14px]">{b.text}</Text>
+              <Text className="min-w-0 flex-1 text-small">{b.text}</Text>
               {b.action ? <Button size="sm" label={b.action.label} onPress={b.action.onPress} /> : null}
             </View>
           ))}
@@ -539,7 +539,7 @@ export function ShiftScreen({
       <Display size={30} className="mt-2">
         {t('Buka shift untuk mulai jualan.')}
       </Display>
-      <Text className="mt-2 text-[15px] text-mute">{t('Hitung uang di laci, lalu masukkan sebagai kas awal.')}</Text>
+      <Text className="mt-2 text-body text-mute">{t('Hitung uang di laci, lalu masukkan sebagai kas awal.')}</Text>
       <Button
         className="mt-4"
         size="lg"
@@ -559,20 +559,20 @@ export function ShiftScreen({
       <Card>
         <View className="flex-row items-center justify-between">
           <Display size={22}>{t('Penjualan per jam')}</Display>
-          <Mono className="text-[14px] text-mute">{t('ribu rupiah')}</Mono>
+          <Mono className="text-small text-mute">{t('ribu rupiah')}</Mono>
         </View>
         {dash ? (
           <HourBars hourly={dash.hourly} />
         ) : loading ? (
           <ActivityIndicator className="py-6" color={colors.ink} />
         ) : (
-          <Text className="py-4 text-[14px] text-mute">{t('Belum bisa dimuat.')}</Text>
+          <Text className="py-4 text-small text-mute">{t('Belum bisa dimuat.')}</Text>
         )}
       </Card>
       <Slip>
         <View className="flex-row justify-between">
-          <Mono className="font-mono-600 text-[14px]">{t('KAS LACI')}</Mono>
-          <Mono className="text-[14px] text-mute">{t('Shift {n}', { n: shift.shiftNumber })}</Mono>
+          <Mono className="font-mono-600 text-small">{t('KAS LACI')}</Mono>
+          <Mono className="text-small text-mute">{t('Shift {n}', { n: shift.shiftNumber })}</Mono>
         </View>
         <SlipRule />
         {drawerRows}
@@ -584,12 +584,12 @@ export function ShiftScreen({
           q.expense?.items.map((x, i) => (
             <View key={`${q.id}:${i}`} className="flex-row items-start justify-between gap-2 border-b border-rule py-2.5">
               <View className="min-w-0 flex-1 gap-1">
-                <Text numberOfLines={2} className="font-body-600 text-[15px]">
+                <Text numberOfLines={2} className="font-body-600 text-body">
                   {x.name}
                 </Text>
                 <Tag tone={q.status === 'conflict' ? 'error' : 'fire'} label={q.status === 'conflict' ? t('ditolak server') : t('belum terkirim')} />
               </View>
-              <Mono className="font-mono-600 text-[15px]">{money(x.amount)}</Mono>
+              <Mono className="font-mono-600 text-body">{money(x.amount)}</Mono>
             </View>
           )),
         )}
@@ -598,13 +598,13 @@ export function ShiftScreen({
             {expense.items.map((x, i) => (
               <View key={i} className={`gap-1 py-2.5 ${i ? 'border-t border-rule' : ''}`}>
                 <View className="flex-row items-start justify-between gap-2">
-                  <Text numberOfLines={2} className="min-w-0 flex-1 font-body-600 text-[15px]">
+                  <Text numberOfLines={2} className="min-w-0 flex-1 font-body-600 text-body">
                     {x.name}
                   </Text>
-                  <Mono className="font-mono-600 text-[15px]">{money(x.amount)}</Mono>
+                  <Mono className="font-mono-600 text-body">{money(x.amount)}</Mono>
                 </View>
                 <View className="flex-row flex-wrap items-center gap-2">
-                  <Mono className="text-[14px] text-mute">
+                  <Mono className="text-small text-mute">
                     {String(x.quantity).replace('.', ',')} {x.unit}
                   </Mono>
                   <Tag label={x.paidFrom === 'drawer' ? t('kas laci') : t('bukan dari laci')} />
@@ -612,15 +612,15 @@ export function ShiftScreen({
               </View>
             ))}
             <View className="flex-row justify-between gap-2 border-t-k border-ink pt-2.5">
-              <Text className="font-body-700 text-[15px]">{t('Total pengeluaran')}</Text>
-              <Mono className="font-mono-600 text-[15px]">{money(expense.total)}</Mono>
+              <Text className="font-body-700 text-body">{t('Total pengeluaran')}</Text>
+              <Mono className="font-mono-600 text-body">{money(expense.total)}</Mono>
             </View>
           </>
         ) : queuedExpenses.length ? null : (
-          <Text className="mt-2 text-[14px] text-mute">{t('Belum ada pengeluaran di shift ini.')}</Text>
+          <Text className="mt-2 text-small text-mute">{t('Belum ada pengeluaran di shift ini.')}</Text>
         )}
         {queuedExpenses.length ? (
-          <Text className="mt-2 text-[14px] text-mute">{t('Belum terkirim.')}</Text>
+          <Text className="mt-2 text-small text-mute">{t('Belum terkirim.')}</Text>
         ) : null}
       </Card>
       <Card>
@@ -629,10 +629,10 @@ export function ShiftScreen({
           top.map((x, i) => (
             <View key={i} className={`py-2.5 ${i ? 'border-t border-rule' : ''}`}>
               <View className="flex-row justify-between gap-2">
-                <Text numberOfLines={1} className="min-w-0 flex-1 font-body-600 text-[15px]">
+                <Text numberOfLines={1} className="min-w-0 flex-1 font-body-600 text-body">
                   {x.name}
                 </Text>
-                <Mono className="text-[14px]">
+                <Mono className="text-small">
                   {x.qty} · {num(x.subtotal)}
                 </Mono>
               </View>
@@ -642,7 +642,7 @@ export function ShiftScreen({
             </View>
           ))
         ) : (
-          <Text className="mt-2 text-[14px] text-mute">{t('Belum ada penjualan di shift ini.')}</Text>
+          <Text className="mt-2 text-small text-mute">{t('Belum ada penjualan di shift ini.')}</Text>
         )}
       </Card>
     </>
@@ -652,27 +652,27 @@ export function ShiftScreen({
     <Card>
       <Display size={22}>{t('Shift hari ini')}</Display>
       {today.length === 0 ? (
-        <Text className="mt-2 text-[14px] text-mute">{t('Belum ada shift hari ini.')}</Text>
+        <Text className="mt-2 text-small text-mute">{t('Belum ada shift hari ini.')}</Text>
       ) : (
         today.map((s, i) => (
           <View key={s.id} className={`flex-row items-start justify-between gap-2 py-2.5 ${i ? 'border-t border-rule' : ''}`}>
             <View className="min-w-0 flex-1">
-              <Text className="font-body-600 text-[15px]">
+              <Text className="font-body-600 text-body">
                 {t('Shift {n}', { n: s.shiftNumber })} · {session?.cashierName}
               </Text>
-              <Text className="mt-0.5 text-[14px] text-mute">
+              <Text className="mt-0.5 text-small text-mute">
                 {s.closedAt
                   ? t('{a} sampai {b}', { a: fmtTime(s.openedAt), b: fmtTime(s.closedAt) })
                   : t('Dibuka {time} · kas awal {amount}', { time: fmtTime(s.openedAt), amount: money(s.openingCash) })}
               </Text>
             </View>
-            <Mono className="text-[14px]" style={{ color: (s.variance ?? 0) < 0 ? colors.error : colors.ink }}>
+            <Mono className="text-small" style={{ color: (s.variance ?? 0) < 0 ? colors.error : colors.ink }}>
               {s.status === 'open' ? t('berjalan') : t('selisih {amount}', { amount: money(s.variance ?? 0) })}
             </Mono>
           </View>
         ))
       )}
-      {today[0] ? <Mono className="mt-1 text-[14px] text-mute">{fmtBusinessDate(today[0].businessDate)}</Mono> : null}
+      {today[0] ? <Mono className="mt-1 text-small text-mute">{fmtBusinessDate(today[0].businessDate)}</Mono> : null}
       <Button className="mt-3" icon="chevron-right" label={t('Riwayat laporan shift')} onPress={onOpenHistory} />
     </Card>
   );
@@ -817,12 +817,12 @@ export function ShiftScreen({
                 ) : null}
               </Slip>
               {closed.variance ? (
-                <Text className="mt-3 text-[14px] text-mute">
+                <Text className="mt-3 text-small text-mute">
                   {t('Hitung ulang laci dan periksa bill tunai.')}
                 </Text>
               ) : null}
               {closed.qrisVariance ? (
-                <Text className="mt-3 text-[14px] text-mute">
+                <Text className="mt-3 text-small text-mute">
                   {t('Cocokkan aplikasi merchant dengan bill QRIS.')}
                 </Text>
               ) : null}
@@ -897,7 +897,7 @@ function TakeOverSheet({ shift, onClose, onDone }: { shift: Shift | null; onClos
     >
       <SheetHeader title={t('Pindahkan shift ke HP ini')} subtitle={shift ? t('Shift {n}', { n: shift.shiftNumber }) : undefined} onClose={onClose} />
       <SheetBody contentClassName="gap-3.5">
-        <Text className="text-[15px] leading-[22px] text-mute">
+        <Text className="text-body leading-[22px] text-mute">
           {t(
             'Hanya kalau HP pembuka shift hilang atau rusak. Penjualan yang tertinggal di HP itu akan ditolak.',
           )}

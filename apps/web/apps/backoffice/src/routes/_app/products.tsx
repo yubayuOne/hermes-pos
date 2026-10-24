@@ -110,7 +110,7 @@ function Products() {
       >
         <OutletField all={false} value={outletId} onChange={(id) => set({ outlet: id ?? undefined, cat: undefined, page: undefined })} />
         <PeriodFilter value={search} range={range} today={today} onChange={(patch) => set({ ...patch, page: undefined })} />
-        <p className="-mt-2 text-[14px] text-mute">{t('Periode untuk kolom Terjual, dari bill selesai.')}</p>
+        <p className="-mt-2 text-small text-mute">{t('Periode untuk kolom Terjual, dari bill selesai.')}</p>
         {/* A dropdown, not a row of chips: an outlet can have many categories (owner's request, 17 Oct 2026). */}
         <Field label={t('Kategori')}>
           <Select value={search.cat ?? ''} onChange={(e) => set({ cat: e.target.value || undefined, page: undefined })}>
@@ -124,7 +124,7 @@ function Products() {
         </Field>
       </FilterBar>
       {sold === null && (
-        <p role="status" className="mt-3 text-[14px] font-semibold text-error">
+        <p role="status" className="mt-3 text-small font-semibold text-error">
           {t('Jumlah terjual belum bisa dimuat. Muat ulang halaman sebentar lagi.')}
         </p>
       )}
@@ -174,7 +174,7 @@ function Products() {
                         {t('Ubah')}
                       </Button>
                     </div>
-                    <span className="block text-[14px] text-mute">{(p.categoryId && catName.get(p.categoryId)) || t('Tanpa kategori')}</span>
+                    <span className="block text-small text-mute">{(p.categoryId && catName.get(p.categoryId)) || t('Tanpa kategori')}</span>
                   </td>
                   <td data-l={t('Harga')} className="num">
                     {money(p.price)}
@@ -294,7 +294,7 @@ function ProductDialog({
             label={t('Kategori')}
             optional
             help={
-              <button type="button" className="lnk lnk-inline text-[13px] text-ink" onClick={() => setNewCat(true)}>
+              <button type="button" className="lnk lnk-inline text-small text-ink" onClick={() => setNewCat(true)}>
                 {t('Kategori belum ada? Buat baru')}
               </button>
             }
@@ -315,7 +315,7 @@ function ProductDialog({
             {product && fromRecipe ? (
               <div className="fld">
                 <span className="fld-l">{t('HPP (modal per porsi)')}</span>
-                <p className="flex flex-wrap items-center gap-2 font-mono text-[18px] font-semibold">
+                <p className="flex flex-wrap items-center gap-2 font-mono text-title font-semibold">
                   {money(product.hpp)}
                   <Tag tone="pine" className="font-sans">
                     {t('dari resep')}
@@ -352,7 +352,7 @@ function ProductDialog({
           {/* A tracked product's stock changes only through stock documents (074); the form sets it when tracking starts. */}
           {f.values.trackStock &&
             (product?.trackStock ? (
-              <p className="text-[15px]">
+              <p className="text-body">
                 {t('Stok sekarang {n}.', { n: amount(product.stock) })}{' '}
                 <Link to="/stock" search={{ outlet: outletId }} className="lnk lnk-inline">
                   {t('Ubah lewat menu Stok')}
@@ -366,7 +366,7 @@ function ProductDialog({
           {product ? (
             <ProductPhoto outletId={outletId} product={product} />
           ) : (
-            <p className="text-[14px] text-mute">{t('Foto bisa ditambahkan setelah produk disimpan.')}</p>
+            <p className="text-small text-mute">{t('Foto bisa ditambahkan setelah produk disimpan.')}</p>
           )}
           <div className="fld">
             <span className="fld-l">{t('Tiket dicetak ke')}</span>

@@ -36,7 +36,7 @@ export function ChoiceButton<K extends string>({
         className="h-[48px] flex-row items-center gap-2 rounded-k px-3"
         style={({ pressed }) => ({ borderWidth: 1.5, borderColor: colors.ink, backgroundColor: pressed ? colors.tint : colors.slip })}
       >
-        <Text numberOfLines={1} className="min-w-0 flex-1 font-body-600 text-[15px]">
+        <Text numberOfLines={1} className="min-w-0 flex-1 font-body-600 text-body">
           {current}
         </Text>
         <Icon name="chevron-down" size={18} />
@@ -65,7 +65,7 @@ export function ChoiceButton<K extends string>({
                     backgroundColor: selected ? colors.pine : pressed ? colors.tint : colors.slip,
                   })}
                 >
-                  <Text numberOfLines={2} className={`min-w-0 flex-1 font-body-600 text-[16px] ${selected ? 'text-slip' : ''}`}>
+                  <Text numberOfLines={2} className={`min-w-0 flex-1 font-body-600 text-body ${selected ? 'text-slip' : ''}`}>
                     {o.label}
                   </Text>
                   {selected ? <Icon name="check" size={18} color={colors.slip} /> : null}

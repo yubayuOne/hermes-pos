@@ -31,6 +31,8 @@ module.exports = {
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
+      // Same scale as the BackOffice (theme.css): 12, 14, 16, 18, 22 px. Size only, no line height.
+      fontSize: { caption: ['12px'], small: ['14px'], body: ['16px'], title: ['18px'], heading: ['22px'] },
       colors: {
         ...t,
         kas: {

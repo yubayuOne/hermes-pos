@@ -29,13 +29,13 @@ function ShiftRow({ s, onPress }: { s: ShiftRecord; onPress: () => void }) {
       style={({ pressed }) => ({ borderWidth: 1.5, borderColor: colors.ink, backgroundColor: pressed ? colors.tint : colors.slip })}
     >
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="min-w-0 flex-1 font-body-600 text-[15px]" numberOfLines={1}>
+        <Text className="min-w-0 flex-1 font-body-600 text-body" numberOfLines={1}>
           {t('Shift {n}', { n: s.shiftNumber })} · {s.cashierName}
         </Text>
-        <Mono className="font-mono-600 text-[15px]">{money(s.sales)}</Mono>
+        <Mono className="font-mono-600 text-body">{money(s.sales)}</Mono>
       </View>
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="min-w-0 flex-1 text-[14px] text-mute" numberOfLines={1}>
+        <Text className="min-w-0 flex-1 text-small text-mute" numberOfLines={1}>
           {hours}
         </Text>
         <Tag tone={s.status === 'open' ? 'pine' : 'neutral'} label={s.status === 'open' ? t('berjalan') : t('ditutup')} />
@@ -134,8 +134,8 @@ export function ShiftHistoryScreen({ onBack, onQueue, onBell }: { onBack: () => 
         error ? (
           <View className="px-3.5 pt-3">
             <Card>
-              <Text className="font-body-700 text-[15px]">{t('Riwayat shift belum dimuat')}</Text>
-              <Text className="mt-1 text-[14px] text-mute">{t('Periksa internet, lalu coba lagi.')}</Text>
+              <Text className="font-body-700 text-body">{t('Riwayat shift belum dimuat')}</Text>
+              <Text className="mt-1 text-small text-mute">{t('Periksa internet, lalu coba lagi.')}</Text>
               <Button className="mt-3" label={t('Coba lagi')} onPress={() => void load(null)} />
             </Card>
           </View>
@@ -155,29 +155,29 @@ export function ShiftHistoryScreen({ onBack, onQueue, onBell }: { onBack: () => 
           onEndReachedThreshold={0.4}
           renderSectionHeader={({ section }) => (
             <View className="flex-row items-baseline justify-between gap-3 bg-paper px-3.5 pb-2 pt-3" accessibilityRole="header">
-              <Text className="font-body-700 text-[15px]">{fmtBusinessDate(section.title)}</Text>
-              <Mono className="text-[14px] text-mute">{money(section.total)}</Mono>
+              <Text className="font-body-700 text-body">{fmtBusinessDate(section.title)}</Text>
+              <Mono className="text-small text-mute">{money(section.total)}</Mono>
             </View>
           )}
           ListHeaderComponent={
             error ? (
               <View className="mx-3.5 mt-2 flex-row items-center gap-3 rounded-k border-k border-ink bg-fireSoft px-3.5 py-3">
-                <Text className="min-w-0 flex-1 text-[14px]">{t('Belum tersambung. Ini daftar yang terakhir tersimpan di perangkat.')}</Text>
+                <Text className="min-w-0 flex-1 text-small">{t('Belum tersambung. Ini daftar yang terakhir tersimpan di perangkat.')}</Text>
                 <Button size="sm" label={t('Coba lagi')} onPress={() => void refresh()} />
               </View>
             ) : null
           }
           ListEmptyComponent={
             <Card className="mx-3.5 mt-2">
-              <Text className="font-body-700 text-[15px]">{period ? t('Tidak ada shift di periode ini.') : t('Belum ada shift.')}</Text>
-              <Text className="mt-1 text-[14px] text-mute">{t('Shift yang dibuka di outlet ini muncul di sini, yang terbaru di atas.')}</Text>
+              <Text className="font-body-700 text-body">{period ? t('Tidak ada shift di periode ini.') : t('Belum ada shift.')}</Text>
+              <Text className="mt-1 text-small text-mute">{t('Shift yang dibuka di outlet ini muncul di sini, yang terbaru di atas.')}</Text>
             </Card>
           }
           ListFooterComponent={
             more ? (
               <ActivityIndicator className="py-4" color={colors.ink} />
             ) : rows.length && !hasMore ? (
-              <Mono className="py-3 text-center text-[14px] text-mute">{t('Sudah semua · {n} shift', { n: rows.length })}</Mono>
+              <Mono className="py-3 text-center text-small text-mute">{t('Sudah semua · {n} shift', { n: rows.length })}</Mono>
             ) : null
           }
           renderItem={({ item }) => <ShiftRow s={item} onPress={() => setOpen(item)} />}

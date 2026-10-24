@@ -58,9 +58,9 @@ export function Bell({ className }: { className?: string }) {
           className="z-40 w-[min(380px,calc(100vw-32px))] rounded border-[1.5px] border-ink bg-slip shadow-[var(--shadow-hard-4)] animate-pop"
         >
           <div className="flex items-center justify-between gap-3 border-b border-rule px-4 py-3">
-            <h2 className="text-[20px]">{t('Notifikasi')}</h2>
+            <h2 className="text-heading">{t('Notifikasi')}</h2>
             {items && items.some((n) => !n.read) && (
-              <button type="button" className="lnk text-[14px]" onClick={markAll}>
+              <button type="button" className="lnk text-small" onClick={markAll}>
                 {t('Tandai sudah dibaca')}
               </button>
             )}
@@ -86,7 +86,7 @@ export function Bell({ className }: { className?: string }) {
                         {!n.read && <span className="sr-only">{t('Belum dibaca')}: </span>}
                         <NotificationText n={n} />
                       </p>
-                      <p className="mt-1 font-mono text-[13px] text-mute">
+                      <p className="mt-1 font-mono text-small text-mute">
                         {dateShort(n.createdAt, lang, app.business.timezone)} · {time(n.createdAt, app.business.timezone)}
                       </p>
                     </div>

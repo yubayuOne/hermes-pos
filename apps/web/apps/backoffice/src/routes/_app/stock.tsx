@@ -127,7 +127,7 @@ function StockTable({ items }: { items: StockItem[] }) {
             <tr key={p.productId}>
               <td data-l={t('Produk')}>
                 <span className="font-semibold">{p.name}</span>
-                <span className="block text-[14px] text-mute">
+                <span className="block text-small text-mute">
                   {p.category || t('Tanpa kategori')}
                   {!p.isActive && ` · ${t('nonaktif')}`}
                 </span>
@@ -138,7 +138,7 @@ function StockTable({ items }: { items: StockItem[] }) {
               <td data-l={t('Modal (HPP)')} className="num">
                 {money(p.value)}
               </td>
-              <td data-l={t('Hitung terakhir')} className="text-[15px]">
+              <td data-l={t('Hitung terakhir')} className="text-body">
                 {p.lastCount ? dateShort(p.lastCount, lang, tz) : <span className="text-mute">{t('belum pernah')}</span>}
               </td>
             </tr>
@@ -175,12 +175,12 @@ function History({ docs, total, set }: { docs: StockDocument[]; total: number; s
           <Card key={d.id} as="article">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <p className="font-semibold">{t(KIND_LABEL[d.kind])}</p>
-              <span className="font-mono text-[14px] text-mute">
+              <span className="font-mono text-small text-mute">
                 {dateShort(d.createdAt, lang, tz)} {time(d.createdAt, tz)}
               </span>
             </div>
-            {d.reason && <p className="text-[15px] text-mute">{d.reason}</p>}
-            <ul className="mt-3 grid gap-1 border-t border-rule pt-3 text-[15px]">
+            {d.reason && <p className="text-body text-mute">{d.reason}</p>}
+            <ul className="mt-3 grid gap-1 border-t border-rule pt-3 text-body">
               {d.lines.map((l) => (
                 <li key={l.productId} className="flex flex-wrap justify-between gap-x-4">
                   <span>{l.productName}</span>
@@ -279,7 +279,7 @@ function DocumentDialog({ outletId, kind, items, onClose }: { outletId: string; 
             <label key={p.productId} className="flex items-center gap-3 rounded border border-rule bg-slip px-3 py-2">
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">{p.name}</span>
-                <span className="block font-mono text-[13px] text-mute">{t('Stok sistem {n}', { n: amount(p.stock) })}</span>
+                <span className="block font-mono text-small text-mute">{t('Stok sistem {n}', { n: amount(p.stock) })}</span>
               </span>
               <Input
                 aria-label={`${t(text.input)} ${p.name}`}

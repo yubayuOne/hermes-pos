@@ -120,14 +120,14 @@ function Expenses() {
       </div>
 
       <Card className="mt-5" aria-label={t('Total pengeluaran')}>
-        <p className="font-mono text-[14px] text-mute">{t('Total pengeluaran · {period}', { period: periodLabel })}</p>
+        <p className="font-mono text-small text-mute">{t('Total pengeluaran · {period}', { period: periodLabel })}</p>
         <p className="big-num mt-3 break-words">{money(data.totals.total)}</p>
         <dl className="mt-5 grid grid-cols-2 gap-6 border-t-[1.5px] border-ink pt-4">
           <Stat label={t('Operasional')} value={money(data.totals.operasional)} />
           <Stat label={t('Belanja')} value={money(data.totals.belanja)} />
         </dl>
         {data.totals.adjustments !== 0 && (
-          <p className="mt-4 text-[14px] text-mute">{t('Termasuk koreksi pengeluaran lama: {amount}', { amount: money(data.totals.adjustments) })}</p>
+          <p className="mt-4 text-small text-mute">{t('Termasuk koreksi pengeluaran lama: {amount}', { amount: money(data.totals.adjustments) })}</p>
         )}
       </Card>
 
@@ -140,8 +140,8 @@ function Expenses() {
           {byDay.map(([day, list]) => (
             <section key={day} aria-labelledby={`day-${day}`}>
               <h2 id={`day-${day}`} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b-[1.5px] border-ink pb-2">
-                <span className="font-display text-[22px] font-extrabold tracking-[-0.02em]">{dateLong(`${day}T12:00:00Z`, lang, 'UTC')}</span>
-                <span className="font-mono text-[15px]">{money(data.dayTotals[day] ?? 0)}</span>
+                <span className="font-display text-heading font-extrabold tracking-[-0.02em]">{dateLong(`${day}T12:00:00Z`, lang, 'UTC')}</span>
+                <span className="font-mono text-body">{money(data.dayTotals[day] ?? 0)}</span>
               </h2>
               <div className="mt-4 grid gap-5">
                 {list.map((e) => (
@@ -151,7 +151,7 @@ function Expenses() {
             </section>
           ))}
           <div className="grid justify-items-center gap-3">
-            <p className="font-mono text-[14px] text-mute">{t('{total} catatan shift di periode ini', { total: data.total })}</p>
+            <p className="font-mono text-small text-mute">{t('{total} catatan shift di periode ini', { total: data.total })}</p>
             <Pagination page={at + 1} pages={pageCount} busy={more.busy} onPage={(p) => void goTo(p)} />
             <FormAlert>{more.error && t(more.error)}</FormAlert>
           </div>
@@ -171,12 +171,12 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
     <Card as="article" aria-label={t('Pengeluaran shift {n}, {amount}', { n: e.shiftNumber, amount: money(e.total) })}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="font-mono text-[14px] text-mute">
+          <p className="font-mono text-small text-mute">
             {t('Shift {n}', { n: e.shiftNumber })} · {e.outletName}
             {e.cashierName ? ` · ${e.cashierName}` : ''}
           </p>
           <p className="mt-1 font-display text-[28px] font-extrabold leading-none tracking-[-0.03em]">{money(e.total)}</p>
-          {e.drawerTotal > 0 && <p className="mt-1.5 text-[15px] text-mute">{t('{amount} dari kas laci', { amount: money(e.drawerTotal) })}</p>}
+          {e.drawerTotal > 0 && <p className="mt-1.5 text-body text-mute">{t('{amount} dari kas laci', { amount: money(e.drawerTotal) })}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {e.shiftOpen && <Tag tone="fire">{t('shift masih buka')}</Tag>}
@@ -208,7 +208,7 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                 <tr key={i.id}>
                   <td data-l={t('Barang atau biaya')}>
                     {i.name}
-                    <details className="text-[14px] text-mute">
+                    <details className="text-small text-mute">
                       <summary className="cursor-pointer">{t('Lihat detail')}</summary>
                       <p>
                         {t('Uang dari')}: {t(PAID_FROM[i.paidFrom])}
@@ -235,7 +235,7 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
         </div>
       )}
       {e.cancelled.length > 0 && (
-        <ul className="mt-4 grid gap-1 border-t border-rule pt-3 text-[14px] text-mute" aria-label={t('Barang yang dibatalkan')}>
+        <ul className="mt-4 grid gap-1 border-t border-rule pt-3 text-small text-mute" aria-label={t('Barang yang dibatalkan')}>
           {e.cancelled.map((i) => (
             <li key={i.id}>
               <span className="line-through">
@@ -393,12 +393,12 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
               </Select>
             </Field>
             {shifts?.length === 0 && (
-              <p role="status" className="col-span-full text-[14px] text-mute">
+              <p role="status" className="col-span-full text-small text-mute">
                 {t('Tidak ada shift dalam 7 hari sampai {date}.', { date: dateLong(`${date}T12:00:00Z`, lang, 'UTC') })}
               </p>
             )}
             {!!shifts?.length && shiftDay !== date && (
-              <p role="status" className="col-span-full text-[14px] text-mute">
+              <p role="status" className="col-span-full text-small text-mute">
                 {t('Tidak ada shift pada tanggal ini. Dicatat di shift {date}.', { date: dateLong(`${shiftDay}T12:00:00Z`, lang, 'UTC') })}
               </p>
             )}
@@ -414,7 +414,7 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
           <fieldset key={k} className="grid grid-cols-2 gap-3 rounded border-[1.5px] border-ink bg-slip p-4 sm:grid-cols-6">
             <legend className="sr-only">{t('Barang {n}', { n: k + 1 })}</legend>
             <div className="col-span-full flex items-center justify-between gap-3">
-              <span aria-hidden className="font-mono text-[14px] text-mute">
+              <span aria-hidden className="font-mono text-small text-mute">
                 {t('Barang {n}', { n: k + 1 })}
               </span>
               <Button
@@ -430,18 +430,18 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
               </Button>
             </div>
             <label className="col-span-full grid min-w-0 gap-1.5">
-              <span className="text-[14px] font-semibold">{t('Barang atau biaya')}</span>
+              <span className="text-small font-semibold">{t('Barang atau biaya')}</span>
               <Input value={r.name} maxLength={60} onChange={(ev) => set(k, { name: ev.target.value })} />
             </label>
             <label className="col-span-full grid min-w-0 gap-1.5 sm:col-span-2">
-              <span className="text-[14px] font-semibold">{t('Kategori')}</span>
+              <span className="text-small font-semibold">{t('Kategori')}</span>
               <Select value={r.category} onChange={(ev) => set(k, { category: ev.target.value === 'operasional' ? 'operasional' : 'belanja' })}>
                 <option value="belanja">{t('Belanja')}</option>
                 <option value="operasional">{t('Operasional')}</option>
               </Select>
             </label>
             <label className="grid min-w-0 gap-1.5 sm:col-span-1">
-              <span className="text-[14px] font-semibold">{t('Jumlah|barang')}</span>
+              <span className="text-small font-semibold">{t('Jumlah|barang')}</span>
               <Input
                 value={r.quantity}
                 inputMode="decimal"
@@ -450,7 +450,7 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
               />
             </label>
             <label className="grid min-w-0 gap-1.5 sm:col-span-1">
-              <span className="text-[14px] font-semibold">{t('Satuan')}</span>
+              <span className="text-small font-semibold">{t('Satuan')}</span>
               <Select value={r.unit} onChange={(ev) => set(k, { unit: ev.target.value })}>
                 {EXPENSE_UNITS.map((u) => (
                   <option key={u} value={u}>
@@ -460,7 +460,7 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
               </Select>
             </label>
             <label className="col-span-full grid min-w-0 gap-1.5 sm:col-span-2">
-              <span className="text-[14px] font-semibold">{t('Harga total')}</span>
+              <span className="text-small font-semibold">{t('Harga total')}</span>
               <Input
                 value={r.amount && Number(r.amount).toLocaleString('id-ID')}
                 inputMode="numeric"
@@ -470,7 +470,7 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
               />
             </label>
             {errors[k] && (
-              <p role="alert" className="col-span-full text-[14px] font-semibold text-error">
+              <p role="alert" className="col-span-full text-small font-semibold text-error">
                 {t(errors[k])}
               </p>
             )}

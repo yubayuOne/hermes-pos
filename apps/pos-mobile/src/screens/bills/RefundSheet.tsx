@@ -146,7 +146,7 @@ export function RefundSheet({
         onClose={onClose}
       />
       <SheetBody contentClassName="gap-3.5">
-        <Text className="text-[15px] leading-[22px] text-mute">{t('Pilih item yang dikembalikan. Refund masuk ke shift ini dan tidak bisa dibatalkan.')}</Text>
+        <Text className="text-body leading-[22px] text-mute">{t('Pilih item yang dikembalikan. Refund masuk ke shift ini dan tidak bisa dibatalkan.')}</Text>
         <Label>{t('Item')}</Label>
         <View className="gap-2.5">
           {open.length ? (
@@ -156,10 +156,10 @@ export function RefundSheet({
                 <View key={i.itemId} className="gap-2 rounded-k border-k border-ink bg-slip px-3 py-2.5">
                   <View className="flex-row items-center gap-3">
                     <View className="min-w-0 flex-1">
-                      <Text numberOfLines={2} className="font-body-600 text-[15px]">
+                      <Text numberOfLines={2} className="font-body-600 text-body">
                         {i.productName}
                       </Text>
-                      <Mono className="text-[14px] text-mute">{t('sisa {n} dari {m}', { n: left(i), m: i.quantity })}</Mono>
+                      <Mono className="text-small text-mute">{t('sisa {n} dari {m}', { n: left(i), m: i.quantity })}</Mono>
                     </View>
                     <Stepper
                       label={i.productName}
@@ -181,10 +181,10 @@ export function RefundSheet({
               );
             })
           ) : (
-            <Text className="text-[15px] text-mute">{t('Semua item sudah direfund.')}</Text>
+            <Text className="text-body text-mute">{t('Semua item sudah direfund.')}</Text>
           )}
           {errors.items ? (
-            <Text accessibilityRole="alert" className="font-body-600 text-[14px] text-error">
+            <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
               {errors.items}
             </Text>
           ) : null}
@@ -199,8 +199,8 @@ export function RefundSheet({
           className="flex-row items-center justify-between rounded-k px-3.5 py-3"
           style={{ borderWidth: 1.5, borderColor: colors.ink, backgroundColor: colors.tint3 }}
         >
-          <Text className="font-body-600 text-[15px]">{t('Perkiraan refund')}</Text>
-          <Mono className="font-mono-600 ml-3 min-w-0 flex-1 text-right text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
+          <Text className="font-body-600 text-body">{t('Perkiraan refund')}</Text>
+          <Mono className="font-mono-600 ml-3 min-w-0 flex-1 text-right text-body" numberOfLines={1} adjustsFontSizeToFit>
             {money(est)}
           </Mono>
         </View>
@@ -245,7 +245,7 @@ export function RefundSheet({
           help={t('Minta pemilik mengetik kodenya di perangkat ini. Kode diatur di backoffice.')}
         />
         {errors.form ? (
-          <Text accessibilityRole="alert" className="font-body-600 text-[14px] text-error">
+          <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
             {errors.form}
           </Text>
         ) : null}

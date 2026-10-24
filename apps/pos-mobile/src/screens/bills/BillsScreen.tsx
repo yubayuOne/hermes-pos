@@ -91,13 +91,13 @@ function BillRow({ bill, selected, queued, onPress }: { bill: TransactionSummary
       style={({ pressed }) => ({ borderWidth: selected ? 2.5 : 1.5, borderColor: colors.ink, backgroundColor: pressed ? colors.tint : colors.slip })}
     >
       <View className="flex-row items-center justify-between gap-3">
-        <Mono className="min-w-0 flex-1 font-mono-600 text-[15px]" numberOfLines={1}>
+        <Mono className="min-w-0 flex-1 font-mono-600 text-body" numberOfLines={1}>
           {bill.number}
         </Mono>
-        <Mono className="font-mono-600 text-[15px]">{money(bill.total)}</Mono>
+        <Mono className="font-mono-600 text-body">{money(bill.total)}</Mono>
       </View>
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="min-w-0 flex-1 text-[14px] text-mute" numberOfLines={1}>
+        <Text className="min-w-0 flex-1 text-small text-mute" numberOfLines={1}>
           {line}
         </Text>
         {queued ? <Tag label={t('belum terkirim')} tone="fire" /> : statusTag(bill)}
@@ -544,7 +544,7 @@ export function BillsScreen({
         <View className="p-4">
           <Card>
             <Display size={26}>{t('Belum ada shift yang buka.')}</Display>
-            <Text className="mt-2 text-[15px] text-mute">
+            <Text className="mt-2 text-body text-mute">
               {t('Hanya bill shift ini. Riwayat lama ada di backoffice.')}
             </Text>
             {!locked ? <Button className="mt-4" variant="fire" label={t('Buka shift')} onPress={onOpenShift} /> : null}
@@ -598,7 +598,7 @@ export function BillsScreen({
             }}
           />
         ) : null}
-        {view && !wide ? <Text className="text-[14px] text-mute">{closedNote}</Text> : null}
+        {view && !wide ? <Text className="text-small text-mute">{closedNote}</Text> : null}
         <Tabs<Status>
           value={filter}
           onChange={(k) => {
@@ -664,7 +664,7 @@ export function BillsScreen({
           onRefresh={() => void load()}
           renderItem={({ item }) => <BillRow bill={item} selected={wide && selected?.id === item.id} queued={!!entryOf(item.id)} onPress={() => open(item)} />}
           ListEmptyComponent={
-            <Text className="py-8 text-center text-[15px] text-mute">
+            <Text className="py-8 text-center text-body text-mute">
               {q
                 ? t('Tidak ada bill yang cocok.')
                 : filter === 'held'
@@ -676,7 +676,7 @@ export function BillsScreen({
           }
           ListFooterComponent={
             rows.length ? (
-              <Mono className="py-3 text-center text-[14px] text-mute">{t('Menampilkan {n} dari {m} bill.', { n: rows.length, m: total })}</Mono>
+              <Mono className="py-3 text-center text-small text-mute">{t('Menampilkan {n} dari {m} bill.', { n: rows.length, m: total })}</Mono>
             ) : null
           }
         />
@@ -690,7 +690,7 @@ export function BillsScreen({
       {selected.status === 'voided' ? (
         <View className="mt-3 rounded-k px-3.5 py-3" style={{ borderWidth: 1.5, borderColor: colors.errorLine, backgroundColor: colors.errorSoft }}>
           <Label>{t('Alasan void · disetujui pemilik')}</Label>
-          <Text className="mt-1 text-[15px]">{selected.voidReason?.trim() || '-'}</Text>
+          <Text className="mt-1 text-body">{selected.voidReason?.trim() || '-'}</Text>
         </View>
       ) : null}
       {selected.status !== 'voided' ? (
@@ -728,7 +728,7 @@ export function BillsScreen({
     ) : selEntry ? (
       <View className="gap-2">
         {holdLocked ? (
-          <Text className="text-[14px] text-mute">
+          <Text className="text-small text-mute">
             {t('Bill ini sedang dikirim. Tunggu sebentar, lalu buka lagi.')}
           </Text>
         ) : null}
@@ -799,9 +799,9 @@ export function BillsScreen({
               </>
             ) : (
               <View className="flex-1 items-center justify-center gap-3 p-6">
-                <Text className="text-[15px] text-mute">{t('Pilih bill di kiri.')}</Text>
+                <Text className="text-body text-mute">{t('Pilih bill di kiri.')}</Text>
                 {/* Wide screens keep the list short, so the closed-shift note lives here. */}
-                {view ? <Text className="max-w-[380px] text-center text-[14px] text-mute">{closedNote}</Text> : null}
+                {view ? <Text className="max-w-[380px] text-center text-small text-mute">{closedNote}</Text> : null}
               </View>
             )}
           </View>
@@ -897,7 +897,7 @@ function VoidSheet({ bill, onClose, onVoided }: { bill: TransactionSummary | nul
         onClose={onClose}
       />
       <SheetBody contentClassName="gap-3.5">
-        <Text className="text-[15px] leading-[22px] text-mute">
+        <Text className="text-body leading-[22px] text-mute">
           {t('Stok kembali dan kas laci dikoreksi. Tidak bisa diurungkan, perlu internet.')}
         </Text>
         <TextField
@@ -928,7 +928,7 @@ function VoidSheet({ bill, onClose, onVoided }: { bill: TransactionSummary | nul
           help={t('Minta pemilik mengetik kodenya di perangkat ini. Kode diatur di backoffice.')}
         />
         {errors.form ? (
-          <Text accessibilityRole="alert" className="font-body-600 text-[14px] text-error">
+          <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
             {errors.form}
           </Text>
         ) : null}

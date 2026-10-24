@@ -53,7 +53,7 @@ function Outlets() {
                 <Tag tone={included ? 'pine' : 'fire'}>{included ? t('termasuk paket') : t('tambahan')}</Tag>
               </div>
               <p className="mt-2 text-mute">{o.address || `[${t('Alamat outlet')}]`}</p>
-              {o.phone && <p className="font-mono text-[14px] text-mute">{o.phone}</p>}
+              {o.phone && <p className="font-mono text-small text-mute">{o.phone}</p>}
               <Button sm className="mt-3" onClick={() => setEditing(o)} {...lock.props}>
                 {lock.label(t('Ubah data outlet'))}
                 <span className="sr-only"> {o.name}</span>

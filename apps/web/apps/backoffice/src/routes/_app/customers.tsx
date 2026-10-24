@@ -96,7 +96,7 @@ function Customers() {
                   <td data-l={t('Total belanja')} className="num">
                     {money(c.total)}
                   </td>
-                  <td data-l={t('Terakhir belanja')} className="font-mono text-[14px]">
+                  <td data-l={t('Terakhir belanja')} className="font-mono text-small">
                     {dateShort(c.lastAt, lang, tz)}
                   </td>
                 </tr>

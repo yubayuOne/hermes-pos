@@ -59,7 +59,7 @@ export function Keypad({
                 transform: [{ translateY: pressed ? 1 : 0 }],
               })}
             >
-              {k === 'del' ? <Icon name="backspace" size={24} /> : <Mono className="text-[22px]">{k}</Mono>}
+              {k === 'del' ? <Icon name="backspace" size={24} /> : <Mono className="text-heading">{k}</Mono>}
             </Tap>
           )}
         </View>

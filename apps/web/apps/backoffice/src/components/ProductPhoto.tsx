@@ -69,7 +69,7 @@ export function ProductPhoto({ outletId, product }: { outletId: string; product:
           {src ? (
             <img src={src} alt={t('Foto {name}', { name: product.name })} className="size-full object-cover" />
           ) : (
-            <span className="text-[12px] text-mute">{t('Belum ada')}</span>
+            <span className="text-caption text-mute">{t('Belum ada')}</span>
           )}
         </div>
         <div className="flex flex-wrap gap-2">

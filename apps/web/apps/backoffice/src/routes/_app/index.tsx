@@ -98,7 +98,7 @@ function Summary() {
   return (
     <Page title={t('Ringkasan')} tools={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}>
       <PeriodFilter value={search} range={data.range} today={data.today} onChange={set}>
-        <p className="w-full pt-1 text-[14px] text-mute sm:ml-2 sm:w-auto sm:pt-0">{t('Grafik selalu 7 hari terakhir dan jam hari ini.')}</p>
+        <p className="w-full pt-1 text-small text-mute sm:ml-2 sm:w-auto sm:pt-0">{t('Grafik selalu 7 hari terakhir dan jam hari ini.')}</p>
         {/* The full report (A4, print or PDF) for the same period and outlet as this page. */}
         <Link to="/reports" search={search} className={`${btn('plain')} w-full sm:ml-auto sm:w-auto`}>
           {t('Laporan')}
@@ -125,13 +125,13 @@ function Summary() {
         <>
           <div className="mt-5 grid gap-5 xl:grid-cols-[7fr_5fr]">
             <Card className="animate-rise" aria-label={t('Total omset')}>
-              <p className="font-mono text-[14px] text-mute">
+              <p className="font-mono text-small text-mute">
                 {t('Total omset, bersih setelah refund')} · {periodLabel} · {outletName}
               </p>
               <p className="big-num mt-4 break-words">
                 <Hl>{money(p.sales)}</Hl>
               </p>
-              <p className="mt-3 text-[14px] text-mute">{versusText}</p>
+              <p className="mt-3 text-small text-mute">{versusText}</p>
               <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t-[1.5px] border-ink pt-5">
                 <Stat label={t('Omset tunai')} value={money(p.cash)} />
                 <Stat label={t('Omset QRIS')} value={money(p.qris)} />
@@ -144,11 +144,11 @@ function Summary() {
               </dl>
             </Card>
             <Card className="animate-rise [animation-delay:60ms]" aria-label={t('Omset setelah pengeluaran')}>
-              <p className="font-mono text-[14px] text-mute">{t('Omset setelah pengeluaran')}</p>
+              <p className="font-mono text-small text-mute">{t('Omset setelah pengeluaran')}</p>
               <p className="mt-3 font-display text-[clamp(38px,4vw,52px)] font-extrabold leading-none tracking-[-0.035em] text-pine">
                 {money(p.salesAfterExpenses)}
               </p>
-              <p className="mt-2 text-[14px] text-mute">{t('Semua pengeluaran dikurangkan, dari kas laci maupun dari luar laci.')}</p>
+              <p className="mt-2 text-small text-mute">{t('Semua pengeluaran dikurangkan, dari kas laci maupun dari luar laci.')}</p>
               <dl className="mt-5 grid grid-cols-2 gap-6 border-t border-dashed border-ink pt-5">
                 <Stat label={t('Pengeluaran')} value={money(p.expenses.total)} />
                 <Stat label={t('Dari kas laci')} value={money(p.expenses.drawer)} />

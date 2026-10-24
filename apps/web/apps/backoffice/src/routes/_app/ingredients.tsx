@@ -163,7 +163,7 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
                 <tr key={i.id}>
                   <td data-l={t('Bahan')}>
                     <span className="font-semibold">{i.name}</span>
-                    <details className="text-[14px] text-mute">
+                    <details className="text-small text-mute">
                       <summary className="cursor-pointer">{t('Lihat detail')}</summary>
                       <p>
                         {t('Terakhir dihitung')}: {i.lastCountedAt ? dateShort(i.lastCountedAt, lang) : t('belum pernah')}
@@ -182,7 +182,7 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
                   </td>
                   <td data-l={t('Harga rata-rata')} className="num">
                     {money(i.price)} / {i.packLabel || t('kemasan')}
-                    <span className="block text-[14px] text-mute">{unitCostText(i, lang)}</span>
+                    <span className="block text-small text-mute">{unitCostText(i, lang)}</span>
                   </td>
                   <td data-l={t('Aksi')}>
                     <div className="flex flex-wrap gap-2">
@@ -277,7 +277,7 @@ function RecipeList({ menus, onOpen }: { menus: Product[]; onOpen: (id: string) 
               <tr key={p.id}>
                 <td data-l={t('Menu')}>
                   <span className="font-semibold">{p.name}</span>
-                  {!p.isActive && <span className="block text-[14px] text-mute">{t('nonaktif')}</span>}
+                  {!p.isActive && <span className="block text-small text-mute">{t('nonaktif')}</span>}
                 </td>
                 <td data-l={t('Harga jual')} className="num">
                   {money(p.price)}
@@ -288,7 +288,7 @@ function RecipeList({ menus, onOpen }: { menus: Product[]; onOpen: (id: string) 
                 <td data-l={t('Untung per porsi')} className="num">
                   {p.hpp > 0 && p.price > 0 ? (
                     <>
-                      {money(profit)} <span className="font-sans text-[14px] text-mute">({decimal((profit / p.price) * 100, lang, 0)}%)</span>
+                      {money(profit)} <span className="font-sans text-small text-mute">({decimal((profit / p.price) * 100, lang, 0)}%)</span>
                     </>
                   ) : (
                     <span className="text-mute">-</span>
@@ -337,7 +337,7 @@ function RecipePage({ outletId, product, recipe, onBack }: { outletId: string; p
           {t('Kembali ke daftar resep')}
         </Button>
       </div>
-      <h2 className="text-[20px] font-semibold">{t('Resep {name}', { name: product.name })}</h2>
+      <h2 className="text-heading font-semibold">{t('Resep {name}', { name: product.name })}</h2>
       <RecipeEditor outletId={outletId} price={product.price} initial={initial} onChange={(ls) => setLines(ls)} />
       <FormAlert>{act.error && t(act.error)}</FormAlert>
       <div className="flex flex-wrap gap-2">
@@ -433,7 +433,7 @@ function PurchaseList({
                   <tr key={p.id}>
                     <td data-l={t('Tanggal')} className={cancelled ? 'line-through' : undefined}>
                       {dateShort(p.boughtOn, lang)}
-                      {cancelled && <span className="block text-[14px] text-mute no-underline">{t('dibatalkan')}</span>}
+                      {cancelled && <span className="block text-small text-mute no-underline">{t('dibatalkan')}</span>}
                     </td>
                     <td data-l={t('Bahan')} className={cancelled ? 'text-mute line-through' : undefined}>
                       {purchaseSummary(p, t('kemasan'), lang)}
@@ -509,19 +509,19 @@ function PurchaseDetail({ purchase, onClose }: { purchase: Purchase; onClose: ()
             <div className="flex flex-wrap justify-between gap-x-4">
               <span className="font-semibold">
                 {l.name}
-                {l.expenseItemId && <span className="ml-2 text-[14px] font-normal text-mute">({t('dari pengeluaran')})</span>}
+                {l.expenseItemId && <span className="ml-2 text-small font-normal text-mute">({t('dari pengeluaran')})</span>}
               </span>
-              <span className="font-mono text-[15px]">
+              <span className="font-mono text-body">
                 {decimal(l.packs, lang, 3)} {l.packLabel || t('kemasan')}, {money(l.total)}
               </span>
             </div>
-            <p className="font-mono text-[14px] text-mute">
+            <p className="font-mono text-small text-mute">
               {t('Harga sebelum')} {money(l.priceBefore)}, {t('Harga sesudah')} {money(l.priceAfter)}
             </p>
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-right font-mono text-[16px] font-semibold">
+      <p className="mt-3 text-right font-mono text-body font-semibold">
         {t('Total belanja')}: {money(purchase.total)}
       </p>
       {cancelling && (

@@ -53,13 +53,13 @@ export function OutletLogo({ outlet }: { outlet: Outlet }) {
   const src = draft?.url ?? outlet.logoUrl;
   return (
     <div className="mt-5 border-t border-dashed border-ink pt-4">
-      <p className="font-mono text-[14px] text-mute">{t('Logo outlet')}</p>
+      <p className="font-mono text-small text-mute">{t('Logo outlet')}</p>
       <div className="mt-2 flex flex-wrap items-center gap-4">
         <div className="grid h-[88px] w-[88px] shrink-0 place-items-center border border-dashed border-ink">
           {src ? (
             <img src={src} alt={t('Logo {name}', { name: outlet.name })} className="h-full w-full object-contain" />
           ) : (
-            <span className="text-[12px] text-mute">{t('Belum ada')}</span>
+            <span className="text-caption text-mute">{t('Belum ada')}</span>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -94,7 +94,7 @@ export function OutletLogo({ outlet }: { outlet: Outlet }) {
         </div>
       </div>
       <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={pick} />
-      <p className="mt-2 text-[14px] text-mute">
+      <p className="mt-2 text-small text-mute">
         {draft
           ? t('Sudah dikompres: {size} KB. Simpan untuk memakainya di aplikasi kasir.', { size: decimal(draft.blob.size / 1024, lang) })
           : t('PNG, JPEG, atau WebP sampai 10 MB. Persegi dengan latar transparan paling rapi.')}

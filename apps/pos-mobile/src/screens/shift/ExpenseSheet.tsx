@@ -103,7 +103,7 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
     >
       <SheetHeader title={t('Catat pengeluaran')} subtitle={t('Belanja bahan atau biaya operasional outlet.')} onClose={onClose} />
       <SheetBody contentClassName="gap-3.5 pb-8">
-        <Text className="text-[14px] text-mute">{t('Uang dari laci? Catat di sini. Belanja dengan uang lain? Catat di menu Belanja di BackOffice.')}</Text>
+        <Text className="text-small text-mute">{t('Uang dari laci? Catat di sini. Belanja dengan uang lain? Catat di menu Belanja di BackOffice.')}</Text>
         {lines.map((l, i) => {
           const e = errors[i] ?? {};
           return (
@@ -151,22 +151,22 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
           <Button icon="plus" label={t('Tambah barang')} onPress={() => setLines((ls) => [...ls, emptyLine(ls[ls.length - 1]?.category)])} />
         ) : null}
 
-        <Text className="text-[14px] text-mute">{t('Dari kas laci. Mengurangi kas seharusnya di shift ini sekarang juga.')}</Text>
+        <Text className="text-small text-mute">{t('Dari kas laci. Mengurangi kas seharusnya di shift ini sekarang juga.')}</Text>
         <View
           accessibilityLiveRegion="polite"
           className="flex-row items-center justify-between rounded-k px-3.5 py-3"
           style={{ borderWidth: 1.5, borderColor: colors.ink, backgroundColor: colors.tint3 }}
         >
-          <Text className="font-body-600 text-[15px]">{t('Total pengeluaran')}</Text>
-          <Mono className="font-mono-600 ml-3 min-w-0 flex-1 text-right text-[16px]" numberOfLines={1} adjustsFontSizeToFit>
+          <Text className="font-body-600 text-body">{t('Total pengeluaran')}</Text>
+          <Mono className="font-mono-600 ml-3 min-w-0 flex-1 text-right text-body" numberOfLines={1} adjustsFontSizeToFit>
             {money(total)}
           </Mono>
         </View>
-        <Text className="text-[14px] text-mute">
+        <Text className="text-small text-mute">
           {t('Langsung masuk laporan shift ini tanpa persetujuan. Pemilik bisa mengubahnya di backoffice. Tanpa internet, disimpan dulu di perangkat.')}
         </Text>
         {formError ? (
-          <Text accessibilityRole="alert" className="font-body-600 text-[14px] text-error">
+          <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
             {formError}
           </Text>
         ) : null}

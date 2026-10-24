@@ -82,7 +82,7 @@ export function Button({
       ) : null}
       <Text
         numberOfLines={2}
-        className={`font-body-600 text-[15px] ${variant === 'ghost' ? 'underline' : ''}`}
+        className={`font-body-600 text-body ${variant === 'ghost' ? 'underline' : ''}`}
         style={{ color: off ? colors.mute : look.text, textAlign: 'center', lineHeight: 18, flexShrink: 1 }}
       >
         {label}
@@ -145,7 +145,7 @@ export function IconButton({
       <Icon name={icon} size={20} color={disabled ? colors.mute : tone === 'error' ? colors.error : colors.ink} />
       {badge ? (
         <View className="absolute -right-2 -top-2 min-w-[20px] items-center justify-center rounded-k border-k border-ink bg-fire px-1" style={{ height: 20 }}>
-          <Text className="font-mono-600 text-[12px] text-ink">{badge > 99 ? '99+' : badge}</Text>
+          <Text className="font-mono-600 text-caption text-ink">{badge > 99 ? '99+' : badge}</Text>
         </View>
       ) : null}
     </Tap>

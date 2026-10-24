@@ -38,7 +38,7 @@ export function ErrorPage({ code, path }: { code: 404 | 500; path?: string }) {
           {!is404 && (
             <div className="mt-6 max-w-[460px] rounded border-[1.5px] border-l-[12px] border-ink border-l-fire bg-slip px-5 py-4">
               <p className="font-bold">{t('Aplikasi kasir tetap bisa dipakai.')}</p>
-              <p className="mt-1 text-[15px] text-mute">{t('Transaksi tersimpan di perangkat kasir dan terkirim otomatis saat sistem pulih.')}</p>
+              <p className="mt-1 text-body text-mute">{t('Transaksi tersimpan di perangkat kasir dan terkirim otomatis saat sistem pulih.')}</p>
             </div>
           )}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -83,14 +83,14 @@ export function ErrorPage({ code, path }: { code: 404 | 500; path?: string }) {
                 ).map(([to, label]) => (
                   <li key={to} className="border-b border-rule last:border-b-0">
                     <Link to={to} className="flex min-h-[52px] items-center justify-between px-4 font-semibold hover:bg-tint-3">
-                      {t(label)} <span className="font-mono text-[13px] font-normal text-mute">{to}</span>
+                      {t(label)} <span className="font-mono text-small font-normal text-mute">{to}</span>
                     </Link>
                   </li>
                 ))}
               </ul>
             </nav>
           ) : (
-            <p className="mt-8 max-w-[34em] text-[15px] text-mute">
+            <p className="mt-8 max-w-[34em] text-body text-mute">
               {t('Masih bermasalah? Hubungi WhatsApp {wa} atau {email} dengan kode di samping.', {
                 wa: SUPPORT.whatsapp,
                 email: SUPPORT.email,
@@ -117,7 +117,7 @@ export function ErrorPage({ code, path }: { code: 404 | 500; path?: string }) {
             </>
           )}
           <RCut />
-          <p className="text-[13px] text-mute">{is404 ? t('Tidak ada transaksi yang terhapus.') : t('Data bisnis Anda aman.')}</p>
+          <p className="text-small text-mute">{is404 ? t('Tidak ada transaksi yang terhapus.') : t('Data bisnis Anda aman.')}</p>
         </Receipt>
       </main>
     </div>

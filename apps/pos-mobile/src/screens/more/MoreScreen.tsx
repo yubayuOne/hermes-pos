@@ -26,8 +26,8 @@ function Row({ title, sub, onPress }: { title: string; sub: string; onPress: () 
       style={({ pressed }) => ({ backgroundColor: pressed ? colors.tint : 'transparent' })}
     >
       <View className="min-w-0 flex-1">
-        <Text className="font-body-600 text-[15px]">{title}</Text>
-        <Text className="mt-0.5 text-[14px] text-mute">{sub}</Text>
+        <Text className="font-body-600 text-body">{title}</Text>
+        <Text className="mt-0.5 text-small text-mute">{sub}</Text>
       </View>
       <Icon name="chevron-right" size={20} />
     </Tap>
@@ -78,13 +78,13 @@ export function MoreScreen({
     <Card>
       <View className="flex-row items-center gap-3">
         <View className="h-[52px] w-[52px] items-center justify-center rounded-k bg-pine">
-          <Text className="font-body-700 text-[22px] text-paper">{(session?.cashierName ?? '?').slice(0, 1).toUpperCase()}</Text>
+          <Text className="font-body-700 text-heading text-paper">{(session?.cashierName ?? '?').slice(0, 1).toUpperCase()}</Text>
         </View>
         <View className="min-w-0 flex-1">
           <Display size={26} numberOfLines={1}>
             {session?.cashierName ?? '-'}
           </Display>
-          <Text className="text-[14px] text-mute" numberOfLines={1}>
+          <Text className="text-small text-mute" numberOfLines={1}>
             {session?.outletName} · {session?.terminalName}
           </Text>
         </View>
@@ -103,7 +103,7 @@ export function MoreScreen({
         <>
           <View className="mt-1 flex-row items-end justify-between gap-2">
             <Display size={26}>{planLabel(status)}</Display>
-            <Mono className="font-mono-600 text-[15px]" style={{ color: status.state === 'expired' ? colors.error : colors.ink }}>
+            <Mono className="font-mono-600 text-body" style={{ color: status.state === 'expired' ? colors.error : colors.ink }}>
               {forever ? t('selamanya') : status.state === 'expired' ? t('berakhir') : t('{n} hari lagi', { n: left })}
             </Mono>
           </View>
@@ -113,14 +113,14 @@ export function MoreScreen({
               <View className="mt-2 h-[8px] border border-ink bg-tint2">
                 <View className="h-full bg-pine" style={{ width: `${Math.min(100, (left / totalDays) * 100)}%` }} />
               </View>
-              <Text className="mt-2 text-[14px] text-mute">{t('Berlaku sampai {date}', { date: status.expiresAt ? fmtDate(status.expiresAt) : '-' })}</Text>
+              <Text className="mt-2 text-small text-mute">{t('Berlaku sampai {date}', { date: status.expiresAt ? fmtDate(status.expiresAt) : '-' })}</Text>
             </>
           )}
         </>
       ) : (
-        <Text className="mt-1 text-[14px] text-mute">{t('Status langganan belum dimuat.')}</Text>
+        <Text className="mt-1 text-small text-mute">{t('Status langganan belum dimuat.')}</Text>
       )}
-      <Text className="mt-2 text-[14px] text-mute">{t('Pemilik memperpanjang di backoffice.')}</Text>
+      <Text className="mt-2 text-small text-mute">{t('Pemilik memperpanjang di backoffice.')}</Text>
     </Card>
   );
 
@@ -133,8 +133,8 @@ export function MoreScreen({
         onPress={onOpenPrinter}
       />
       <View className="border-t border-rule py-3">
-        <Text className="font-body-600 text-[15px]">{t('Tampilan katalog')}</Text>
-        <Text className="mb-2 mt-0.5 text-[14px] text-mute">
+        <Text className="font-body-600 text-body">{t('Tampilan katalog')}</Text>
+        <Text className="mb-2 mt-0.5 text-small text-mute">
           {view === 'compact'
             ? t('Teks saja: lebih banyak menu per layar, ringan di HP lama.')
             : t('Foto menu dalam bingkai seragam. Menu tanpa foto memakai inisial.')}
@@ -151,8 +151,8 @@ export function MoreScreen({
         </View>
       </View>
       <View className="border-t border-rule py-3">
-        <Text className="font-body-600 text-[15px]">{t('Bahasa')}</Text>
-        <Text className="mb-2 mt-0.5 text-[14px] text-mute">{t('Indonesia atau English, disimpan di perangkat ini')}</Text>
+        <Text className="font-body-600 text-body">{t('Bahasa')}</Text>
+        <Text className="mb-2 mt-0.5 text-small text-mute">{t('Indonesia atau English, disimpan di perangkat ini')}</Text>
         <View style={{ maxWidth: 140 }}>
           <Tabs
             items={[
@@ -179,8 +179,8 @@ export function MoreScreen({
   const about = (
     <Card>
       <Label>{t('Tentang')}</Label>
-      <Text className="mt-1 font-body-600 text-[15px]">{BRAND.appName}</Text>
-      <Text className="mt-0.5 text-[14px] text-mute">{t('Versi {v} · pembaruan otomatis lewat udara', { v: BRAND.version })}</Text>
+      <Text className="mt-1 font-body-600 text-body">{BRAND.appName}</Text>
+      <Text className="mt-0.5 text-small text-mute">{t('Versi {v} · pembaruan otomatis lewat udara', { v: BRAND.version })}</Text>
     </Card>
   );
 

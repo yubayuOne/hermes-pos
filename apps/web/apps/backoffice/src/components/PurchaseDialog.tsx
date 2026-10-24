@@ -114,7 +114,7 @@ export function PurchaseDialog({ outletId, ingredients, onClose }: { outletId: s
                     </Field>
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[14px] text-mute">{ing ? t('Isi {n} {u} per {pack}', { n: ing.packQty, u: ing.packUnit, pack }) : ''}</span>
+                    <span className="text-small text-mute">{ing ? t('Isi {n} {u} per {pack}', { n: ing.packQty, u: ing.packUnit, pack }) : ''}</span>
                     {rows.length > 1 && (
                       <Button sm onClick={() => setRows((rs) => rs.filter((o) => o.key !== r.key))} aria-label={`${t('Hapus baris')} ${ing?.name ?? ''}`.trim()}>
                         {t('Hapus baris')}
@@ -129,7 +129,7 @@ export function PurchaseDialog({ outletId, ingredients, onClose }: { outletId: s
             <Button onClick={() => setRows((rs) => [...rs, blank()])} disabled={rows.length >= 50}>
               {t('Tambah bahan')}
             </Button>
-            <p className="font-mono text-[16px] font-semibold">
+            <p className="font-mono text-body font-semibold">
               {t('Total belanja')}: {money(sum)}
             </p>
           </div>

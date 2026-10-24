@@ -114,7 +114,7 @@ function Vouchers() {
                 <tr key={v.id} style={{ animationDelay: `${i * 50}ms` }}>
                   <td data-l={t('Kode')}>
                     <span className="inline-flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded border-[1.5px] border-dashed border-ink px-2 py-1 font-mono text-[15px] font-semibold tracking-wider hover:bg-tint-2 disabled:hover:bg-transparent">{v.code}</span>
+                      <span className="inline-flex items-center gap-1.5 rounded border-[1.5px] border-dashed border-ink px-2 py-1 font-mono text-body font-semibold tracking-wider hover:bg-tint-2 disabled:hover:bg-transparent">{v.code}</span>
                       <Button sm disabled={lock.locked} onClick={() => setEditing(v)} aria-label={t('Ubah voucher {code}', { code: v.code })}>
                         {t('Ubah')}
                       </Button>
@@ -125,9 +125,9 @@ function Vouchers() {
                   </td>
                   <td data-l={t('Potongan')}>
                     <span className="font-mono">{v.discountType === 'percent' ? `${v.value}%` : money(v.value)}</span>
-                    <span className="block text-[14px] text-mute">{v.scope === 'bill' ? t('seluruh bill') : t('{n} produk', { n: v.productIds.length })}</span>
+                    <span className="block text-small text-mute">{v.scope === 'bill' ? t('seluruh bill') : t('{n} produk', { n: v.productIds.length })}</span>
                   </td>
-                  <td data-l={t('Syarat')} className="text-[15px]">
+                  <td data-l={t('Syarat')} className="text-body">
                     {v.minSpend > 0 ? t('min. belanja {amount}', { amount: money(v.minSpend) }) : t('tanpa minimal')}
                   </td>
                   <td data-l={t('Terpakai')} className="num">
@@ -135,11 +135,11 @@ function Vouchers() {
                       `${v.usedCount} / ${v.quota}`
                     ) : (
                       <span>
-                        {v.usedCount} <span className="font-sans text-[14px] text-mute">· {t('tanpa batas')}</span>
+                        {v.usedCount} <span className="font-sans text-small text-mute">· {t('tanpa batas')}</span>
                       </span>
                     )}
                   </td>
-                  <td data-l={t('Berlaku sampai')} className="font-mono text-[15px]">
+                  <td data-l={t('Berlaku sampai')} className="font-mono text-body">
                     {dateShort(v.expiresOn, lang)}
                   </td>
                   <td data-l="Status">
@@ -324,14 +324,14 @@ function ProductPicker({ value, onChange, error }: { value: string[]; onChange: 
         </Select>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-mono text-[13px]" role="status">
+        <p className="font-mono text-small" role="status">
           {t('{n} dari {total} produk dipilih', { n: value.length, total: products.length })}
         </p>
         <span className="flex gap-3">
-          <button type="button" className="lnk text-[14px]" onClick={() => onChange([...new Set([...value, ...results.map((r) => r.id)])])}>
+          <button type="button" className="lnk text-small" onClick={() => onChange([...new Set([...value, ...results.map((r) => r.id)])])}>
             {t('Pilih semua hasil')}
           </button>
-          <button type="button" className="lnk text-[14px]" onClick={() => onChange([])}>
+          <button type="button" className="lnk text-small" onClick={() => onChange([])}>
             {t('Kosongkan')}
           </button>
         </span>
@@ -354,7 +354,7 @@ function ProductPicker({ value, onChange, error }: { value: string[]; onChange: 
               onChange={() => toggle(p.id)}
               label={
                 <span>
-                  {p.name} <span className="text-[13px] text-mute">{[p.category, multiOutlet ? p.outlet : ''].filter(Boolean).join(' · ')}</span>
+                  {p.name} <span className="text-small text-mute">{[p.category, multiOutlet ? p.outlet : ''].filter(Boolean).join(' · ')}</span>
                 </span>
               }
             />

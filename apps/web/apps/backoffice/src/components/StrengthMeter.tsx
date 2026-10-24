@@ -24,18 +24,18 @@ export function StrengthMeter({ pw, email }: { pw: string; email: string }) {
               <span key={i} className={cn('h-1.5 border border-ink', i <= score ? (score >= 3 ? 'bg-pine' : 'bg-fire') : 'bg-tint-2')} />
             ))}
           </div>
-          <span className="w-14 font-mono text-[13px]" aria-live="polite">
+          <span className="w-14 font-mono text-small" aria-live="polite">
             {t(LEVELS[score])}
           </span>
         </div>
       )}
-      <ul className="grid gap-1 text-[13px] text-mute">
+      <ul className="grid gap-1 text-small text-mute">
         {rules.map((r) => (
           <li key={r.label} className="flex items-center gap-2">
             <span
               aria-hidden
               className={cn(
-                'grid size-4 place-items-center border-[1.5px] text-[11px] leading-none',
+                'grid size-4 place-items-center border-[1.5px] text-caption leading-none',
                 r.ok ? 'border-pine bg-pine text-paper' : 'border-ink bg-slip',
               )}
             >

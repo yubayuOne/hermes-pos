@@ -89,7 +89,7 @@ function SignIn() {
         busy={busy !== null}
         busyLabel={busy === 'google' ? t('Membuka Google...') : undefined}
       />
-      <p className="mt-6 text-[15px] text-mute">
+      <p className="mt-6 text-body text-mute">
         {t('Belum punya akun?')}{' '}
         <Link to="/register" className="lnk lnk-inline text-ink">
           {t('Daftar trial gratis')}

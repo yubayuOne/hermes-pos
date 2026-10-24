@@ -53,7 +53,7 @@ function CustomerRow({ compact, onTyping }: { compact: boolean; onTyping?: OnTyp
     return (
       <View className="flex-row gap-2.5">
         <View className="w-[38%] min-w-0 gap-1">
-          {compact ? null : <Text className="text-[13px] text-mute">{t('Meja')}</Text>}
+          {compact ? null : <Text className="text-small text-mute">{t('Meja')}</Text>}
           <TablePicker outletId={session?.outletId ?? ''} current={customer.table} onPick={pickTable} />
         </View>
         <TextField
@@ -81,7 +81,7 @@ function CustomerRow({ compact, onTyping }: { compact: boolean; onTyping?: OnTyp
       className="h-[44px] flex-row items-center justify-between rounded-k px-3"
       style={({ pressed }) => ({ borderWidth: 1.5, borderColor: colors.ink, backgroundColor: pressed ? colors.tint : summary ? colors.tint : colors.slip })}
     >
-      <Text numberOfLines={1} className={`min-w-0 flex-1 text-[15px] ${summary ? 'font-body-600' : 'text-mute'}`}>
+      <Text numberOfLines={1} className={`min-w-0 flex-1 text-body ${summary ? 'font-body-600' : 'text-mute'}`}>
         {summary || t('Tambah meja atau nama (opsional)')}
       </Text>
       <Icon name="chevron-down" size={18} />
@@ -139,21 +139,21 @@ function BillLine({
   return (
     <View className="py-3">
       <View className="flex-row items-start justify-between gap-3">
-        <Text numberOfLines={2} className="min-w-0 flex-1 font-body-600 text-[15px]">
+        <Text numberOfLines={2} className="min-w-0 flex-1 font-body-600 text-body">
           {item.name}
         </Text>
-        <Mono className="font-mono-600 text-[15px]">{money(lineGross(item) - cut)}</Mono>
+        <Mono className="font-mono-600 text-body">{money(lineGross(item) - cut)}</Mono>
       </View>
-      <Mono className="mt-0.5 text-[14px] text-mute">
+      <Mono className="mt-0.5 text-small text-mute">
         {item.quantity} × {money(item.unitPrice)}
       </Mono>
       {item.note ? (
         <View className="mt-1.5 border-l-[3px] border-fire pl-2">
-          <Text className="text-[14px]">{t('Catatan: {note}', { note: item.note })}</Text>
+          <Text className="text-small">{t('Catatan: {note}', { note: item.note })}</Text>
         </View>
       ) : null}
       {cut > 0 ? (
-        <Mono className="mt-1 text-[14px] text-pine">
+        <Mono className="mt-1 text-small text-pine">
           {t('Diskon {label} · -{amount}', { label: discountLabel(item.discount, money), amount: money(cut) })}
         </Mono>
       ) : null}
@@ -171,7 +171,7 @@ function BillLine({
             backgroundColor: pressed ? colors.tint : filled || open ? colors.pineSoft : colors.slip,
           })}
         >
-          <Text className="font-body-600 text-[14px]">{t('Opsi')}</Text>
+          <Text className="font-body-600 text-small">{t('Opsi')}</Text>
         </Tap>
         <View className="flex-1" />
         {!compact ? (
@@ -201,7 +201,7 @@ function BillLines({ onOpenShift, onTyping }: { onOpenShift: () => void; onTypin
     <>
       <CustomerRow compact={phoneLandscape} onTyping={onTyping} />
       {cart.length === 0 ? (
-        <Text className="mt-6 text-center text-[15px] text-mute">{t('Bill masih kosong. Ketuk menu untuk menambah.')}</Text>
+        <Text className="mt-6 text-center text-body text-mute">{t('Bill masih kosong. Ketuk menu untuk menambah.')}</Text>
       ) : (
         cart.map((item) => (
           <BillLine
@@ -232,8 +232,8 @@ function BillFooter({ onPay, onSplit, onOpenShift, onVoucher }: FooterProps) {
   const empty = cart.length === 0;
   const row = (label: string, value: string, tone?: 'pine' | 'error') => (
     <View className="flex-row justify-between">
-      <Text className="text-[14px] text-mute">{label}</Text>
-      <Mono className="text-[14px]" style={{ color: tone === 'pine' ? colors.pine : tone === 'error' ? colors.error : colors.ink }}>
+      <Text className="text-small text-mute">{label}</Text>
+      <Mono className="text-small" style={{ color: tone === 'pine' ? colors.pine : tone === 'error' ? colors.error : colors.ink }}>
         {value}
       </Mono>
     </View>
@@ -251,14 +251,14 @@ function BillFooter({ onPay, onSplit, onOpenShift, onVoucher }: FooterProps) {
         <View className="flex-row items-center gap-2.5">
           {voucherButtons}
           <View className="items-end">
-            <Text className="font-body-700 text-[14px]">{t('Total')}</Text>
+            <Text className="font-body-700 text-small">{t('Total')}</Text>
             <Display size={24} numberOfLines={1} adjustsFontSizeToFit style={{ maxWidth: activeHeldBillId ? 110 : 140 }}>
               {money(totals.total)}
             </Display>
           </View>
         </View>
       ) : null}
-      {phoneLandscape && totals.voucherError ? <Text className="font-body-600 text-[14px] text-error">{totals.voucherError}</Text> : null}
+      {phoneLandscape && totals.voucherError ? <Text className="font-body-600 text-small text-error">{totals.voucherError}</Text> : null}
       {phoneLandscape ? null : (
         <>
           {voucherButtons}
@@ -267,10 +267,10 @@ function BillFooter({ onPay, onSplit, onOpenShift, onVoucher }: FooterProps) {
             {totals.itemDiscount ? row(t('Diskon item'), `-${money(totals.itemDiscount)}`, 'pine') : null}
             {totals.billDiscount ? row(t('Diskon bill'), `-${money(totals.billDiscount)}`, 'pine') : null}
             {totals.voucherCut ? row(t('Voucher {code}', { code: voucher?.code ?? '' }), `-${money(totals.voucherCut)}`, 'pine') : null}
-            {totals.voucherError ? <Text className="font-body-600 text-[14px] text-error">{totals.voucherError}</Text> : null}
+            {totals.voucherError ? <Text className="font-body-600 text-small text-error">{totals.voucherError}</Text> : null}
           </View>
           <View className="flex-row items-end justify-between">
-            <Text className="font-body-700 text-[15px]">{t('Total')}</Text>
+            <Text className="font-body-700 text-body">{t('Total')}</Text>
             <Display size={32}>{money(totals.total)}</Display>
           </View>
         </>
@@ -372,7 +372,7 @@ export const BillPanel = memo(function BillPanel(handlers: BillHandlers) {
           <Display size={phoneLandscape ? 22 : 30} accessibilityRole="header">
             {t('Bill')}
           </Display>
-          <Mono numberOfLines={1} className="mt-0.5 text-[14px] text-mute">
+          <Mono numberOfLines={1} className="mt-0.5 text-small text-mute">
             {[
               t('{n} item', { n: count }),
               customer.table ? t('Meja {n}', { n: customer.table }) : null,
