@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, Tag, amount, isoDay, money, useI18n, PencilIcon } from '@hermes-pos/ui';
+import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, Tag, amount, isoDay, money, useI18n } from '@hermes-pos/ui';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
 import { listProductSales } from '../../server/summary';
@@ -168,16 +168,12 @@ function Products() {
               {shown.map((p, i) => (
                 <tr key={p.id} style={{ animationDelay: `${Math.min(i, 12) * 40}ms` }}>
                   <td data-l={t('Produk')}>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1.5 text-left font-semibold underline-offset-4 hover:underline disabled:no-underline"
-                      onClick={() => setEditing(p)}
-                      disabled={lock.locked}
-                      aria-label={t('Ubah produk {name}', { name: p.name })}
-                    >
-                      {p.name}
-                      <PencilIcon />
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold">{p.name}</span>
+                      <Button sm onClick={() => setEditing(p)} disabled={lock.locked} aria-label={t('Ubah produk {name}', { name: p.name })}>
+                        {t('Ubah')}
+                      </Button>
+                    </div>
                     <span className="block text-[14px] text-mute">{(p.categoryId && catName.get(p.categoryId)) || t('Tanpa kategori')}</span>
                   </td>
                   <td data-l={t('Harga')} className="num">

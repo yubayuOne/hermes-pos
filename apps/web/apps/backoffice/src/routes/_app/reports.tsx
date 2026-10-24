@@ -67,7 +67,7 @@ function Reports() {
         </Link>
         <p className="text-[14px] text-mute">{dateRange(range.from, range.to, lang)}</p>
         {!empty && (
-          <Button variant="ink" className="sm:ml-auto" onClick={() => window.print()}>
+          <Button className="sm:ml-auto" onClick={() => window.print()}>
             {t('Cetak / simpan PDF')}
           </Button>
         )}

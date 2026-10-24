@@ -49,7 +49,7 @@ export function CustomRange({
           }}
         />
       </Field>
-      <Button type="submit" variant="ink" className="mt-[26px]">
+      <Button type="submit" variant="fire" className="mt-[26px]">
         {t('Tampilkan')}
       </Button>
     </form>

@@ -66,7 +66,7 @@ export function VoidCodeCard() {
           />
         </Field>
         <div>
-          <Button type="submit" variant="ink" busy={act.busy} busyLabel={t('Menyimpan...')}>
+          <Button type="submit" variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')}>
             {has ? t('Ganti kode') : t('Simpan kode')}
           </Button>
         </div>

@@ -277,7 +277,7 @@ function CancelDialog({ expense: e, item: i, onClose }: { expense: Expense; item
       footer={
         <>
           <Button onClick={onClose} disabled={act.busy}>
-            {t('Kembali')}
+            {t('Batal')}
           </Button>
           <Button type="submit" form="cancel-expense" variant="ink" busy={act.busy} busyLabel={t('Menyimpan...')}>
             {t('Batalkan barang')}

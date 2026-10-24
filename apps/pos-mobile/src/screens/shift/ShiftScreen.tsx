@@ -437,7 +437,7 @@ export function ShiftScreen({
           message={t('Hanya di HP itu.')}
         >
           <ButtonRow>
-            <Button size="sm" variant="danger" label={t('Pindahkan ke HP ini')} onPress={() => setTakeOver(true)} />
+            <Button size="sm" variant="pine" label={t('Pindahkan ke HP ini')} onPress={() => setTakeOver(true)} />
           </ButtonRow>
         </Banner>
       ) : null}

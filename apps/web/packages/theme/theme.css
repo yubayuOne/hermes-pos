@@ -739,12 +739,23 @@
       padding: 28px;
     }
   }
+  /* Footer buttons sit side by side and share the width on phones; a second row pushed the form out of view. */
   .dlg-foot {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: flex-end;
     gap: 12px;
     margin-top: 24px;
+  }
+  .dlg-foot > .btn {
+    white-space: nowrap;
+  }
+  @media (max-width: 560px) {
+    .dlg-foot > .btn {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 0 14px;
+    }
   }
   .alert-box {
     border: 1.5px solid var(--color-ink);

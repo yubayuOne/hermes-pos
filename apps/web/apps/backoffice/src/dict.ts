@@ -1331,4 +1331,6 @@ export const EN: Dict = {
   'Salah input': 'Wrong input',
   'Pelanggan batal': 'Customer cancelled',
   'Pelanggan ganti menu': 'Customer changed the order',
+  'Salin {code}': 'Copy {code}',
+  'Ubah PIN {name}': 'Change PIN for {name}',
 };

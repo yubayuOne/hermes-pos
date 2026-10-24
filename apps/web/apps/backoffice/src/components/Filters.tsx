@@ -54,7 +54,7 @@ export function FilterBar({
             <Button onClick={onReset} disabled={active === 0}>
               {t('Atur ulang')}
             </Button>
-            <Button variant="ink" onClick={() => setOpen(false)}>
+            <Button variant="fire" onClick={() => setOpen(false)}>
               {t('Selesai')}
             </Button>
           </>

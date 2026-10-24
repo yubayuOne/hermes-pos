@@ -225,7 +225,7 @@ function RemoveIngredientDialog({ ingredient, onClose }: { ingredient: Ingredien
           <Button onClick={onClose} disabled={act.busy}>
             {t('Batal')}
           </Button>
-          <Button variant="fire" onClick={remove} busy={act.busy} busyLabel={t('Menghapus...')}>
+          <Button variant="ink" onClick={remove} busy={act.busy} busyLabel={t('Menghapus...')}>
             {t('Hapus bahan')}
           </Button>
         </>
@@ -361,7 +361,7 @@ function RecipePage({ outletId, product, recipe, onBack }: { outletId: string; p
               <Button onClick={() => setConfirmRemove(false)} disabled={act.busy}>
                 {t('Batal')}
               </Button>
-              <Button variant="fire" onClick={remove} busy={act.busy} busyLabel={t('Menghapus...')}>
+              <Button variant="ink" onClick={remove} busy={act.busy} busyLabel={t('Menghapus...')}>
                 {t('Hapus resep')}
               </Button>
             </>
@@ -487,7 +487,7 @@ function PurchaseDetail({ purchase, onClose }: { purchase: Purchase; onClose: ()
             <Button onClick={() => setCancelling(false)} disabled={act.busy}>
               {t('Batal')}
             </Button>
-            <Button type="submit" form="purchase-cancel" variant="fire" busy={act.busy} busyLabel={t('Membatalkan...')}>
+            <Button type="submit" form="purchase-cancel" variant="ink" busy={act.busy} busyLabel={t('Membatalkan...')}>
               {t('Batalkan belanja')}
             </Button>
           </>

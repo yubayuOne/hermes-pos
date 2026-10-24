@@ -18,7 +18,6 @@ import {
   time,
   toast,
   useI18n,
-  PencilIcon,
 } from '@hermes-pos/ui';
 import { FilterBar, OutletField, SearchBox } from '../../components/Filters';
 import { Page } from '../../components/Page';
@@ -209,7 +208,6 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
                         aria-label={t('Buka bill {number}', { number: b.number })}
                       >
                         {b.number}
-                        <PencilIcon />
                       </button>
                       <span className="block text-[14px] text-mute">
                         {[b.customerName, b.tableNumber && t('Meja {n}', { n: b.tableNumber }), !search.outlet && b.outletName].filter(Boolean).join(' · ')}

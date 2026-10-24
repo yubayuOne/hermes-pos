@@ -96,10 +96,9 @@ function Cashiers() {
                       </span>
                     </td>
                     <td data-l="PIN">
-                      <button type="button" className="lnk" onClick={() => setPinFor(c)} disabled={lock.locked}>
+                      <Button sm onClick={() => setPinFor(c)} disabled={lock.locked} aria-label={t('Ubah PIN {name}', { name: c.name })}>
                         {lock.locked ? t('Terkunci') : t('Ubah PIN')}
-                        <span className="sr-only"> {c.name}</span>
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 );

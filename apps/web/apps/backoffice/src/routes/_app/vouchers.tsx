@@ -19,7 +19,6 @@ import {
   money,
   toast,
   useI18n,
-  PencilIcon,
 } from '@hermes-pos/ui';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
@@ -114,21 +113,14 @@ function Vouchers() {
               {view.rows.map((v, i) => (
                 <tr key={v.id} style={{ animationDelay: `${i * 50}ms` }}>
                   <td data-l={t('Kode')}>
-                    <span className="inline-flex items-center gap-2">
-                      <button
-                        type="button"
-                        disabled={lock.locked}
-                        onClick={() => setEditing(v)}
-                        className="inline-flex items-center gap-1.5 rounded border-[1.5px] border-dashed border-ink px-2 py-1 font-mono text-[15px] font-semibold tracking-wider hover:bg-tint-2 disabled:hover:bg-transparent"
-                        aria-label={t('Ubah voucher {code}', { code: v.code })}
-                      >
-                        {v.code}
-                        <PencilIcon />
-                      </button>
-                      <button type="button" className="lnk px-1 text-[14px]" onClick={() => copy(v.code)}>
+                    <span className="inline-flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded border-[1.5px] border-dashed border-ink px-2 py-1 font-mono text-[15px] font-semibold tracking-wider hover:bg-tint-2 disabled:hover:bg-transparent">{v.code}</span>
+                      <Button sm disabled={lock.locked} onClick={() => setEditing(v)} aria-label={t('Ubah voucher {code}', { code: v.code })}>
+                        {t('Ubah')}
+                      </Button>
+                      <Button sm onClick={() => copy(v.code)} aria-label={t('Salin {code}', { code: v.code })}>
                         {t('Salin')}
-                        <span className="sr-only"> {v.code}</span>
-                      </button>
+                      </Button>
                     </span>
                   </td>
                   <td data-l={t('Potongan')}>

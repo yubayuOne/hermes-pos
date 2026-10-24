@@ -155,7 +155,7 @@ function ProfileTab() {
           </Field>
           <FormAlert>{act.error && t(act.error)}</FormAlert>
           <div>
-            <Button type="submit" variant="ink" busy={act.busy} busyLabel={t('Menyimpan...')}>
+            <Button type="submit" variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')}>
               {t('Simpan profil')}
             </Button>
           </div>
@@ -257,7 +257,7 @@ function SessionCard() {
         <div className="mt-4 rounded border-[1.5px] border-ink bg-fire-soft p-4" role="alert">
           <p className="font-semibold">{t('Keluar dari Backoffice di perangkat ini?')}</p>
           <div className="mt-3 flex flex-wrap gap-3">
-            <Button variant="ink" busy={busy} busyLabel={t('Keluar...')} onClick={out} autoFocus>
+            <Button busy={busy} busyLabel={t('Keluar...')} onClick={out} autoFocus>
               {t('Ya, keluar')}
             </Button>
             <Button onClick={() => setConfirm(false)}>{t('Batal')}</Button>
@@ -323,7 +323,7 @@ function BusinessTab() {
           </div>
           <FormAlert>{saveB.error && t(saveB.error)}</FormAlert>
           <div>
-            <Button type="submit" variant="ink" busy={saveB.busy} busyLabel={t('Menyimpan...')} {...lock.props}>
+            <Button type="submit" variant="fire" busy={saveB.busy} busyLabel={t('Menyimpan...')} {...lock.props}>
               {lock.label(t('Simpan data bisnis'))}
             </Button>
           </div>
@@ -396,7 +396,7 @@ function ReceiptTab() {
           </div>
           <FormAlert>{saveR.error && t(saveR.error)}</FormAlert>
           <div>
-            <Button type="submit" variant="ink" busy={saveR.busy} busyLabel={t('Menyimpan...')} {...lock.props}>
+            <Button type="submit" variant="fire" busy={saveR.busy} busyLabel={t('Menyimpan...')} {...lock.props}>
               {lock.label(t('Simpan struk'))}
             </Button>
           </div>
