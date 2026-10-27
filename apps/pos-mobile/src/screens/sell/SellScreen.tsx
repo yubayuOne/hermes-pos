@@ -11,6 +11,7 @@ import { Header } from '../../components/chrome';
 import { ChoiceButton } from '../../components/ChoiceSheet';
 import { useQueueActions } from '../../components/overlays';
 import { useLayout } from '../../hooks/useLayout';
+import { useKeyboardHeight } from '../../hooks/useKeyboardOpen';
 import { useAppStore } from '../../hooks/AppStore';
 import { useNotify } from '../../hooks/NotifyProvider';
 import { fetchCatalog } from '../../services/transaction/repository';
@@ -161,6 +162,7 @@ export function SellScreen({
   onOpenBills: () => void;
   openBillRequest: number;
 }) {
+  const keyboardHeight = useKeyboardHeight();
   const { lang } = useT();
   const notify = useNotify();
   const { wide, tablet, phoneLandscape, columns } = useLayout();
@@ -545,7 +547,8 @@ export function SellScreen({
   );
 
   const content = (
-    <View className="flex-1 bg-paper">
+    // Portrait: the whole screen, Lihat bill included, lifts above the keyboard.
+    <View className="flex-1 bg-paper" style={!wide && !phoneLandscape ? { paddingBottom: keyboardHeight } : undefined}>
       {header}
       {!phoneLandscape || hasBanner ? (
         <View className={`gap-2.5 px-3.5 ${phoneLandscape ? 'pb-2 pt-2' : 'pb-2.5 pt-3'}`}>

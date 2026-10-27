@@ -137,7 +137,7 @@ export function AmountBox({ label, value, active = true, compact }: { label: str
       style={{ height: compact ? 54 : 64, borderWidth: 1.5, borderColor: colors.ink, ...(active ? { boxShadow: `inset 0 0 0 1.5px ${colors.fire}` } : null) }}
     >
       <Mono className="text-small text-mute">{label}</Mono>
-      <Mono className="font-mono-600" style={{ fontSize: compact ? 24 : 28 }} numberOfLines={1} adjustsFontSizeToFit>
+      <Mono className="min-w-0 flex-1 text-right font-mono-600" style={{ fontSize: compact ? 24 : 28 }} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Mono>
     </View>

@@ -101,9 +101,8 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
       size="tall"
       label={t('Catat pengeluaran')}
     >
-      <SheetHeader title={t('Catat pengeluaran')} subtitle={t('Belanja bahan atau biaya operasional outlet.')} onClose={onClose} />
+      <SheetHeader title={t('Catat pengeluaran')} onClose={onClose} />
       <SheetBody contentClassName="gap-3.5 pb-8">
-        <Text className="text-small text-mute">{t('Uang dari laci? Catat di sini. Belanja dengan uang lain? Catat di menu Belanja di BackOffice.')}</Text>
         {lines.map((l, i) => {
           const e = errors[i] ?? {};
           return (
@@ -141,7 +140,6 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
                 mono
                 maxLength={13}
                 placeholder="0"
-                help={t('Total yang dibayar. Satu catatan, tanpa jumlah dan satuan.')}
                 error={e.amount ? t(e.amount) : null}
               />
             </View>
@@ -151,7 +149,6 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
           <Button icon="plus" label={t('Tambah barang')} onPress={() => setLines((ls) => [...ls, emptyLine(ls[ls.length - 1]?.category)])} />
         ) : null}
 
-        <Text className="text-small text-mute">{t('Dari kas laci. Mengurangi kas seharusnya di shift ini sekarang juga.')}</Text>
         <View
           accessibilityLiveRegion="polite"
           className="flex-row items-center justify-between rounded-k px-3.5 py-3"
@@ -162,9 +159,6 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
             {money(total)}
           </Mono>
         </View>
-        <Text className="text-small text-mute">
-          {t('Langsung masuk laporan shift ini tanpa persetujuan. Pemilik bisa mengubahnya di backoffice. Tanpa internet, disimpan dulu di perangkat.')}
-        </Text>
         {formError ? (
           <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
             {formError}

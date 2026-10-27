@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { Tap } from '../../components/Tap';
-import { ScrollView, View } from 'react-native';
+import { Keyboard, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Display, Mono, Text } from '../../components/Text';
 import { Button, ButtonRow, IconButton } from '../../components/Button';
@@ -109,7 +109,14 @@ function LineOptions({ item, onTyping }: { item: CartItem; onTyping?: OnTyping }
         onSubmitEditing={() => setItemNote(item.productId, note)}
         maxLength={NOTE_MAX}
         returnKeyType="done"
-        help={t('Tercetak di struk, dapur, dan bar. Tidak mengubah harga.')}
+      />
+      <Button
+        variant="fire"
+        label={t('Simpan')}
+        onPress={() => {
+          setItemNote(item.productId, note);
+          Keyboard.dismiss();
+        }}
       />
     </View>
   );
@@ -390,8 +397,9 @@ export const BillPanel = memo(function BillPanel(handlers: BillHandlers) {
         {activeHeldNumber ? <Tag className="mb-3" label={t('dipanggil · {n}', { n: activeHeldNumber })} tone="fire" /> : null}
         <BillLines onOpenShift={handlers.onOpenShift} onTyping={setTyping} />
       </ScrollView>
-      {/* Hidden only while a bill field is typed in; the menu search keeps totals and Bayar in view. */}
-      {keyboard && typing ? null : (
+      {/* Landscape hides it while a bill field is typed in (too little height). Portrait keeps it: the window resizes
+          with the keyboard (softwareKeyboardLayoutMode "resize"), so Bayar rises above the keyboard. */}
+      {keyboard && typing && phoneLandscape ? null : (
         <View
           className={`border-t-k border-ink px-4 ${phoneLandscape ? 'gap-2 pt-2' : 'gap-3 pt-3'}`}
           style={{ paddingBottom: Math.max(insets.bottom, phoneLandscape ? 8 : 12) + 4 }}

@@ -170,7 +170,6 @@ export function ShiftHistoryScreen({ onBack, onQueue, onBell }: { onBack: () => 
           ListEmptyComponent={
             <Card className="mx-3.5 mt-2">
               <Text className="font-body-700 text-body">{period ? t('Tidak ada shift di periode ini.') : t('Belum ada shift.')}</Text>
-              <Text className="mt-1 text-small text-mute">{t('Shift yang dibuka di outlet ini muncul di sini, yang terbaru di atas.')}</Text>
             </Card>
           }
           ListFooterComponent={

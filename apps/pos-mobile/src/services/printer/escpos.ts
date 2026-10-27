@@ -77,7 +77,7 @@ export function buildReceiptText(r: ReceiptData, width = 32) {
   out.push(...row(t('Waktu'), r.date, w));
   if (r.cashier) out.push(...row(t('Kasir'), r.cashier, w));
   if (r.customer.table) out.push(...row(t('Meja'), r.customer.table, w));
-  if (kind === 'customer' && r.customer.name) out.push(...row(t('Pelanggan'), r.customer.name, w));
+  if (kind !== 'refund' && r.customer.name) out.push(...row(t('Pelanggan'), r.customer.name, w));
   out.push(rule(w));
   if (kind === 'refund' && r.refund) {
     // Per-item amounts are not printed: only the server total is authoritative.

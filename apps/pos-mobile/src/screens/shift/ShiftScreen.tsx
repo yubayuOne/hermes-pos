@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { Display, Mono, Text } from '../../components/Text';
 import { Button, ButtonRow } from '../../components/Button';
@@ -82,7 +82,6 @@ function HourBars({ hourly }: { hourly: DashboardSummary['hourly'] }) {
           </Mono>
         ))}
       </View>
-      <Text className="mt-2 text-small text-mute">{t('Dalam ribu rupiah. Batang oranye adalah jam tersibuk shift ini.')}</Text>
     </View>
   );
 }
@@ -413,10 +412,12 @@ export function ShiftScreen({
   // Still on this phone (not in the ledger yet): cash sales in, drawer expenses out. Shown as an estimate.
   const pendingDrawerOut = queuedExpenses.reduce((n, e) => n + (e.status === 'waiting' && e.expense?.paidFrom === 'drawer' ? e.total : 0), 0);
   const pendingDrawer = pendingCash - pendingDrawerOut;
-  const drawerRows = (
+  // `extra` sits right under the cash sales line (the close sheet puts the QRIS figures there).
+  const drawerRows = (extra?: ReactNode) => (
     <>
       <SlipRow left={t('Kas awal (modal)')} right={money(openingCash)} />
       <SlipRow left={t('Penjualan tunai')} right={money(cashSales)} />
+      {extra}
       <SlipRow left={t('Kas keluar (refund, pengeluaran)')} right={`-${money(cash?.cashOut ?? 0)}`} />
       <SlipBand tone="pineSoft" left={t('Seharusnya di laci')} right={money(expectedCash)} />
       {pendingDrawer !== 0 ? (
@@ -453,9 +454,6 @@ export function ShiftScreen({
         <Card className="bg-fireSoft">
           <Label>{t('Belum terkirim · {n} bill', { n: pendingSales.length })}</Label>
           <Mono className="font-mono-600 mt-1 text-body">{money(pendingCash + pendingQris)}</Mono>
-          <Text className="mt-1 text-small text-mute">
-            {t('Tunai {cash} · QRIS {qris}. Perkiraan dari HP ini; masuk ke laporan setelah terkirim.', { cash: money(pendingCash), qris: money(pendingQris) })}
-          </Text>
         </Card>
       ) : null}
       <Card>
@@ -519,7 +517,6 @@ export function ShiftScreen({
           }}
         />
       </ButtonRow>
-      <Text className="text-small text-mute">{t('Hitung uang di laci, lalu isi angkanya.')}</Text>
       <Button label={locked ? t('Terkunci: langganan berakhir') : t('Catat pengeluaran')} disabled={locked} onPress={() => setExpenseSheet(true)} />
       {blockers.length ? (
         <View className="rounded-k border-k border-ink bg-fireSoft px-3.5 py-3">
@@ -539,7 +536,6 @@ export function ShiftScreen({
       <Display size={30} className="mt-2">
         {t('Buka shift untuk mulai jualan.')}
       </Display>
-      <Text className="mt-2 text-body text-mute">{t('Hitung uang di laci, lalu masukkan sebagai kas awal.')}</Text>
       <Button
         className="mt-4"
         size="lg"
@@ -575,8 +571,7 @@ export function ShiftScreen({
           <Mono className="text-small text-mute">{t('Shift {n}', { n: shift.shiftNumber })}</Mono>
         </View>
         <SlipRule />
-        {drawerRows}
-        <SlipRow sub left={t('Dihitung server dari buku kas. Tidak ada input kas manual.')} />
+        {drawerRows()}
       </Slip>
       <Card>
         <Display size={22}>{t('Pengeluaran shift ini')}</Display>
@@ -714,7 +709,7 @@ export function ShiftScreen({
         }}
         label={t('Buka shift')}
       >
-        <SheetHeader title={t('Buka shift')} subtitle={t('Hitung uang di laci, lalu masukkan sebagai kas awal.')} onClose={() => setOpenSheet(false)} />
+        <SheetHeader title={t('Buka shift')} onClose={() => setOpenSheet(false)} />
         <SheetBody>
           <MoneyPad label={t('Kas awal')} value={opening} onChange={setOpening} presets={[0, 100000, 200000, 300000]} />
         </SheetBody>
@@ -735,31 +730,32 @@ export function ShiftScreen({
       >
         <SheetHeader
           title={t('Tutup shift {n}', { n: shift?.shiftNumber ?? '' })}
-          subtitle={t('Hitung semua uang di laci, lalu masukkan jumlahnya.')}
           onClose={() => setCloseSheet(false)}
         />
         <SheetBody contentClassName="gap-2.5">
           {/* The same drawer figures as on the Shift tab, so the cashier counts against them without leaving the sheet. */}
-          <Slip torn={false}>{drawerRows}</Slip>
+          <Slip torn={false}>
+            {drawerRows(
+              askQris ? (
+                <>
+                  <SlipRow left={t('QRIS tercatat di sistem')} right={money(qrisSystem)} />
+                  {qris !== '' ? (
+                    <SlipBand
+                      tone={Number(qris) === qrisSystem ? 'pineSoft' : 'error'}
+                      left={t('Selisih QRIS')}
+                      right={money(Number(qris) - qrisSystem)}
+                    />
+                  ) : null}
+                </>
+              ) : null,
+            )}
+          </Slip>
           <MoneyPad
             label={t('Uang di laci')}
             value={counted}
             onChange={setCounted}
-            second={askQris ? { label: t('QRIS di aplikasi merchant'), value: qris, onChange: setQris } : undefined}
+            second={askQris ? { label: t('QRIS'), value: qris, onChange: setQris } : undefined}
           />
-          {/* The QRIS the system has for this shift, so the cashier checks the merchant app's total right here. */}
-          {askQris ? (
-            <Slip torn={false}>
-              <SlipRow left={t('QRIS tercatat di sistem')} right={money(qrisSystem)} />
-              {qris !== '' ? (
-                <SlipBand
-                  tone={Number(qris) === qrisSystem ? 'pineSoft' : 'error'}
-                  left={t('Selisih QRIS')}
-                  right={money(Number(qris) - qrisSystem)}
-                />
-              ) : null}
-            </Slip>
-          ) : null}
         </SheetBody>
         <ActionFooter>
           <ButtonRow>
@@ -795,7 +791,6 @@ export function ShiftScreen({
                     ? t('Kas kurang {amount}.', { amount: money(-closed.variance) })
                     : t('Kas lebih {amount}.', { amount: money(closed.variance) })
               }
-              subtitle={closed.variance === 0 ? t('Uang di laci sama dengan hitungan server.') : t('Laci berbeda dengan hitungan server.')}
             />
             <SheetBody>
               <Slip>
@@ -811,7 +806,7 @@ export function ShiftScreen({
                 {closed.qrisVariance !== null && closed.qrisReported !== null ? (
                   <>
                     <SlipRule />
-                    <SlipRow left={t('QRIS di aplikasi merchant')} right={money(closed.qrisReported)} />
+                    <SlipRow left={t('QRIS')} right={money(closed.qrisReported)} />
                     <SlipBand tone={closed.qrisVariance === 0 ? 'pineSoft' : 'error'} left={t('Selisih QRIS')} right={money(closed.qrisVariance)} />
                   </>
                 ) : null}
@@ -897,11 +892,6 @@ function TakeOverSheet({ shift, onClose, onDone }: { shift: Shift | null; onClos
     >
       <SheetHeader title={t('Pindahkan shift ke HP ini')} subtitle={shift ? t('Shift {n}', { n: shift.shiftNumber }) : undefined} onClose={onClose} />
       <SheetBody contentClassName="gap-3.5">
-        <Text className="text-body leading-[22px] text-mute">
-          {t(
-            'Hanya kalau HP pembuka shift hilang atau rusak. Penjualan yang tertinggal di HP itu akan ditolak.',
-          )}
-        </Text>
         <TextField
           label={t('Kode persetujuan pemilik')}
           value={code}
@@ -915,7 +905,6 @@ function TakeOverSheet({ shift, onClose, onDone }: { shift: Shift | null; onClos
           mono
           maxLength={6}
           error={error || undefined}
-          help={t('Minta pemilik mengetik kodenya di perangkat ini. Kode diatur di backoffice.')}
         />
       </SheetBody>
       <ActionFooter>

@@ -135,7 +135,6 @@ export function ShiftReportBody({ d }: { d: ShiftReportData }) {
             <SlipRow strong left={t('Selisih')} right={money(r.variance ?? 0)} tone={(r.variance ?? 0) === 0 ? undefined : 'error'} />
           </>
         ) : null}
-        <SlipRow sub left={t('Dihitung server dari buku kas, termasuk refund tunai dan pengeluaran dari laci.')} />
       </Slip>
     </>
   );
