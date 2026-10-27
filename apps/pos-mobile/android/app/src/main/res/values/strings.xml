@@ -1,4 +1,4 @@
 <resources>
   <string name="app_name">HERMES POS</string>
-  <string name="expo_runtime_version">1.2.10</string>
+  <string name="expo_runtime_version">1.2.11</string>
 </resources>
