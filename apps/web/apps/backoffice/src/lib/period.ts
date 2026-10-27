@@ -1,5 +1,6 @@
 /** Period filter of Ringkasan and Pengeluaran (owner's choice, 18 Oct 2026). Days are YYYY-MM-DD in the business time zone. */
-export type Period = 'today' | 'month' | 'last-month' | 'custom';
+/** 'all' is only used by the customers list: the whole history, no date limit. */
+export type Period = 'today' | 'month' | 'last-month' | 'custom' | 'all';
 export type PeriodSearch = { period?: Period; from?: string; to?: string };
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;

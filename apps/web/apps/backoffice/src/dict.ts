@@ -325,6 +325,8 @@ export const EN: Dict = {
   // Summary
   'Semua outlet': 'All outlets',
   'Hari ini': 'Today',
+  'Semua waktu': 'All time',
+  'semua waktu': 'all time',
   'Bulan ini': 'This month',
   'Bulan lalu': 'Last month',
   'Pilih tanggal': 'Pick dates',

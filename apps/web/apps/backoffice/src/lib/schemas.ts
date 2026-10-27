@@ -229,16 +229,17 @@ export const expenseListSchema = z
   })
   .refine(...rangeCheck);
 // ---------- Customers (081) ----------
+/** Both dates null means the whole history; the range limit only applies when there are dates. */
 export const customerListSchema = z
   .object({
     outletId: uuid.nullable(),
-    from: day,
-    to: day,
+    from: day.nullable(),
+    to: day.nullable(),
     tz: z.enum(timezones),
     q: z.string().trim().max(40),
     page: z.number().int().min(1),
   })
-  .refine(...rangeCheck);
+  .refine((v) => v.from == null || v.to == null || rangeCheck[0]({ from: v.from, to: v.to }), rangeCheck[1]);
 // ---------- Settings ----------
 export const profileSchema = z.object({
   fullName: z.string().trim().max(80, 'Maksimal 80 karakter.'),

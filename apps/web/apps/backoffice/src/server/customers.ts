@@ -6,15 +6,15 @@ import { startOf } from './summary';
 
 export const CUSTOMER_PAGE = 50;
 
-/** Customers by name (081): one page of 50, biggest spender first, for business days `from` to `to`. */
+/** Customers by name (081): one page of 50, biggest spender first, for business days `from` to `to` (both null: all time). */
 export const listCustomers = createServerFn({ method: 'GET' })
   .validator(parser(customerListSchema))
   .handler(async ({ data }): Promise<CustomerList> => {
     const { readRpc } = await import('./supabase.server');
     const raw = (await readRpc('owner_customers', {
       p_outlet_id: data.outletId,
-      p_from: startOf(data.from, data.tz),
-      p_to: startOf(addDays(data.to, 1), data.tz),
+      p_from: data.from ? startOf(data.from, data.tz) : null,
+      p_to: data.to ? startOf(addDays(data.to, 1), data.tz) : null,
       p_search: data.q || null,
       p_page: data.page,
     })) as { total?: unknown; rows?: unknown };

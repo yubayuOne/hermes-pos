@@ -17,6 +17,8 @@ type Search = PeriodSearch & { outlet?: string; q?: string; page?: number };
 export const Route = createFileRoute('/_app/customers')({
   validateSearch: (s: Record<string, unknown>): Search => ({
     ...parsePeriod(s),
+    // Opens on the whole history. "today" is kept here (the other lists drop it).
+    period: s.period === 'today' ? 'today' : (parsePeriod(s).period ?? 'all'),
     outlet: typeof s.outlet === 'string' ? s.outlet : undefined,
     q: typeof s.q === 'string' && s.q.trim() ? s.q.trim().slice(0, 40) : undefined,
     page: Number.isInteger(s.page) && (s.page as number) > 1 ? (s.page as number) : undefined,
@@ -26,7 +28,8 @@ export const Route = createFileRoute('/_app/customers')({
     const tz = context.app.business.timezone;
     const today = isoDay(new Date(), tz);
     const range = periodRange(deps, today);
-    const list = await listCustomers({ data: { outletId: deps.outlet ?? null, ...range, tz, q: deps.q ?? '', page: deps.page ?? 1 } });
+    const dates = deps.period === 'all' ? { from: null, to: null } : range;
+    const list = await listCustomers({ data: { outletId: deps.outlet ?? null, ...dates, tz, q: deps.q ?? '', page: deps.page ?? 1 } });
     return { list, range, today };
   },
   pendingMs: 150,
@@ -60,11 +63,11 @@ function Customers() {
           />
         }
         outlet={<OutletFilter all value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />}
-        active={search.period ? 1 : 0}
+        active={search.period && search.period !== 'all' ? 1 : 0}
         summary={[outletName, usePeriodLabel(search, data.range), t('{n} pelanggan', { n: data.list.total })].join(' · ')}
         onReset={() => set({ period: undefined, from: undefined, to: undefined, page: undefined })}
       >
-        <PeriodFilter value={search} range={data.range} today={data.today} onChange={(patch) => set({ ...patch, page: undefined })} />
+        <PeriodFilter value={search} range={data.range} today={data.today} allTime onChange={(patch) => set({ ...patch, page: undefined })} />
       </FilterBar>
       {data.list.rows.length === 0 ? (
         <Empty className="mt-6" title={search.q ? t('Tidak ada pelanggan yang cocok.') : t('Belum ada pelanggan di periode ini.')}>

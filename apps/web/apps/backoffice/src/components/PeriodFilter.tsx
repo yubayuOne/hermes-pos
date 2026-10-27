@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Button, Field, Select, dateRange, useI18n } from '@hermes-pos/ui';
-import type { PeriodSearch } from '../lib/period';
+import type { Period, PeriodSearch } from '../lib/period';
 import { CustomRange } from './CustomRange';
 
-const OPTIONS = [
+const OPTIONS: ReadonlyArray<readonly [Period, string]> = [
   ['today', 'Hari ini'],
   ['month', 'Bulan ini'],
   ['last-month', 'Bulan lalu'],
   ['custom', 'Pilih tanggal'],
-] as const;
+];
 
 /**
  * Hari ini, Bulan ini, Bulan lalu, Pilih tanggal as one dropdown (owner's request, 18 Oct 2026: fewer buttons in a row).
@@ -19,16 +19,20 @@ export function PeriodFilter({
   range,
   today,
   onChange,
+  allTime,
   children,
 }: {
   value: PeriodSearch;
   range: { from: string; to: string };
   today: string;
   onChange: (patch: PeriodSearch) => void;
+  /** Adds "Semua waktu" first (customers list): the whole history. */
+  allTime?: boolean;
   children?: React.ReactNode;
 }) {
   const { t, lang } = useI18n();
   const [editing, setEditing] = useState(false);
+  const options = allTime ? [['all', 'Semua waktu'] as const, ...OPTIONS] : OPTIONS;
   const current = editing ? 'custom' : (value.period ?? 'today');
   return (
     <>
@@ -37,13 +41,14 @@ export function PeriodFilter({
           <Select
             value={current}
             onChange={(e) => {
-              const v = e.target.value as (typeof OPTIONS)[number][0];
+              const v = e.target.value as Period;
               setEditing(v === 'custom');
               if (v === 'custom') return;
-              onChange({ period: v === 'today' ? undefined : v, from: undefined, to: undefined });
+              // 'today' goes out too: the lists that do not know it drop it, so they still show today.
+              onChange({ period: v, from: undefined, to: undefined });
             }}
           >
-            {OPTIONS.map(([v, l]) => (
+            {options.map(([v, l]) => (
               <option key={v} value={v}>
                 {v === 'custom' && value.period === 'custom' ? dateRange(range.from, range.to, lang) : t(l)}
               </option>
@@ -75,5 +80,5 @@ export function PeriodFilter({
 export function usePeriodLabel(value: PeriodSearch, range: { from: string; to: string }) {
   const { t, lang } = useI18n();
   const p = value.period ?? 'today';
-  return p === 'today' ? t('hari ini') : p === 'month' ? t('bulan ini') : p === 'last-month' ? t('bulan lalu') : dateRange(range.from, range.to, lang);
+  return p === 'all' ? t('semua waktu') : p === 'today' ? t('hari ini') : p === 'month' ? t('bulan ini') : p === 'last-month' ? t('bulan lalu') : dateRange(range.from, range.to, lang);
 }
