@@ -94,7 +94,7 @@ function MoneyPad({ label, value, onChange, presets, second }: PadField & { pres
   const [onSecond, setOnSecond] = useState(false);
   const pick = (f: PadField, active: boolean, select: () => void) => (
     <Tap accessibilityRole="button" accessibilityLabel={`${f.label} ${money(Number(f.value || 0))}`} accessibilityState={{ selected: active }} onPress={select}>
-      <AmountBox label={f.label} value={money(Number(f.value || 0))} active={active} compact={phoneLandscape} />
+      <AmountBox label={f.label} value={num(Number(f.value || 0))} active={active} compact={phoneLandscape} />
     </Tap>
   );
   const box = (
@@ -105,7 +105,7 @@ function MoneyPad({ label, value, onChange, presets, second }: PadField & { pres
           {pick(second, onSecond, () => setOnSecond(true))}
         </>
       ) : (
-        <AmountBox label={label} value={money(Number(value || 0))} compact={phoneLandscape} />
+        <AmountBox label={label} value={num(Number(value || 0))} compact={phoneLandscape} />
       )}
       {presets ? (
         <View className="flex-row gap-2">
@@ -122,7 +122,7 @@ function MoneyPad({ label, value, onChange, presets, second }: PadField & { pres
       ) : null}
     </View>
   );
-  const pad = second && onSecond ? <Keypad value={second.value} onChange={second.onChange} compact={phoneLandscape} /> : <Keypad value={value} onChange={onChange} compact={phoneLandscape} />;
+  const pad = second && onSecond ? <Keypad value={second.value} onChange={second.onChange} compact={phoneLandscape} maxLength={13} /> : <Keypad value={value} onChange={onChange} compact={phoneLandscape} maxLength={13} />;
   return phoneLandscape ? (
     <View className="flex-row gap-4">
       <View className="flex-1">{box}</View>
@@ -415,11 +415,11 @@ export function ShiftScreen({
   // `extra` sits right under the cash sales line (the close sheet puts the QRIS figures there).
   const drawerRows = (extra?: ReactNode) => (
     <>
-      <SlipRow left={t('Kas awal (modal)')} right={money(openingCash)} />
-      <SlipRow left={t('Penjualan tunai')} right={money(cashSales)} />
+      <SlipRow left={t('Modal Tunai')} right={money(openingCash)} />
+      <SlipRow left={t('Pendapatan Tunai')} right={money(cashSales)} />
       {extra}
-      <SlipRow left={t('Kas keluar (refund, pengeluaran)')} right={`-${money(cash?.cashOut ?? 0)}`} />
-      <SlipBand tone="pineSoft" left={t('Seharusnya di laci')} right={money(expectedCash)} />
+      <SlipRow left={t('Pengeluaran')} right={`-${money(cash?.cashOut ?? 0)}`} />
+      <SlipBand tone="pineSoft" left={t('Total Tunai')} right={money(expectedCash)} />
       {pendingDrawer !== 0 ? (
         <>
           <SlipRow sub left={t('Belum terkirim (tunai)')} right={`${pendingDrawer > 0 ? '+' : '-'}${money(Math.abs(pendingDrawer))}`} />
@@ -711,7 +711,7 @@ export function ShiftScreen({
       >
         <SheetHeader title={t('Buka shift')} onClose={() => setOpenSheet(false)} />
         <SheetBody>
-          <MoneyPad label={t('Kas awal')} value={opening} onChange={setOpening} presets={[0, 100000, 200000, 300000]} />
+          <MoneyPad label={t('Modal Tunai')} value={opening} onChange={setOpening} presets={[0, 100000, 200000, 300000]} />
         </SheetBody>
         <ActionFooter>
           <ButtonRow>
@@ -738,20 +738,13 @@ export function ShiftScreen({
             {drawerRows(
               askQris ? (
                 <>
-                  <SlipRow left={t('QRIS tercatat di sistem')} right={money(qrisSystem)} />
-                  {qris !== '' ? (
-                    <SlipBand
-                      tone={Number(qris) === qrisSystem ? 'pineSoft' : 'error'}
-                      left={t('Selisih QRIS')}
-                      right={money(Number(qris) - qrisSystem)}
-                    />
-                  ) : null}
+                  <SlipRow left={t('Pendapatan Qris')} right={money(qrisSystem)} />
                 </>
               ) : null,
             )}
           </Slip>
           <MoneyPad
-            label={t('Uang di laci')}
+            label={t('Total Tunai')}
             value={counted}
             onChange={setCounted}
             second={askQris ? { label: t('QRIS'), value: qris, onChange: setQris } : undefined}

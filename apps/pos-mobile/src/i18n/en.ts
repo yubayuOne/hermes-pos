@@ -769,6 +769,10 @@ export const EN: Record<string, string | [string, string]> = {
   'Alasan: {reason}': 'Reason: {reason}',
   // Offline queue: expense entries (migration 043)
   Pengeluaran: 'Expense',
+  'Modal Tunai': 'Cash float',
+  'Pendapatan Tunai': 'Cash income',
+  'Pendapatan Qris': 'QRIS income',
+  'Total Tunai': 'Total cash',
   'Pengeluaran ini tidak akan masuk laporan. Hapus hanya kalau sudah dicatat ulang atau memang batal.':
     'This expense will not be in the report. Delete it only if it was recorded again or really cancelled.',
   'Ditolak server: {reason} Entri tidak dihapus otomatis. Tinjau bersama pemilik.':
