@@ -13,7 +13,7 @@ import { ChoiceButton } from '../../components/ChoiceSheet';
 import { useLayout } from '../../hooks/useLayout';
 import { useAppStore } from '../../hooks/AppStore';
 import { useNotify } from '../../hooks/NotifyProvider';
-import { fetchBillItems, fetchBillRefunds, fetchRecentClosedShifts, voidTransaction } from '../../services/transaction/repository';
+import { fetchBillItems, fetchBillRefunds, fetchRecentClosedShifts, loadVouchers, voidTransaction } from '../../services/transaction/repository';
 import { concerns as billWaitsOn, entryNumber, QueuedCheckout, settlesHeldBill, takeBackHold } from '../../services/transaction/offlineQueue';
 import { lineDiscount, lineGross } from '../../utils/discount';
 import { readShift, ShiftData, syncShift } from '../../services/local/shiftData';
@@ -377,6 +377,7 @@ export function BillsScreen({
                 customerPhone: changed.customer.phone,
                 tableNumber: changed.customer.table,
                 billDiscount: changed.billDiscount ?? null,
+                voucherCode: changed.voucherCode ?? null,
               },
               items: changed.items,
             }
@@ -393,10 +394,15 @@ export function BillsScreen({
         );
       }
       const { header, items: lines } = recalled;
+      // The voucher the bill was held with: found in the outlet's list. Gone (expired, or not on this phone) means no voucher.
+      const code = header.voucherCode?.toUpperCase() ?? null;
+      const voucher = code && session ? ((await loadVouchers(session.outletId)).list.find((v) => v.code.toUpperCase() === code) ?? null) : null;
+      if (code && !voucher) notify.toast('warning', t('Voucher {code} tidak dipakai lagi', { code }), t('Pasang voucher lain saat bayar.'));
       replaceCart(
         lines,
         { name: header.customerName || selected.customerName || '', phone: header.customerPhone || '', table: header.tableNumber || selected.table || '' },
         header.billDiscount,
+        voucher,
       );
       setActiveHeldBillId(selected.id);
       setActiveHeldNumber(selected.number);

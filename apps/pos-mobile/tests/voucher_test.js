@@ -90,11 +90,11 @@ ok(
 // A voucher that takes the whole bill is refused on the till, as the server refuses it at payment.
 {
   const r = applyVoucher(cart, null, bill('percent', 100));
-  ok(r.error === 'Diskon tidak boleh membuat total menjadi nol.' && r.cut === 0 && r.billDiscount === null, 'bill voucher 100% refused with the reason');
+  ok(r.error === null && r.cut === 62000, 'bill voucher 100% accepted: a discount may take the total to zero');
   const p = applyVoucher([item('kopi', 22000, 1)], null, prod('percent', 100, ['kopi']));
-  ok(p.error === 'Diskon tidak boleh membuat total menjadi nol.', 'product voucher 100% on the only line refused');
+  ok(p.error === null && p.cut === 22000, 'product voucher 100% on the only line accepted');
   ok(applyVoucher(cart, null, bill('percent', 50)).error === null, 'bill voucher 50% still accepted');
-  ok(billTotals(cart, null, bill('percent', 100)).total === 62000, 'refused voucher: the bill is charged full price');
+  ok(billTotals(cart, null, bill('percent', 100)).total === 0, 'bill voucher 100%: the bill is charged zero');
 }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

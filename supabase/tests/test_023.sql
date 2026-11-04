@@ -69,7 +69,7 @@ begin
   begin perform complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'discount_type','amount','discount_value',10001))),'cash',99999,null,'e2',null,null); err:=null; exception when others then err:=sqlerrm; end;
   perform t_ck('A7 diskon item nominal melebihi harga ditolak', err like '%melebihi harga%', coalesce(err,'(tidak error)'));
   begin perform complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1)),'bill_discount_type','percent','bill_discount_value',100),'cash',99999,null,'e3',null,null); err:=null; exception when others then err:=sqlerrm; end;
-  perform t_ck('A8 diskon yang membuat total 0 ditolak', err like '%total menjadi nol%', coalesce(err,'(tidak error)'));
+  perform t_ck('A8 diskon yang membuat total 0 diterima (bill gratis tetap penjualan)', err is null, coalesce(err,'(tidak error)'));
   begin perform complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1,'discount_type','bogus','discount_value',5))),'cash',99999,null,'e4',null,null); err:=null; exception when others then err:=sqlerrm; end;
   perform t_ck('A9 jenis diskon tidak dikenal ditolak', err like '%Jenis diskon tidak valid%', coalesce(err,'(tidak error)'));
   begin perform complete_checkout(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',2,'discount_type','percent','discount_value',50))),'cash',9999,null,'e5',null,null); err:=null; exception when others then err:=sqlerrm; end;
@@ -126,7 +126,7 @@ begin
   reset role; update products set selling_price=10000 where id=pa; set role authenticated;
 
   begin perform save_held_bill(sh,c,o,jsonb_build_object('table_number','M1','items',jsonb_build_array(jsonb_build_object('product_id',pa,'quantity',1)),'bill_discount_type','percent','bill_discount_value',100)); err:=null; exception when others then err:=sqlerrm; end;
-  perform t_ck('B8 Tahan Bill dengan diskon yang menihilkan total ditolak', err like '%total menjadi nol%', coalesce(err,'(tidak error)'));
+  perform t_ck('B8 Tahan Bill dengan diskon yang menihilkan total diterima', err is null, coalesce(err,'(tidak error)'));
 end $$;
 
 -- ===================== C. Split Bill dengan diskon =====================

@@ -105,7 +105,7 @@ export function PaymentScreen({
   const own = useRef<{ key: string; transactionId: string; number: string } | null>(null);
   const received = paymentMethod === 'qris' ? total : Number(paid || 0);
   const change = paymentMethod === 'qris' ? 0 : Math.max(0, received - total);
-  const enough = received >= total && total > 0;
+  const enough = received >= total;
   const offlineLikely = queue.some((e) => e.status === 'waiting');
 
   useEffect(() => {

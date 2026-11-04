@@ -65,7 +65,7 @@ interface State {
   clearManualDiscounts: () => void;
   setItemNote: (productId: string, note: string | null) => void;
   clearCart: () => void;
-  replaceCart: (items: CartItem[], customer: CustomerInfo, billDiscount?: Discount | null) => void;
+  replaceCart: (items: CartItem[], customer: CustomerInfo, billDiscount?: Discount | null, voucher?: Voucher | null) => void;
   startSplitBill: (customer: CustomerInfo) => void;
   setSplitParentTransaction: (id: string) => void;
   updateSplitParts: (parts: SplitBillPart[]) => void;
@@ -330,11 +330,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       },
       clearCart,
 
-      replaceCart: (items: CartItem[], info: CustomerInfo, bill?: Discount | null) => {
+      replaceCart: (items: CartItem[], info: CustomerInfo, bill?: Discount | null, voucher?: Voucher | null) => {
         setCart(items);
         setCustomer(info);
         setBillDiscount(bill && bill.value > 0 ? bill : null);
-        setVoucher(null);
+        setVoucher(voucher ?? null);
       },
       startSplitBill,
       setSplitParentTransaction: (id: string) => setSplitBill((x) => (x ? { ...x, parentTransactionId: id } : x)),

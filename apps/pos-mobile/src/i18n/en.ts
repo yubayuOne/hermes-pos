@@ -770,6 +770,8 @@ export const EN: Record<string, string | [string, string]> = {
   // Offline queue: expense entries (migration 043)
   Pengeluaran: 'Expense',
   'Modal Tunai': 'Cash float',
+  'Voucher {code} tidak dipakai lagi': 'Voucher {code} no longer applies',
+  'Pasang voucher lain saat bayar.': 'Pick another voucher when paying.',
   'Pendapatan Tunai': 'Cash income',
   'Pendapatan Qris': 'QRIS income',
   'Total Tunai': 'Total cash',

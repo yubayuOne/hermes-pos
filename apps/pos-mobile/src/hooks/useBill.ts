@@ -48,7 +48,7 @@ export function useBill(onOpenShift: () => void) {
       try {
         // Queued for this bill (its offline hold, earlier changes): the change goes behind them, not straight out.
         if (waitsForQueue(shift.id, ids) || billWaits(activeHeldBillId)) throw queueFirst();
-        await updateHeldBill({ transactionId: activeHeldBillId, items: cart, customer, billDiscount });
+        await updateHeldBill({ transactionId: activeHeldBillId, items: cart, customer, billDiscount, voucherCode: voucher?.code ?? null });
         s.clearCart();
         s.setActiveHeldBillId(null);
         s.setActiveHeldNumber(null);
@@ -72,8 +72,9 @@ export function useBill(onOpenShift: () => void) {
             items: cart,
             customer,
             billDiscount,
+            voucherCode: voucher?.code ?? null,
             payment: { method: 'cash', amountReceived: 0 },
-            total: billTotals(cart, billDiscount, null).total,
+            total: billTotals(cart, billDiscount, voucher).total,
           });
         } catch (err) {
           void notify.fail(t('Bill belum tersimpan'), err, t('Bill tidak bisa disimpan di perangkat. Bill tetap di layar.'));
@@ -97,10 +98,10 @@ export function useBill(onOpenShift: () => void) {
       customer,
       billDiscount,
       idempotencyKey,
+      voucherCode: voucher?.code ?? null,
       transactionId: own?.transactionId ?? null,
       number: own?.number ?? null,
     };
-    const droppedVoucher = !!voucher;
     const waits = waitsForQueue(shift.id, ids);
     // Whether the request leaves the phone: if it does and gets no answer, the server may have the bill (maybeSent).
     const tried = !waits && isOnline();
@@ -109,7 +110,7 @@ export function useBill(onOpenShift: () => void) {
       await saveHeldBill(args);
       s.clearCart();
       s.bumpHeld();
-      notify.success(t('Bill ditahan'), droppedVoucher ? t('Voucher dilepas. Pasang lagi saat bill dibayar.') : t('Panggil lagi dari tab Bill.'));
+      notify.success(t('Bill ditahan'), t('Panggil lagi dari tab Bill.'));
       return true;
     } catch (error) {
       if (!isUnknownCheckoutOutcome(error)) {
@@ -117,13 +118,13 @@ export function useBill(onOpenShift: () => void) {
         return false;
       }
       try {
-        // A held bill is saved without its voucher, so its queued total leaves the voucher out too.
+        // The queued copy keeps the voucher too: the server applies it again when the change is sent.
         await enqueueCheckout({
           ...args,
           kind: 'hold',
           maybeSent: tried,
           payment: { method: 'cash', amountReceived: 0 },
-          total: billTotals(cart, billDiscount, null).total,
+          total: billTotals(cart, billDiscount, voucher).total,
         });
       } catch (e) {
         void notify.fail(t('Bill belum ditahan'), e, t('Bill tidak bisa disimpan di perangkat. Bill tetap di layar.'));

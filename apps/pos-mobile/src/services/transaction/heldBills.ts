@@ -5,13 +5,14 @@ import { cleanNote, notePayload } from '../../utils/note';
 import { t } from '../../i18n';
 
 /** Bill payload shared by hold, update, and checkout. Discounts are sent as type + value; the server computes them. */
-export function billPayload(items: CartItem[], customer: CustomerInfo, billDiscount?: Discount | null) {
+export function billPayload(items: CartItem[], customer: CustomerInfo, billDiscount?: Discount | null, voucherCode?: string | null) {
   return {
     items: items.map((i) => ({ product_id: i.productId, quantity: i.quantity, ...discountPayload(i.discount), ...notePayload(i.note) })),
     ...billDiscountPayload(billDiscount),
     customer_name: customer.name,
     customer_phone: customer.phone,
     table_number: customer.table,
+    voucher_code: voucherCode ?? null,
   };
 }
 
@@ -26,6 +27,8 @@ export async function saveHeldBill(args: {
   items: CartItem[];
   customer: CustomerInfo;
   billDiscount?: Discount | null;
+  /** The voucher the cashier applied; the server keeps it with the bill (migration 094). */
+  voucherCode?: string | null;
   idempotencyKey?: string;
   /** The phone's id and number for the bill (migration 054); without them the server numbers it. */
   transactionId?: string | null;
@@ -35,7 +38,7 @@ export async function saveHeldBill(args: {
     p_shift_id: args.shiftId,
     p_cashier_id: args.cashierId,
     p_outlet_id: args.outletId,
-    p_payload: billPayload(args.items, args.customer, args.billDiscount),
+    p_payload: billPayload(args.items, args.customer, args.billDiscount, args.voucherCode),
     p_idempotency_key: args.idempotencyKey ?? null,
   };
   const { data, error } =
@@ -64,7 +67,10 @@ const toCartItem = (r: any): CartItem => ({
   note: cleanNote(r.note) || null,
 });
 
-export type RecalledBill = { header: { customerName: string; customerPhone: string; tableNumber: string; billDiscount: Discount | null }; items: CartItem[] };
+export type RecalledBill = {
+  header: { customerName: string; customerPhone: string; tableNumber: string; billDiscount: Discount | null; voucherCode: string | null };
+  items: CartItem[];
+};
 
 /** recall_held_bill_with_items's answer (also each entry of `held` in pos_shift_snapshot, 057). */
 export function toRecalledBill(data: unknown): RecalledBill {
@@ -75,7 +81,10 @@ export function toRecalledBill(data: unknown): RecalledBill {
   }));
   const billDiscount: Discount | null =
     d.billDiscountType && Number(d.billDiscountValue) > 0 ? { type: d.billDiscountType, value: Number(d.billDiscountValue) } : null;
-  return { header: { customerName: d.customerName ?? '', customerPhone: d.customerPhone ?? '', tableNumber: d.tableNumber ?? '', billDiscount }, items };
+  return {
+    header: { customerName: d.customerName ?? '', customerPhone: d.customerPhone ?? '', tableNumber: d.tableNumber ?? '', billDiscount, voucherCode: d.voucherCode ?? null },
+    items,
+  };
 }
 
 /** get_held_bill_items's rows as split lines, with the remaining discount per line (also inside pos_shift_snapshot, 057). */
@@ -97,10 +106,16 @@ export async function fetchRemainingBillItems(transactionId: string): Promise<Ar
 }
 
 /** Save the cashier's changes back into the recalled held bill (migration 032). Needs internet. */
-export async function updateHeldBill(args: { transactionId: string; items: CartItem[]; customer: CustomerInfo; billDiscount?: Discount | null }) {
+export async function updateHeldBill(args: {
+  transactionId: string;
+  items: CartItem[];
+  customer: CustomerInfo;
+  billDiscount?: Discount | null;
+  voucherCode?: string | null;
+}) {
   const { error } = await supabase.rpc('update_held_bill', {
     p_transaction_id: args.transactionId,
-    p_payload: billPayload(args.items, args.customer, args.billDiscount),
+    p_payload: billPayload(args.items, args.customer, args.billDiscount, args.voucherCode),
   });
   if (error) throw error;
 }

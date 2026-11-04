@@ -440,6 +440,7 @@ async function runSync(who: { cashierId?: string; outletId: string } | null): Pr
             items: entry.items,
             customer: entry.customer,
             billDiscount: entry.billDiscount,
+            voucherCode: entry.voucherCode ?? null,
             idempotencyKey: entry.idempotencyKey,
             transactionId: entry.transactionId ?? null,
             number: entry.number ?? null,
@@ -448,7 +449,7 @@ async function runSync(who: { cashierId?: string; outletId: string } | null): Pr
         );
       } else if (entry.kind === 'update' && entry.existingTransactionId) {
         await withTimeout(
-          updateHeldBill({ transactionId: entry.existingTransactionId, items: entry.items, customer: entry.customer, billDiscount: entry.billDiscount }),
+          updateHeldBill({ transactionId: entry.existingTransactionId, items: entry.items, customer: entry.customer, billDiscount: entry.billDiscount, voucherCode: entry.voucherCode ?? null }),
           CHECKOUT_TIMEOUT_MS,
         );
       } else {

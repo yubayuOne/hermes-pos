@@ -32,8 +32,6 @@ export function applyVoucher(items: CartItem[], billDiscount: Discount | null, v
     const base = cartTotals(items, null).total;
     if (v.discountType === 'amount' && v.value >= base) return { items, billDiscount, cut: 0, error: t('Potongan voucher lebih besar dari total bill.') };
     const d: Discount = { type: v.discountType, value: v.value };
-    // Same rule as the server (set_bill_totals): a voucher cannot take the total to zero, so refuse it here, not at payment.
-    if (cartTotals(items, d).total <= 0) return { items, billDiscount, cut: 0, error: t('Diskon tidak boleh membuat total menjadi nol.') };
     return { items, billDiscount: d, cut: calcDiscount(base, d), error: null };
   }
   let cut = 0;
@@ -46,7 +44,6 @@ export function applyVoucher(items: CartItem[], billDiscount: Discount | null, v
     return { ...i, discount: d };
   });
   if (!matched) return { items, billDiscount, cut: 0, error: t('Voucher ini hanya untuk menu tertentu, dan menu itu tidak ada di bill.') };
-  if (cartTotals(next, billDiscount).total <= 0) return { items, billDiscount, cut: 0, error: t('Diskon tidak boleh membuat total menjadi nol.') };
   return { items: next, billDiscount, cut, error: null };
 }
 
