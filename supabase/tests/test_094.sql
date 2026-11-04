@@ -35,3 +35,12 @@ select pg_temp.ok('H2 update without a voucher clears it', (public.recall_held_b
 select set_config('t.bill2', public.save_held_bill(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
   jsonb_build_object('table_number', 'M2', 'items', jsonb_build_array(pg_temp.item('t.kopi', 1))), 'hv-2')::text, false);
 select pg_temp.ok('H3 held without a voucher: no code', (public.recall_held_bill_with_items(current_setting('t.bill2')::uuid) ->> 'voucherCode') is null);
+
+-- A bill a discount takes to zero is paid with nothing: accepted, and no cash row for it.
+select set_config('t.free', (public.complete_checkout(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
+  jsonb_build_object('items', jsonb_build_array(pg_temp.item('t.kopi', 1)), 'bill_discount_type', 'percent', 'bill_discount_value', 100),
+  'cash', 0, null, 'z-1', null, null) ->> 'transactionId'), false);
+select pg_temp.ok('Z1 bill gratis diterima dengan total 0', (select total from public.transactions where id = current_setting('t.free')::uuid) = 0);
+select pg_temp.ok('Z2 bill gratis tidak menulis baris kas', not exists (
+  select 1 from public.cash_ledger cl join public.payments p on p.id = cl.source_id
+  where cl.source_type = 'payment' and p.transaction_id = current_setting('t.free')::uuid));
