@@ -10,7 +10,7 @@ new Function('module', 'exports', 'require', ts.transpileModule(src, { compilerO
   mod.exports,
   () => ({ t: (k) => k }),
 );
-const { calcDiscount, cartTotals, validateDiscount, splitLineDiscount } = mod.exports;
+const { calcDiscount, cartTotals, splitLineDiscount } = mod.exports;
 let pass = 0,
   fail = 0;
 const ok = (c, m) => {
@@ -55,20 +55,5 @@ for (let base = 1; base <= 3000; base += 7)
     if (calcDiscount(base, { type: 'percent', value: v }) !== want) bad++;
   }
 ok(bad === 0, 'brute force: matches integer half-up rounding (no float error)');
-ok(
-  validateDiscount(10000, { type: 'percent', value: 101 }) !== null &&
-    validateDiscount(10000, { type: 'amount', value: 10001 }) !== null &&
-    validateDiscount(10000, { type: 'amount', value: 10000 }) === null,
-  'limit validation',
-);
-ok(
-  validateDiscount(10000, { type: 'percent', value: 100 }, { mustLeavePositive: true }) !== null &&
-    validateDiscount(10000, { type: 'percent', value: 99 }, { mustLeavePositive: true }) === null,
-  'total must not be zero',
-);
-ok(
-  validateDiscount(10000, { type: 'percent', value: 12.345 }) !== null && validateDiscount(10000, { type: 'amount', value: 100.5 }) !== null,
-  'max 2 decimals; whole rupiah',
-);
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

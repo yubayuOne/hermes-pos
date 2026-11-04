@@ -1,4 +1,3 @@
-import { t } from '../i18n';
 import { CartItem, Discount } from '../types/domain';
 
 /**
@@ -40,22 +39,6 @@ export function cartTotals(items: CartItem[], billDiscount?: Discount | null): C
   const base = gross - itemDiscount;
   const bill = calcDiscount(base, billDiscount);
   return { gross, itemDiscount, billDiscount: bill, discount: itemDiscount + bill, total: base - bill };
-}
-
-/** Error message for a discount input, or null when valid. `base` = the amount being discounted. */
-export function validateDiscount(base: number, d: Discount | null, opts?: { mustLeavePositive?: boolean }): string | null {
-  if (!d) return null;
-  if (!(d.value > 0)) return t('Isi nilai diskon lebih dari 0.');
-  if (d.type === 'percent') {
-    if (d.value > 100) return t('Diskon persen tidak boleh lebih dari 100.');
-    if (Math.round(d.value * 100) !== d.value * 100 && Math.abs(Math.round(d.value * 100) - d.value * 100) > 1e-9)
-      return t('Maksimal 2 angka di belakang koma.');
-  } else if (!Number.isInteger(d.value)) {
-    return t('Nominal diskon harus rupiah penuh.');
-  }
-  if (d.type === 'amount' && d.value > base) return t('Diskon melebihi harga.');
-  if (opts?.mustLeavePositive && calcDiscount(base, d) >= base) return t('Diskon tidak boleh membuat total menjadi nol.');
-  return null;
 }
 
 /** Short label: "10%" or "Rp 5.000". */

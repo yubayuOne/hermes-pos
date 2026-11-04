@@ -20,7 +20,7 @@ import { refreshSubscription } from '../../services/subscription/subscription';
 import { printerService } from '../../services/printer/service';
 import { ReceiptData } from '../../services/printer/types';
 import { CartItem, CustomerInfo, PaymentMethod } from '../../types/domain';
-import { billTotals } from '../../utils/voucher';
+import { applyVoucher, billTotals } from '../../utils/voucher';
 import { isExpiredError, isUnknownCheckoutOutcome } from '../../utils/errors';
 import { reportPrintResult } from '../../utils/printFeedback';
 import { receiptFromCart, withServerLines } from '../../utils/receipt';
@@ -91,7 +91,9 @@ export function PaymentScreen({
   const items = itemsOverride ?? cart;
   const cust = customerOverride ?? customer;
   const split = !!itemsOverride;
-  const payVoucher = split ? null : voucher;
+  // A voucher that no longer applies (e.g. on a recalled held bill it would take the total to zero) is not sent, and the reason shows.
+  const voucherError = split || !voucher ? null : applyVoucher(items, billDiscount, voucher).error;
+  const payVoucher = split || voucherError ? null : voucher;
   const totals = billTotals(items, split ? null : billDiscount, payVoucher);
   const total = totals.total;
   const [paid, setPaid] = useState('');
@@ -482,6 +484,7 @@ export function PaymentScreen({
       ))}
       <SlipRule />
       {discountTotal ? <SlipRow left={t('Diskon dan voucher')} right={`-${money(discountTotal)}`} tone="pine" /> : null}
+      {voucherError ? <SlipRow sub left={voucherError} /> : null}
       <SlipRow strong left={t('Total')} right={money(total)} />
     </Slip>
   );
