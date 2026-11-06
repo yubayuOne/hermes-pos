@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, Dialog, Empty, Field, FormAlert, Input, Switch, Tag, time, useI18n } from '@hermes-pos/ui';
+import { PlusIcon, Button, Dialog, Empty, Field, FormAlert, Input, Switch, Tag, time, useI18n } from '@hermes-pos/ui';
 import { FilterBar } from '../../components/Filters';
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
@@ -47,7 +47,8 @@ function Tables() {
 
   const add = (
     <Button variant="fire" className="w-full sm:w-auto" onClick={() => setEditing('new')} {...lock.props}>
-      {lock.label(t('Tambah meja'))}
+      <PlusIcon size={16} />
+{lock.label(t('Meja'))}
     </Button>
   );
 

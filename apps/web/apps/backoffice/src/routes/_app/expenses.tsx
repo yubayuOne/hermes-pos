@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { isoDay } from '@hermes-pos/ui';
+import { PlusIcon, isoDay } from '@hermes-pos/ui';
 import { Button, Card, Dialog, Empty, Field, FormAlert, Input, Loading, PencilIcon, Select, SkCard, Tag, dateLong, money, useI18n } from '@hermes-pos/ui';
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
@@ -209,7 +209,8 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
         <div className="flex flex-wrap items-center gap-2">
           {e.shiftOpen && <Tag tone="fire">{t('shift masih buka')}</Tag>}
           <Button sm onClick={() => setAdding(true)} {...lock.props}>
-            {lock.label(t('Tambah barang'))}
+            <PlusIcon size={16} />
+{lock.label(t('Barang'))}
           </Button>
         </div>
       </div>

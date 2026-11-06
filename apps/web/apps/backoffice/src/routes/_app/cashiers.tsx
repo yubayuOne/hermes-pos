@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Button, Dialog, Empty, Field, FormAlert, Input, Select, Switch, Tag, time, useI18n } from '@hermes-pos/ui';
+import { PlusIcon, Button, Dialog, Empty, Field, FormAlert, Input, Select, Switch, Tag, time, useI18n } from '@hermes-pos/ui';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { VoidCodeCard } from '../../components/VoidCodeCard';
@@ -43,7 +43,8 @@ function Cashiers() {
       {cashiers.length > 0 && (
         <div className="flex justify-end">
           <Button variant="fire" className="w-full sm:w-auto" onClick={() => setAdding(true)} {...lock.props}>
-            {lock.label(t('Tambah kasir'))}
+            <PlusIcon size={16} />
+{lock.label(t('Kasir'))}
           </Button>
         </div>
       )}
@@ -53,7 +54,8 @@ function Cashiers() {
           title={t('Belum ada kasir.')}
           action={
             <Button variant="fire" onClick={() => setAdding(true)} {...lock.props}>
-              {lock.label(t('Tambah kasir'))}
+              <PlusIcon size={16} />
+{lock.label(t('Kasir'))}
             </Button>
           }
         >

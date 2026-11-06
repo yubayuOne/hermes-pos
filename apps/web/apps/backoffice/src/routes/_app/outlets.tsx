@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Button, Check, Dialog, Field, FormAlert, Input, Tag, Textarea, cn, money, useI18n } from '@hermes-pos/ui';
+import { PlusIcon, Button, Check, Dialog, Field, FormAlert, Input, Tag, Textarea, cn, money, useI18n } from '@hermes-pos/ui';
 import { OutletLogo } from '../../components/OutletLogo';
 import { Page } from '../../components/Page';
 import { Stat } from '../../components/Stat';
@@ -35,7 +35,8 @@ function Outlets() {
           })}
         </p>
         <Button variant="fire" onClick={() => setInfo(true)} {...lock.props}>
-          {lock.label(t('Tambah outlet'))}
+          <PlusIcon size={16} />
+{lock.label(t('Outlet'))}
         </Button>
       </div>
       <ul className="mt-6 grid items-start gap-5 [grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr))]">

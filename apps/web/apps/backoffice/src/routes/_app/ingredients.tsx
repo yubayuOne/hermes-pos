@@ -97,7 +97,8 @@ function IngredientList({
       ) : items.length === 0 ? (
         <Empty className="mt-6" title={t('Belum ada barang.')}>
           <Button variant="fire" onClick={onAdd}>
-            {t('Tambah barang')}
+            <PlusIcon size={16} />
+{t('Barang')}
           </Button>
         </Empty>
       ) : (

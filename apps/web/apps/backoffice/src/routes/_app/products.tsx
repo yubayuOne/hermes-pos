@@ -151,7 +151,8 @@ function Products() {
           title={t('Belum ada produk.')}
           action={
             <Button variant="fire" onClick={() => setEditing('new')} {...lock.props}>
-              {lock.label(t('Tambah produk'))}
+              <PlusIcon size={16} />
+{lock.label(t('Produk'))}
             </Button>
           }
         >

@@ -19,6 +19,7 @@ import {
   money,
   toast,
   useI18n,
+  PlusIcon,
 } from '@hermes-pos/ui';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
@@ -77,7 +78,8 @@ function Vouchers() {
       {vouchers.length > 0 && (
         <div className="flex justify-end">
           <Button variant="fire" className="w-full sm:w-auto" onClick={() => setEditing('new')} {...lock.props}>
-            {lock.label(t('Buat voucher'))}
+            <PlusIcon size={16} />
+{lock.label(t('Voucher'))}
           </Button>
         </div>
       )}
@@ -87,7 +89,8 @@ function Vouchers() {
           title={t('Belum ada voucher.')}
           action={
             <Button variant="fire" onClick={() => setEditing('new')} {...lock.props}>
-              {lock.label(t('Buat voucher'))}
+              <PlusIcon size={16} />
+{lock.label(t('Voucher'))}
             </Button>
           }
         >
