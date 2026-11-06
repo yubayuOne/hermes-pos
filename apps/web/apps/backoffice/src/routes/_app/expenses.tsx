@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { isoDay } from '@hermes-pos/ui';
-import { Button, Card, Dialog, Empty, Field, FormAlert, Input, Loading, Select, SkCard, Tag, dateLong, money, useI18n } from '@hermes-pos/ui';
+import { Button, Card, Dialog, Empty, Field, FormAlert, Input, Loading, PencilIcon, Select, SkCard, Tag, dateLong, money, useI18n } from '@hermes-pos/ui';
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { Pagination } from '../../components/Pagination';
@@ -12,6 +12,7 @@ import { getSummary } from '../../server/summary';
 import { describeError } from '../../lib/errors';
 import { addExpenseItems, listExpenses } from '../../server/expenses';
 import { ExpenseItemDialog } from '../../components/ExpenseItemDialog';
+import { IconAction } from '../../components/IconAction';
 import { BarangPicker, LAIN } from '../../components/BarangPicker';
 import { getDay } from '../../server/closing';
 import { OutletField } from '../../components/Filters';
@@ -251,10 +252,9 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                     {money(i.amount)}
                   </td>
                   <td data-l="" className="text-right">
-                    <Button sm onClick={() => setEditing(i)} {...lock.props}>
-                      {t('Ubah')}
-                      <span className="sr-only"> {i.name}</span>
-                    </Button>
+                    <IconAction label={`${t('Ubah')} ${i.name}`} onClick={() => setEditing(i)} {...lock.props}>
+                      <PencilIcon size={18} />
+                    </IconAction>
                   </td>
                 </tr>
               ))}
@@ -398,12 +398,6 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
             )}
           </div>
         )}
-        <Field label={t('Sumber uang')}>
-          <Select value={paidFrom} onChange={(ev) => setPaidFrom(ev.target.value === 'drawer' ? 'drawer' : 'other')}>
-            <option value="drawer">{t('Kas Laci')}</option>
-            <option value="other">{t('Kas Outlet')}</option>
-          </Select>
-        </Field>
         {rows.map((r, k) => {
           const picked = barang.find((b) => b.id === r.ingredientId);
           const free = r.ingredientId === LAIN;
@@ -424,15 +418,15 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
                   <span className="sr-only"> {t('barang {n}', { n: k + 1 })}</span>
                 </Button>
               </div>
-              <Field label={t('Barang')} className="col-span-full sm:col-span-3">
+              <Field label={t('Barang')} className="col-span-full">
                 <BarangPicker items={barang} value={r.ingredientId} onChange={(v) => set(k, { ingredientId: v })} allowFree />
               </Field>
               {free && (
-                <Field label={t('Nama')} className="col-span-full sm:col-span-3">
+                <Field label={t('Nama')} className="col-span-full sm:col-span-4">
                   <Input value={r.name} maxLength={60} onChange={(ev) => set(k, { name: ev.target.value })} />
                 </Field>
               )}
-              <Field label={picked ? `${t('Jumlah')} (${picked.baseUnit})` : t('Jumlah')} className="sm:col-span-2">
+              <Field label={picked ? `${t('Jumlah')} (${picked.baseUnit})` : t('Jumlah')} className={free ? 'sm:col-span-2' : 'sm:col-span-3'}>
                 <Input
                   value={r.quantity}
                   inputMode="decimal"
@@ -451,7 +445,7 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
                   </Select>
                 </Field>
               )}
-              <Field label={t('Harga total')} className="col-span-full sm:col-span-2">
+              <Field label={t('Harga total')} className={free ? 'col-span-full sm:col-span-2' : 'col-span-full sm:col-span-3'}>
                 <Input
                   value={r.amount && Number(r.amount).toLocaleString('id-ID')}
                   inputMode="numeric"
@@ -468,6 +462,12 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
             </fieldset>
           );
         })}
+        <Field className="sm:max-w-xs" label={t('Sumber uang')}>
+          <Select value={paidFrom} onChange={(ev) => setPaidFrom(ev.target.value === 'drawer' ? 'drawer' : 'other')}>
+            <option value="drawer">{t('Kas Laci')}</option>
+            <option value="other">{t('Kas Outlet')}</option>
+          </Select>
+        </Field>
         {rows.length < 30 && (
           <Button className="justify-self-start" onClick={() => setRows((rs) => [...rs, blank()])}>
             {t('Tambah baris')}

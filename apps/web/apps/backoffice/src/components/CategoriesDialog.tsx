@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Button, Dialog, Field, FormAlert, Input, useI18n } from '@hermes-pos/ui';
+import { Button, Dialog, Field, FormAlert, Input, PencilIcon, useI18n } from '@hermes-pos/ui';
+import { IconAction } from './IconAction';
 import { describeError } from '../lib/errors';
 import type { ExpenseCategory } from '../lib/types';
 import { useAction } from '../lib/useAction';
@@ -68,9 +69,9 @@ export function CategoriesDialog({ onClose }: { onClose: () => void }) {
               <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-rule pb-2">
                 <span className={c.active ? 'font-semibold' : 'text-mute line-through'}>{c.name}</span>
                 <span className="flex gap-2">
-                  <Button sm onClick={() => { setEditing(c); setName(c.name); }} disabled={act.busy} aria-label={`${t('Ubah')} ${c.name}`}>
-                    {t('Ubah')}
-                  </Button>
+                  <IconAction label={`${t('Ubah')} ${c.name}`} onClick={() => { setEditing(c); setName(c.name); }} disabled={act.busy}>
+                    <PencilIcon size={18} />
+                  </IconAction>
                   <Button sm onClick={() => toggle(c)} disabled={act.busy}>
                     {c.active ? t('Matikan') : t('Aktifkan')}
                   </Button>

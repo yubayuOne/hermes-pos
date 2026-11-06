@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, Dialog, Empty, FormAlert, Tag, dateShort, money, useI18n } from '@hermes-pos/ui';
+import { Button, Dialog, Empty, FormAlert, PencilIcon, PlusIcon, Tag, TrashIcon, dateShort, money, useI18n } from '@hermes-pos/ui';
+import { IconAction } from '../../components/IconAction';
 import { FilterBar, SearchBox } from '../../components/Filters';
 import { CategoriesDialog } from '../../components/CategoriesDialog';
 import { IngredientDialog } from '../../components/IngredientDialog';
@@ -56,9 +57,11 @@ function BarangPage() {
           action={
             <>
               <Button onClick={() => setCategorizing(true)} {...lock.props}>
+                <PlusIcon size={16} />
                 {t('Kategori')}
               </Button>
               <Button variant="fire" onClick={() => setEditing('new')} {...lock.props}>
+                <PlusIcon size={16} />
                 {lock.label(t('Tambah barang'))}
               </Button>
             </>
@@ -156,12 +159,12 @@ function IngredientList({
                   </td>
                   <td data-l={t('Aksi')}>
                     <div className="flex flex-wrap gap-2">
-                      <Button sm onClick={() => onEdit(i)} aria-label={`${t('Ubah')} ${i.name}`} {...lock.props}>
-                        {t('Ubah')}
-                      </Button>
-                      <Button sm onClick={() => setRemoving(i)} aria-label={`${t('Hapus')} ${i.name}`} {...lock.props}>
-                        {t('Hapus')}
-                      </Button>
+                      <IconAction label={`${t('Ubah')} ${i.name}`} onClick={() => onEdit(i)} {...lock.props}>
+                        <PencilIcon size={18} />
+                      </IconAction>
+                      <IconAction tone="error" label={`${t('Hapus')} ${i.name}`} onClick={() => setRemoving(i)} {...lock.props}>
+                        <TrashIcon size={18} />
+                      </IconAction>
                     </div>
                   </td>
                 </tr>

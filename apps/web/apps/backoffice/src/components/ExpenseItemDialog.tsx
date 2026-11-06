@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Button, Dialog, Field, FormAlert, Input, Select, useI18n } from '@hermes-pos/ui';
-import { EXPENSE_UNITS, expenseEditSchema } from '../lib/schemas';
+import { Button, Dialog, Field, FormAlert, Input, useI18n } from '@hermes-pos/ui';
+import { expenseEditSchema } from '../lib/schemas';
 import type { ExpenseItem, Ingredient } from '../lib/types';
 import { useAction } from '../lib/useAction';
 import { deleteExpenseItem, updateExpenseItem } from '../server/expenses';
 import { listIngredients } from '../server/ingredients';
-import { BarangPicker, LAIN } from './BarangPicker';
+import { BarangPicker } from './BarangPicker';
 
 /**
- * Changes or deletes one item of a shift's expenses (102). One form: the barang, then quantity and price. A barang sets the
- * name, category, and unit; "Barang lain" asks for the name and unit only. Delete is at the left and asks once more.
+ * Changes or deletes one item of a shift's expenses (102). The cashier's note (name and unit) is read-only above the form.
+ * The owner picks the barang it belongs to, or leaves it empty to keep the note as it is. Then quantity and price.
  */
 export function ExpenseItemDialog({
   item,
@@ -25,9 +25,7 @@ export function ExpenseItemDialog({
   const { t } = useI18n();
   const act = useAction();
   const [barang, setBarang] = useState<Ingredient[]>([]);
-  const [ingredientId, setIngredientId] = useState(item.ingredientId ?? LAIN);
-  const [name, setName] = useState(item.name);
-  const [unit, setUnit] = useState(item.unit);
+  const [ingredientId, setIngredientId] = useState(item.ingredientId ?? '');
   const [quantity, setQuantity] = useState(String(item.quantity));
   const [amount, setAmount] = useState(String(item.amount));
   const [confirming, setConfirming] = useState(false);
@@ -40,24 +38,23 @@ export function ExpenseItemDialog({
     };
   }, [outletId]);
 
-  const picked = ingredientId === LAIN ? null : (barang.find((b) => b.id === ingredientId) ?? null);
-  const unitText = picked?.baseUnit ?? unit;
+  const picked = barang.find((b) => b.id === ingredientId) ?? null;
+  const unitText = picked?.baseUnit ?? item.unit;
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    // With no barang picked the cashier's note stays as it is: its name and unit are sent unchanged.
     const check = expenseEditSchema.safeParse({
       itemId: item.id,
-      name: picked ? '' : name.trim(),
+      name: picked ? '' : item.name,
       category: '',
-      unit: picked ? '' : unit,
+      unit: picked ? '' : item.unit,
       quantity: Number(quantity.trim().replace(',', '.')),
       amount: Number(amount.replace(/\./g, '')),
       ingredientId: picked ? picked.id : null,
     });
     if (!check.success) return act.setError(check.error.issues[0]?.message ?? 'Data tidak valid.');
-    if (!picked && !check.data.name) return act.setError('Tulis nama barang atau biaya.');
-    if (!picked && !(EXPENSE_UNITS as readonly string[]).includes(check.data.unit)) return act.setError('Pilih satuan.');
-    const res = await act.run(() => updateExpenseItem({ data: check.data }), { success: t('{name} disimpan.', { name: picked?.name ?? check.data.name }) });
+    const res = await act.run(() => updateExpenseItem({ data: check.data }), { success: t('{name} disimpan.', { name: picked?.name ?? item.name }) });
     if (res) onClose();
   }
 
@@ -101,25 +98,15 @@ export function ExpenseItemDialog({
         <FormAlert>{act.error && t(act.error)}</FormAlert>
       ) : (
         <form id="expense-item" noValidate onSubmit={save} className="grid gap-4">
-          <Field label={t('Barang')}>
-            <BarangPicker items={barang} value={ingredientId} onChange={setIngredientId} allowFree />
+          <div className="rounded border border-rule bg-slip px-3 py-2">
+            <p className="text-small text-mute">{t('Catatan kasir')}</p>
+            <p className="font-semibold">
+              {item.name} · {item.unit}
+            </p>
+          </div>
+          <Field label={t('Barang')} optional>
+            <BarangPicker items={barang} value={ingredientId} onChange={setIngredientId} />
           </Field>
-          {!picked && (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t('Nama')}>
-                <Input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
-              </Field>
-              <Field label={t('Satuan')}>
-                <Select value={unit} onChange={(e) => setUnit(e.target.value)}>
-                  {EXPENSE_UNITS.map((u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            </div>
-          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={`${t('Jumlah')} (${unitText || '-'})`}>
               <Input inputMode="decimal" className="font-mono" value={quantity} onChange={(e) => setQuantity(e.target.value.replace(/[^\d.,]/g, ''))} />
