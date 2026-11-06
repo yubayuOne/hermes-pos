@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Input, Select, decimal, money, useI18n } from '@hermes-pos/ui';
+import { Button, Field, Input, Select, decimal, money, useI18n } from '@hermes-pos/ui';
 import { describeError } from '../lib/errors';
 import type { Ingredient, RecipeCost, RecipeLineInput } from '../lib/types';
 import { UNIT_LABEL, sameFamilyUnits } from '../lib/units';
@@ -96,37 +96,35 @@ export function RecipeEditor({
         const ing = byId.get(r.ingredientId);
         const line = cost?.lines.find((l) => l.ingredientId === r.ingredientId);
         return (
-          <div key={r.key} className="grid gap-2 rounded border border-rule bg-slip p-2">
-            <Select aria-label={t('Bahan {n}', { n: n + 1 })} value={r.ingredientId} onChange={(e) => pick(r.key, e.target.value)}>
-              <option value="">{t('Pilih bahan')}</option>
-              {ingredients.filter((i) => i.counted).map((i) => (
-                <option key={i.id} value={i.id} disabled={used.has(i.id) && i.id !== r.ingredientId}>
-                  {i.name}
-                </option>
-              ))}
-              <option value={NEW}>{t('+ Barang baru')}</option>
-            </Select>
-            <div className="flex flex-wrap items-center gap-2">
-              <Input
-                aria-label={t('Jumlah bahan {n}', { n: n + 1 })}
-                inputMode="decimal"
-                className="w-[110px] text-right font-mono"
-                value={r.qty}
-                onChange={(e) => patch(r.key, { qty: e.target.value.replace(/[^\d.,]/g, '').slice(0, 10) })}
-              />
-              <Select aria-label={t('Satuan bahan {n}', { n: n + 1 })} className="w-[160px]" value={r.unit} onChange={(e) => patch(r.key, { unit: e.target.value as Row['unit'] })}>
+          <div key={r.key} className="grid gap-3 rounded border border-rule bg-slip p-3 sm:grid-cols-[minmax(0,1fr)_7rem_9rem]">
+            <Field label={t('Bahan')} className="sm:col-span-1">
+              <Select value={r.ingredientId} onChange={(e) => pick(r.key, e.target.value)}>
+                <option value="">{t('Pilih bahan')}</option>
+                {ingredients.filter((i) => i.counted).map((i) => (
+                  <option key={i.id} value={i.id} disabled={used.has(i.id) && i.id !== r.ingredientId}>
+                    {i.name}
+                  </option>
+                ))}
+                <option value={NEW}>{t('+ Barang baru')}</option>
+              </Select>
+            </Field>
+            <Field label={t('Jumlah')}>
+              <Input inputMode="decimal" className="text-right font-mono" value={r.qty} onChange={(e) => patch(r.key, { qty: e.target.value.replace(/[^\d.,]/g, '').slice(0, 10) })} />
+            </Field>
+            <Field label={t('Satuan')}>
+              <Select value={r.unit} onChange={(e) => patch(r.key, { unit: e.target.value as Row['unit'] })}>
                 {(ing ? sameFamilyUnits(ing.packUnit) : sameFamilyUnits(r.unit)).map((u) => (
                   <option key={u} value={u}>
                     {UNIT_LABEL[u]}
                   </option>
                 ))}
               </Select>
-              {line && (
-                <span className="ml-auto font-mono text-small">
-                  {money(line.cost)}
-                  {line.incomplete && <span className="ml-1 font-sans text-mute">{t('perkiraan')}</span>}
-                </span>
-              )}
+            </Field>
+            <div className="flex flex-wrap items-center justify-between gap-3 sm:col-span-3">
+              <span className="font-mono text-small">
+                {line ? money(line.cost) : ''}
+                {line?.incomplete && <span className="ml-1 font-sans text-mute">{t('perkiraan')}</span>}
+              </span>
               <Button sm aria-label={t('Hapus baris {n}', { n: n + 1 })} onClick={() => setRows((rs) => (rs.length > 1 ? rs.filter((x) => x.key !== r.key) : [{ ...r, ingredientId: '', qty: '' }]))}>
                 {t('Hapus')}
               </Button>
@@ -136,7 +134,7 @@ export function RecipeEditor({
       })}
       <div>
         <Button sm onClick={() => setRows((rs) => [...rs, { key: nextKey.current++ + 1000, ingredientId: '', qty: '', unit: 'g' }])}>
-          {t('Tambah bahan ke resep')}
+          {t('Tambah bahan')}
         </Button>
       </div>
       <div aria-live="polite" className="grid gap-1 border-t border-rule pt-3">

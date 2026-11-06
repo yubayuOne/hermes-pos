@@ -39,13 +39,12 @@ export function checkLines(lines: ExpenseLine[]): { errors: Array<Partial<Record
     const name = l.name.trim();
     const quantity = parseQuantity(l.quantity);
     const amount = parseAmount(l.amount);
-    if (!l.category.trim()) e.category = 'Pilih kategori.';
     if (!name) e.name = 'Tulis nama barang atau biaya.';
     else if (name.length > 60) e.name = 'Nama barang maksimal 60 huruf.';
     if (quantity === null) e.quantity = 'Jumlah lebih dari 0, maksimal 3 angka di belakang koma.';
     if (!(EXPENSE_UNITS as readonly string[]).includes(l.unit)) e.unit = 'Pilih satuan.';
     if (amount === null) e.amount = 'Harga total lebih dari Rp0, tanpa koma.';
-    if (!Object.keys(e).length) items.push({ name, category: l.category.trim(), ingredientId: l.ingredientId || null, quantity: quantity!, unit: l.unit, amount: amount! });
+    if (!Object.keys(e).length) items.push({ name, category: l.category.trim() || null, ingredientId: l.ingredientId || null, quantity: quantity!, unit: l.unit, amount: amount! });
     return e;
   });
   return { errors, items: lines.length && items.length === lines.length ? items : null };

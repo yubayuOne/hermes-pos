@@ -136,21 +136,17 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
                 maxLength={60}
                 error={e.name ? t(e.name) : null}
               />
-              <View className="flex-row flex-wrap gap-2">
-                {options.categories.length === 0 ? (
-                  <Text className="text-small text-mute">{t('Belum ada kategori. Minta pemilik mengatur kategori di BackOffice.')}</Text>
-                ) : (
-                  options.categories.map((c) => <Chip key={c} label={c} selected={l.category === c} onPress={() => set(i, { category: c })} />)
-                )}
-              </View>
-              {e.category ? (
-                <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
-                  {t(e.category)}
-                </Text>
-              ) : null}
+              {options.categories.length > 0 && (
+                <View className="flex-row flex-wrap gap-2">
+                  <Chip label={t('Tanpa kategori')} selected={!l.category} onPress={() => set(i, { category: '' })} />
+                  {options.categories.map((c) => (
+                    <Chip key={c} label={c} selected={l.category === c} onPress={() => set(i, { category: c })} />
+                  ))}
+                </View>
+              )}
               {options.barang.length > 0 && (
                 <View className="flex-row flex-wrap gap-2">
-                  <Chip label={t('Tanpa barang')} selected={!l.ingredientId} onPress={() => set(i, { ingredientId: '' })} />
+                  <Chip label={t('Barang lain')} selected={!l.ingredientId} onPress={() => set(i, { ingredientId: '' })} />
                   {options.barang.map((b) => (
                     <Chip
                       key={b.id}

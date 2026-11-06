@@ -299,7 +299,7 @@ function CountSheet({ outletId, items, today, onClose }: { outletId: string; ite
           <Field label={t('Tanggal hitung')}>
             <Input type="date" max={today} value={date} onChange={(e) => e.target.value && setDate(e.target.value)} />
           </Field>
-          <Input type="search" aria-label={t('Cari produk')} placeholder={t('Cari nama produk')} value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input type="search" aria-label={t('Cari produk')} placeholder={t('Cari produk')} value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
         {date < today && <Tag className="justify-self-start">{t('Hitung untuk hari lalu dicatat di akhir hari itu.')}</Tag>}
         {loadError && <FormAlert>{loadError}</FormAlert>}
@@ -427,7 +427,7 @@ function DocumentDialog({ outletId, kind, items, onClose }: { outletId: string; 
             </Select>
           </Field>
         )}
-        <Input type="search" aria-label={t('Cari produk')} placeholder={t('Cari nama produk')} value={q} onChange={(e) => setQ(e.target.value)} />
+        <Input type="search" aria-label={t('Cari produk')} placeholder={t('Cari produk')} value={q} onChange={(e) => setQ(e.target.value)} />
         <div className="grid max-h-[46vh] gap-2 overflow-y-auto pr-1">
           {shown.map((p) => (
             <label key={p.productId} className="flex items-center gap-3 rounded border border-rule bg-slip px-3 py-2">

@@ -152,8 +152,8 @@ export type Report = {
 export type ExpenseItem = {
   id: string;
   name: string;
-  /** The owner's category name (099); older items keep the names they were recorded with. */
-  category: string;
+  /** The owner's category name (099), or null when none was given (100). */
+  category: string | null;
   quantity: number;
   unit: string;
   amount: number;

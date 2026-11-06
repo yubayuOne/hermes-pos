@@ -668,7 +668,11 @@ const RPC = {
   update_product: () => 'id',
   owner_save_product: () => 'id',
   owner_save_recipe: () => null,
-  owner_list_ingredients: () => [],
+  owner_list_ingredients: () => [
+    { id: 'mock-barang-1', name: 'Minyak goreng', price: 20, packQty: 1, packUnit: 'ml', unitCost: 20, baseUnit: 'ml', usedBy: 1, stock: 2050, stockStarted: true, dihitungStok: true, lastCountedAt: null },
+    { id: 'mock-barang-2', name: 'Listrik', price: 0, packQty: 1, packUnit: 'pcs', unitCost: 0, baseUnit: 'pcs', usedBy: 0, stock: 0, stockStarted: false, dihitungStok: false, lastCountedAt: null },
+    { id: 'mock-barang-3', name: 'Susu cair', price: 18, packQty: 1, packUnit: 'ml', unitCost: 18, baseUnit: 'ml', usedBy: 2, stock: 0, stockStarted: false, dihitungStok: true, lastCountedAt: null },
+  ],
   owner_save_barang: () => 'mock-barang-id',
   owner_set_expense_stock: () => null,
   owner_list_expense_categories: () => [

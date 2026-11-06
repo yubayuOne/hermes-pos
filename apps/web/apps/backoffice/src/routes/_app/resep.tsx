@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
 import { Button, Dialog, Empty, FormAlert, Tag, decimal, money, useI18n } from '@hermes-pos/ui';
-import { FilterBar } from '../../components/Filters';
+import { FilterBar, SearchBox } from '../../components/Filters';
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
@@ -42,6 +42,8 @@ function RecipesPage() {
   const data = Route.useLoaderData();
   const navigate = useNavigate({ from: '/resep' });
   const set = (patch: Partial<Search>) => navigate({ search: (s: Search) => ({ ...s, ...patch }), replace: true });
+  const [q, setQ] = useState('');
+  const needle = q.trim().toLowerCase();
   return (
     <Page title={t('Resep|menu')}>
       {search.product ? (
@@ -49,24 +51,28 @@ function RecipesPage() {
           <RecipePage key={data.product.id} outletId={data.outletId} product={data.product} recipe={data.recipe} onBack={() => set({ product: undefined })} />
         ) : (
           <Empty className="mt-6" title={t('Menu tidak ditemukan.')}>
-            <Button onClick={() => set({ product: undefined })}>{t('Kembali ke daftar resep')}</Button>
+            <Button onClick={() => set({ product: undefined })}>{t('Kembali')}</Button>
           </Empty>
         )
       ) : (
         <>
           <div className="mt-5">
-            <FilterBar outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, product: undefined })} />} />
+            <FilterBar
+              search={<SearchBox label={t('Cari menu')} placeholder={t('Cari nama')} value={q} onChange={setQ} />}
+              outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, product: undefined })} />}
+            />
           </div>
-          <RecipeList menus={data.menus} onOpen={(id) => set({ product: id })} />
+          <RecipeList menus={data.menus.filter((p) => !needle || p.name.toLowerCase().includes(needle))} searching={needle !== ''} onOpen={(id) => set({ product: id })} />
         </>
       )}
     </Page>
   );
 }
 
-function RecipeList({ menus, onOpen }: { menus: Product[]; onOpen: (id: string) => void }) {
+function RecipeList({ menus, searching, onOpen }: { menus: Product[]; searching: boolean; onOpen: (id: string) => void }) {
   const { t, lang } = useI18n();
   const lock = useLock();
+  if (menus.length === 0 && searching) return <Empty className="mt-6" title={t('Tidak ada yang cocok.')} />;
   if (menus.length === 0)
     return (
       <Empty className="mt-6" title={t('Belum ada menu.')}>
@@ -161,7 +167,7 @@ function RecipePage({ outletId, product, recipe, onBack }: { outletId: string; p
     <form noValidate onSubmit={save} className="mt-5 grid max-w-[640px] gap-4">
       <div>
         <Button sm onClick={onBack}>
-          {t('Kembali ke daftar resep')}
+          {t('Kembali')}
         </Button>
       </div>
       <h2 className="text-heading font-semibold">{t('Resep {name}', { name: product.name })}</h2>
@@ -169,7 +175,7 @@ function RecipePage({ outletId, product, recipe, onBack }: { outletId: string; p
       <FormAlert>{act.error && t(act.error)}</FormAlert>
       <div className="flex flex-wrap gap-2">
         <Button type="submit" variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')} {...lock.props}>
-          {lock.label(t('Simpan resep'))}
+          {lock.label(t('Simpan'))}
         </Button>
         {recipe?.source === 'recipe' && (
           <Button onClick={() => setConfirmRemove(true)} disabled={act.busy} {...lock.props}>
@@ -182,7 +188,7 @@ function RecipePage({ outletId, product, recipe, onBack }: { outletId: string; p
           open
           onOpenChange={(o) => !o && setConfirmRemove(false)}
           title={t('Hapus resep {name}?', { name: product.name })}
-          description={t('HPP terakhir tetap dipakai sebagai HPP ketikan. Ubah di halaman Produk.')}
+          description={t('HPP tetap dipakai. Ubah di halaman Produk.')}
           footer={
             <>
               <Button onClick={() => setConfirmRemove(false)} disabled={act.busy}>

@@ -191,7 +191,8 @@ export const voucherActiveSchema = z.object({ id: uuid, active: z.boolean() });
 export const EXPENSE_UNITS = ['kg', 'gr', 'L', 'ml', 'pcs', 'pack', 'dus', 'botol', 'sachet', 'ikat', 'karung', 'lusin'] as const;
 export const expenseItemSchema = z.object({
   name: req('Tulis nama barang atau biaya.', 60, 'Nama barang maksimal 60 huruf.'),
-  category: z.string().trim().min(1, 'Pilih kategori.').max(40, 'Nama kategori maksimal 40 huruf.'),
+  /** Optional: the owner's category, or blank (100: no default categories). */
+  category: z.string().trim().max(40, 'Nama kategori maksimal 40 huruf.'),
   quantity: z
     .number({ error: 'Jumlah harus angka.' })
     .gt(0, 'Jumlah harus lebih dari 0.')

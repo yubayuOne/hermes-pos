@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, Dialog, Empty, FormAlert, Tag, dateShort, decimal, money, useI18n } from '@hermes-pos/ui';
-import { CountDialog } from '../../components/CountDialog';
-import { FilterBar } from '../../components/Filters';
+import { Button, Dialog, Empty, FormAlert, Tag, dateShort, money, useI18n } from '@hermes-pos/ui';
+import { FilterBar, SearchBox } from '../../components/Filters';
 import { IngredientDialog } from '../../components/IngredientDialog';
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
@@ -32,59 +31,62 @@ export const Route = createFileRoute('/_app/ingredients')({
 
 function BarangPage() {
   const { t } = useI18n();
+  const lock = useLock();
   const data = Route.useLoaderData();
+  const [q, setQ] = useState('');
+  const [editing, setEditing] = useState<Ingredient | 'new' | null>(null);
+  const needle = q.trim().toLowerCase();
   const navigate = useNavigate({ from: '/ingredients' });
   return (
     <Page title={t('Barang|menu')}>
       <details className="mt-4">
         <summary className="cursor-pointer font-semibold">{t('Cara pakai')}</summary>
         <ol className="mt-2 list-decimal pl-6">
-          <li>{t('Barang bisa berupa bahan, atau biaya seperti listrik dan iuran. Yang dihitung stoknya dipakai di resep.')}</li>
-          <li>{t('Catat pengeluaran dengan barangnya. Untuk barang yang dihitung stoknya, isi jumlah yang masuk stok.')}</li>
-          <li>{t('Hitung stok kapan saja. Harga rata-rata ikut berubah dari pengeluaran.')}</li>
+          <li>{t('Bahan atau biaya, misalnya minyak atau listrik.')}</li>
+          <li>{t('Pilih barang saat mencatat pengeluaran.')}</li>
+          <li>{t('Harga rata-rata mengikuti pengeluaran.')}</li>
         </ol>
       </details>
       <div className="mt-5">
         <FilterBar
+          search={<SearchBox label={t('Cari barang')} placeholder={t('Cari nama')} value={q} onChange={setQ} />}
           outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => navigate({ search: (s: Search) => ({ ...s, outlet: id ?? undefined }), replace: true })} />}
+          action={
+            <Button variant="fire" onClick={() => setEditing('new')} {...lock.props}>
+              {lock.label(t('Tambah barang'))}
+            </Button>
+          }
         />
       </div>
-      <IngredientList outletId={data.outletId} items={data.items} />
+      <IngredientList items={data.items.filter((i) => !needle || i.name.toLowerCase().includes(needle))} searching={needle !== ''} onAdd={() => setEditing('new')} onEdit={setEditing} />
+      {editing && data.outletId && <IngredientDialog outletId={data.outletId} ingredient={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
     </Page>
   );
 }
 
-/** Harga rata-rata per satuan dasar: harga kecil tetap punya desimal (Rp 0,12 per g). */
-function unitCostText(i: Ingredient, lang: 'id' | 'en') {
-  const digits = i.unitCost >= 10 ? 0 : i.unitCost >= 1 ? 1 : 3;
-  return `Rp${decimal(i.unitCost, lang, digits)} / ${i.baseUnit}`;
-}
-
-function IngredientList({ outletId, items }: { outletId: string | null; items: Ingredient[] }) {
+function IngredientList({
+  items,
+  searching,
+  onAdd,
+  onEdit,
+}: {
+  items: Ingredient[];
+  searching: boolean;
+  onAdd: () => void;
+  onEdit: (i: Ingredient) => void;
+}) {
   const { t, lang } = useI18n();
   const lock = useLock();
-  const [editing, setEditing] = useState<Ingredient | 'new' | null>(null);
   const [removing, setRemoving] = useState<Ingredient | null>(null);
-  const [counting, setCounting] = useState(false);
   const counted = items.filter((i) => i.counted);
   return (
     <>
-      {outletId && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button variant="fire" onClick={() => setEditing('new')} {...lock.props}>
-            {lock.label(t('Tambah barang'))}
-          </Button>
-          {counted.length > 0 && (
-            <Button onClick={() => setCounting(true)} {...lock.props}>
-              {t('Hitung stok')}
-            </Button>
-          )}
-        </div>
-      )}
-      {counted.some((i) => !i.stockStarted) && <p className="mt-4">{t('Stok mulai dihitung saat ada pengeluaran dengan jumlah masuk stok, atau saat hitung stok pertama.')}</p>}
-      {items.length === 0 ? (
+      {counted.some((i) => !i.stockStarted) && <p className="mt-4">{t('Stok mulai saat ada pengeluaran dengan jumlah stok.')}</p>}
+      {items.length === 0 && searching ? (
+        <Empty className="mt-6" title={t('Tidak ada yang cocok.')} />
+      ) : items.length === 0 ? (
         <Empty className="mt-6" title={t('Belum ada barang.')}>
-          <Button variant="fire" onClick={() => setEditing('new')}>
+          <Button variant="fire" onClick={onAdd}>
             {t('Tambah barang')}
           </Button>
         </Empty>
@@ -143,13 +145,12 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
                     ) : (
                       <>
                         {money(i.unitCost)} / {i.baseUnit}
-                        <span className="block text-small text-mute">{unitCostText(i, lang)}</span>
                       </>
                     )}
                   </td>
                   <td data-l={t('Aksi')}>
                     <div className="flex flex-wrap gap-2">
-                      <Button sm onClick={() => setEditing(i)} aria-label={`${t('Ubah')} ${i.name}`} {...lock.props}>
+                      <Button sm onClick={() => onEdit(i)} aria-label={`${t('Ubah')} ${i.name}`} {...lock.props}>
                         {t('Ubah')}
                       </Button>
                       <Button sm onClick={() => setRemoving(i)} aria-label={`${t('Hapus')} ${i.name}`} {...lock.props}>
@@ -163,8 +164,6 @@ function IngredientList({ outletId, items }: { outletId: string | null; items: I
           </table>
         </div>
       )}
-      {editing && outletId && <IngredientDialog outletId={outletId} ingredient={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
-      {counting && outletId && <CountDialog outletId={outletId} items={counted} onClose={() => setCounting(false)} />}
       {removing && <RemoveIngredientDialog ingredient={removing} onClose={() => setRemoving(null)} />}
     </>
   );

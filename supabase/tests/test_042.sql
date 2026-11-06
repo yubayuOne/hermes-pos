@@ -1,6 +1,10 @@
 -- Tests for 042 (owner report) on top of 001 to 042. Every line of output must start with PASS.
 \set ON_ERROR_STOP on
 set client_min_messages = notice;
+-- The owner's list of expense categories is not given by default (100): the test businesses get the two names the tests use.
+create or replace function pg_temp.cats() returns void language sql security definer as $$
+  insert into public.expense_categories(business_id, name) select b.id, n.name from public.businesses b cross join (values ('operasional'), ('belanja')) n(name) on conflict do nothing
+$$;
 
 create or replace function pg_temp.ok(label text, cond boolean) returns void language plpgsql as $$
 begin raise notice '%', (case when coalesce(cond, false) then 'PASS ' else 'FAIL ' end) || label; end $$;
@@ -29,6 +33,7 @@ insert into auth.users(id, email) values ('e0000000-0000-0000-0000-000000000001'
 select set_config('request.jwt.claim.sub', 'e0000000-0000-0000-0000-000000000001', false);
 set role authenticated;
 select set_config('t.reg', public.register_business('Resto Rina', 'Pusat', null)::text, false);
+select pg_temp.cats();
 select set_config('t.b', current_setting('t.reg')::jsonb ->> 'business_id', false);
 select set_config('t.o', current_setting('t.reg')::jsonb ->> 'outlet_id', false);
 reset role;
@@ -130,6 +135,7 @@ select pg_temp.ok('L1 expired: report still readable', (pg_temp.rep() -> 'pnl' -
 -- Another business sees nothing and cannot ask for this outlet.
 select set_config('request.jwt.claim.sub', 'e0000000-0000-0000-0000-000000000002', false);
 select public.register_business('Toko Budi', 'Satu', null);
+select pg_temp.cats();
 select pg_temp.ok('X1 other owner: empty report', (pg_temp.rep() -> 'pnl' ->> 'netSales')::numeric = 0
   and jsonb_array_length(pg_temp.rep() -> 'shifts') = 0 and jsonb_array_length(pg_temp.rep() -> 'products') = 0);
 select pg_temp.fails('X2 other owner cannot read this outlet', format('select pg_temp.rep(%L::uuid)', current_setting('t.o')), 'tidak ditemukan');

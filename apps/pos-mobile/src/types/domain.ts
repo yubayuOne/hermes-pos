@@ -136,7 +136,7 @@ export type PinResult =
 export type ExpenseCategory = string;
 export interface ExpenseItem {
   name: string;
-  category: ExpenseCategory;
+  category: ExpenseCategory | null;
   /** The barang of the item, if it is one of the outlet's barang (099). */
   ingredientId?: string | null;
   quantity: number;

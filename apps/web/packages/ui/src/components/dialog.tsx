@@ -37,8 +37,10 @@ export function Dialog({
               <CloseIcon />
             </D.Close>
           </div>
-          {description ? <D.Description className="mt-3 text-mute">{description}</D.Description> : <D.Description className="sr-only">{title}</D.Description>}
-          {children && <div className="mt-5 grid gap-4">{children}</div>}
+          <div className="dlg-body">
+            {description ? <D.Description className="mt-3 text-mute">{description}</D.Description> : <D.Description className="sr-only">{title}</D.Description>}
+            {children && <div className="mt-5 grid gap-4">{children}</div>}
+          </div>
           {footer && <div className="dlg-foot">{footer}</div>}
         </D.Content>
       </D.Portal>

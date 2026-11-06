@@ -34,6 +34,8 @@ select public.owner_create_cashier(current_setting('t.o')::uuid, 'Sari', '123456
 select set_config('t.c', (select cashier_id::text from public.owner_list_cashiers() where cashier_name = 'Sari'), false);
 select public.owner_set_void_code('271828');
 select set_config('t.sh', public.open_shift(current_setting('t.c')::uuid, current_setting('t.o')::uuid, 0)::text, false);
+select pg_temp.ok('B0 a new business has no expense categories (100)', public.owner_list_expense_categories()::text = '[]');
+select public.owner_save_expense_category(null, 'Belanja', true);
 
 -- Barang: minyak (counted, ml) and listrik (not counted).
 select set_config('t.minyak', public.owner_save_barang(current_setting('t.o')::uuid, null, 'Minyak goreng', 'ml', true)::text, false);
@@ -86,10 +88,10 @@ select pg_temp.ok('B7 cancelling the latest item puts the stock and the average 
 -- B8: a barang that is not counted (listrik) takes no stock.
 select pg_temp.fails('B8 a stock amount on a barang that is not counted is refused',
   $q$select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(jsonb_build_object(
-    'name', 'Listrik Maret', 'category', 'operasional', 'quantity', 1, 'unit', 'botol', 'amount', 150000,
+    'name', 'Listrik Maret', 'category', 'Belanja', 'quantity', 1, 'unit', 'botol', 'amount', 150000,
     'ingredientId', current_setting('t.listrik'), 'stockQty', 5)))$q$, 'tidak dihitung stoknya');
 select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(jsonb_build_object(
-  'name', 'Listrik Maret', 'category', 'operasional', 'quantity', 1, 'unit', 'botol', 'amount', 150000,
+  'name', 'Listrik Maret', 'category', 'Belanja', 'quantity', 1, 'unit', 'botol', 'amount', 150000,
   'ingredientId', current_setting('t.listrik'))));
 select pg_temp.ok('B8b the same barang without a stock amount is a plain expense: no moves, no stock',
   pg_temp.qb(format('select not exists (select 1 from public.ingredient_moves where ingredient_id = %L) and not stock_started from public.ingredients where id = %L',
@@ -130,18 +132,19 @@ select pg_temp.ok('B11b three cups use six ml; the stock goes down by that',
     current_setting('t.minyak'), current_setting('t.minyak'))));
 
 -- B12: categories. The owner's list; unknown and switched-off categories are refused.
-select pg_temp.ok('B12 a new business starts with the two categories the old app used',
-  (public.owner_list_expense_categories()::text like '%"operasional"%') and (public.owner_list_expense_categories()::text like '%"belanja"%'));
+select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(jsonb_build_object(
+  'name', 'Biaya tanpa kategori', 'quantity', 1, 'unit', 'botol', 'amount', 5000)));
+select pg_temp.ok('B12a an item may have no category', pg_temp.qb(format('select exists (select 1 from public.expense_items where name = %L and category is null)', 'Biaya tanpa kategori')));
 select set_config('t.cat', public.owner_save_expense_category(null, 'Listrik', true)::text, false);
 select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(jsonb_build_object(
   'name', 'Iuran sampah', 'category', 'LISTRIK', 'quantity', 1, 'unit', 'botol', 'amount', 30000)));
 select pg_temp.fails('B12b a category that is not in the list is refused',
   $q$select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(jsonb_build_object(
-    'name', 'Hiburan', 'category', 'hiburan', 'quantity', 1, 'unit', 'botol', 'amount', 10000)))$q$, 'Pilih kategori yang tersedia');
+    'name', 'Hiburan', 'category', 'hiburan', 'quantity', 1, 'unit', 'botol', 'amount', 10000)))$q$, 'Kategori tidak tersedia');
 select public.owner_save_expense_category(current_setting('t.cat')::uuid, 'Listrik', false);
 select pg_temp.fails('B12c a switched-off category is refused',
   $q$select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(jsonb_build_object(
-    'name', 'Iuran lagi', 'category', 'Listrik', 'quantity', 1, 'unit', 'botol', 'amount', 10000)))$q$, 'Pilih kategori yang tersedia');
+    'name', 'Iuran lagi', 'category', 'Listrik', 'quantity', 1, 'unit', 'botol', 'amount', 10000)))$q$, 'Kategori tidak tersedia');
 select pg_temp.fails('B12d a category name in another case is taken',
   $q$select public.owner_save_expense_category(null, 'belanja', true)$q$, 'sudah dipakai');
 

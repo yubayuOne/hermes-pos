@@ -55,14 +55,14 @@ export function IngredientDialog({
       open
       onOpenChange={(o) => !o && onClose()}
       title={ingredient ? t('Ubah barang') : t('Tambah barang')}
-      description={t('Barang bisa berupa bahan, atau biaya seperti listrik dan iuran. Hanya barang yang dihitung stoknya masuk stok dan bisa dipakai di resep.')}
+      description={t('Bahan atau biaya, misalnya minyak atau listrik.')}
       footer={
         <>
           <Button onClick={onClose} disabled={act.busy}>
             {t('Batal')}
           </Button>
           <Button type="submit" form="ingredient" variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')}>
-            {t('Simpan barang')}
+            {t('Simpan')}
           </Button>
         </>
       }
@@ -72,17 +72,17 @@ export function IngredientDialog({
           <Input autoFocus value={f.values.name} onChange={(e) => f.set('name', e.target.value)} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t('Satuan')} error={f.errors.unit && t(f.errors.unit)} help={locked ? t('Tidak bisa diubah setelah barang punya stok.') : t('Stok dihitung dalam satuan ini.')}>
+          <Field label={t('Satuan')} error={f.errors.unit && t(f.errors.unit)} help={locked ? t('Terkunci setelah ada stok.') : undefined}>
             <Select value={f.values.unit} disabled={locked} onChange={(e) => f.set('unit', e.target.value as 'g' | 'ml' | 'pcs')}>
               <option value="g">{t('Gram (g)')}</option>
               <option value="ml">{t('Mililiter (ml)')}</option>
               <option value="pcs">{t('Buah (pcs)')}</option>
             </Select>
           </Field>
-          <Field label={t('Dihitung stoknya?')} error={f.errors.counted && t(f.errors.counted)} help={locked ? t('Tidak bisa diubah setelah barang punya stok.') : undefined}>
+          <Field label={t('Dihitung stoknya?')} error={f.errors.counted && t(f.errors.counted)} help={locked ? t('Terkunci setelah ada stok.') : undefined}>
             <Select value={f.values.counted} disabled={locked} onChange={(e) => f.set('counted', e.target.value)}>
-              <option value="yes">{t('Ya, ada stok dan harga rata-rata')}</option>
-              <option value="no">{t('Tidak, hanya dicatat sebagai pengeluaran')}</option>
+              <option value="yes">{t('Ya, ada stok')}</option>
+              <option value="no">{t('Tidak, hanya biaya')}</option>
             </Select>
           </Field>
         </div>

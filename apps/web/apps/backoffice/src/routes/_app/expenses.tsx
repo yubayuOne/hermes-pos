@@ -5,7 +5,6 @@ import { Button, Card, Dialog, Empty, Field, FormAlert, Input, Loading, Select, 
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { Pagination } from '../../components/Pagination';
-import { Stat } from '../../components/Stat';
 import type { DayShift, Expense, ExpenseCategory, ExpenseItem, Ingredient } from '../../lib/types';
 import { listIngredients } from '../../server/ingredients';
 import { listExpenseCategories, saveExpenseCategory, setExpenseStock } from '../../server/expenses';
@@ -124,7 +123,7 @@ function Expenses() {
         action={
           <>
             <Button onClick={() => setCategorizing(true)} {...lock.props}>
-              {t('Atur kategori')}
+              {t('Kategori')}
             </Button>
             <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
               {lock.label(t('Catat pengeluaran'))}
@@ -140,10 +139,6 @@ function Expenses() {
       <Card className="mt-5" aria-label={t('Total pengeluaran')}>
         <p className="font-mono text-small text-mute">{t('Total pengeluaran · {period}', { period: periodLabel })}</p>
         <p className="big-num mt-3 break-words">{money(data.totals.total)}</p>
-        <dl className="mt-5 grid grid-cols-2 gap-6 border-t-[1.5px] border-ink pt-4">
-          <Stat label={t('Operasional')} value={money(data.totals.operasional)} />
-          <Stat label={t('Belanja')} value={money(data.totals.belanja)} />
-        </dl>
         {data.totals.adjustments !== 0 && (
           <p className="mt-4 text-small text-mute">{t('Termasuk koreksi pengeluaran lama: {amount}', { amount: money(data.totals.adjustments) })}</p>
         )}
@@ -240,7 +235,7 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                       </p>
                     </details>
                   </td>
-                  <td data-l={t('Kategori')}>{i.category}</td>
+                  <td data-l={t('Kategori')}>{i.category ?? '—'}</td>
                   <td data-l={t('Jumlah|barang')} className="num">
                     {qty(i.quantity)} {i.unit}
                   </td>
@@ -250,7 +245,7 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                   <td data-l="" className="text-right">
                     {i.ingredientCounted && (
                       <Button sm onClick={() => setStocking(i)} {...lock.props}>
-                        {i.stockQty === null ? t('Isi jumlah masuk stok') : t('Ubah jumlah masuk stok')}
+                        {i.stockQty === null ? t('Isi stok') : t('Ubah stok')}
                         <span className="sr-only"> {i.name}</span>
                       </Button>
                     )}
@@ -303,14 +298,14 @@ function StockDialog({ item: i, onClose }: { item: ExpenseItem; onClose: () => v
       open
       onOpenChange={(o) => !o && onClose()}
       title={t('Jumlah masuk stok')}
-      description={t('Jumlah yang benar-benar masuk stok, dalam satuan barang. Boleh berbeda dari kemasan, misalnya minyak yang ditimbang tanpa botolnya. Kosongkan untuk menunggu lagi.')}
+      description={t('Jumlah nyata yang masuk stok, dalam satuan barang.')}
       footer={
         <>
           <Button onClick={onClose} disabled={act.busy}>
             {t('Batal')}
           </Button>
           <Button type="submit" form="stock-expense" variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')}>
-            {t('Simpan jumlah')}
+            {t('Simpan')}
           </Button>
         </>
       }
@@ -345,7 +340,7 @@ function CancelDialog({ expense: e, item: i, onClose }: { expense: Expense; item
       description={
         i.paidFrom === 'drawer'
           ? t('{amount} kembali ke kas seharusnya shift {n}.', { amount: money(i.amount), n: e.shiftNumber })
-          : t('{amount} tidak dihitung lagi sebagai pengeluaran. Catatannya tetap terlihat.', { amount: money(i.amount) })
+          : t('{amount} tidak lagi dihitung.', { amount: money(i.amount) })
       }
       footer={
         <>
@@ -360,7 +355,7 @@ function CancelDialog({ expense: e, item: i, onClose }: { expense: Expense; item
     >
       <form id="cancel-expense" noValidate onSubmit={save} className="grid gap-4">
         <ReasonChips options={['Salah catat', 'Dicatat dua kali', 'Nominal salah']} onPick={setReason} />
-        <Field label={t('Alasan')} help={t('Contoh: dicatat dua kali, nominal salah (catat ulang yang benar dengan Tambah barang).')}>
+        <Field label={t('Alasan')} help={t('Contoh: dicatat dua kali.')}>
           <Input autoFocus maxLength={200} value={reason} onChange={(ev) => setReason(ev.target.value)} />
         </Field>
         <FormAlert>{act.error && t(act.error)}</FormAlert>
@@ -406,7 +401,7 @@ function CategoriesDialog({ onClose }: { onClose: () => void }) {
       open
       onOpenChange={(o) => !o && onClose()}
       title={t('Kategori pengeluaran')}
-      description={t('Atur sendiri kategorinya. Kategori yang dimatikan tidak bisa dipilih lagi, tapi pengeluaran lama tetap memakainya.')}
+      description={t('Yang dimatikan tidak bisa dipilih lagi.')}
       footer={
         <Button onClick={onClose}>{t('Tutup')}</Button>
       }
@@ -414,7 +409,7 @@ function CategoriesDialog({ onClose }: { onClose: () => void }) {
       <div className="grid gap-4">
         <form noValidate onSubmit={save} className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
           <Field label={editing ? t('Ubah nama kategori') : t('Kategori baru')}>
-            <Input value={name} maxLength={40} placeholder={editing?.name ?? t('Contoh: listrik, iuran sampah')} onChange={(ev) => setName(ev.target.value)} />
+            <Input value={name} maxLength={40} placeholder={editing?.name ?? t('Contoh: listrik')} onChange={(ev) => setName(ev.target.value)} />
           </Field>
           <div className="flex gap-2">
             {editing && (
@@ -543,14 +538,14 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
       wide
       onOpenChange={(o) => !o && onClose()}
       title={shift ? t('Tambah barang ke shift {n}', { n: shift.number }) : t('Catat pengeluaran')}
-      description={t('Kalau dibayar dari laci, kas seharusnya shift itu berkurang dan selisihnya dihitung ulang.')}
+      description={t('Dari laci: kas shift berkurang.')}
       footer={
         <>
           <Button onClick={onClose} disabled={act.busy}>
             {t('Batal')}
           </Button>
           <Button variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')} disabled={!target} onClick={save}>
-            {t('Simpan barang')}
+            {t('Simpan')}
           </Button>
         </>
       }
@@ -591,108 +586,94 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
             <option value="drawer">{t('Kas laci')}</option>
           </Select>
         </Field>
-        {rows.map((r, k) => (
-          <fieldset key={k} className="grid grid-cols-2 gap-3 rounded border-[1.5px] border-ink bg-slip p-4 sm:grid-cols-6">
-            <legend className="sr-only">{t('Barang {n}', { n: k + 1 })}</legend>
-            <div className="col-span-full flex items-center justify-between gap-3">
-              <span aria-hidden className="font-mono text-small text-mute">
-                {t('Barang {n}', { n: k + 1 })}
-              </span>
-              <Button
-                sm
-                disabled={rows.length === 1}
-                onClick={() => {
-                  setRows((rs) => rs.filter((_, j) => j !== k));
-                  setErrors((es) => es.filter((_, j) => j !== k));
-                }}
-              >
-                {t('Hapus')}
-                <span className="sr-only"> {t('barang {n}', { n: k + 1 })}</span>
-              </Button>
-            </div>
-            <label className="col-span-full grid min-w-0 gap-1.5">
-              <span className="text-small font-semibold">{t('Barang atau biaya')}</span>
-              <Input value={r.name} maxLength={60} onChange={(ev) => set(k, { name: ev.target.value })} />
-            </label>
-            <label className="col-span-full grid min-w-0 gap-1.5 sm:col-span-3">
-              <span className="text-small font-semibold">{t('Barang di daftar')}</span>
-              <Select
-                value={r.ingredientId}
-                onChange={(ev) => {
-                  const picked = barang.find((b) => b.id === ev.target.value);
-                  set(k, { ingredientId: ev.target.value, ...(picked && !r.name.trim() ? { name: picked.name } : {}), ...(picked?.counted ? {} : { stockQty: '' }) });
-                }}
-              >
-                <option value="">{t('Tidak dari daftar barang')}</option>
-                {barang.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                    {b.counted ? '' : ' (' + t('tidak dihitung stoknya') + ')'}
-                  </option>
-                ))}
-              </Select>
-            </label>
-            {barang.find((b) => b.id === r.ingredientId)?.counted && (
-              <label className="col-span-full grid min-w-0 gap-1.5 sm:col-span-3">
-                <span className="text-small font-semibold">
-                  {t('Jumlah masuk stok')} ({barang.find((b) => b.id === r.ingredientId)?.baseUnit})
-                </span>
+        {rows.map((r, k) => {
+          const picked = barang.find((b) => b.id === r.ingredientId);
+          return (
+            <fieldset key={k} className="grid gap-3 rounded border border-rule bg-slip p-3 sm:grid-cols-6">
+              <legend className="sr-only">{t('Barang {n}', { n: k + 1 })}</legend>
+              <div className="col-span-full flex items-center justify-between gap-3">
+                <span className="font-semibold">{t('Barang {n}', { n: k + 1 })}</span>
+                <Button
+                  sm
+                  disabled={rows.length === 1}
+                  onClick={() => {
+                    setRows((rs) => rs.filter((_, j) => j !== k));
+                    setErrors((es) => es.filter((_, j) => j !== k));
+                  }}
+                >
+                  {t('Hapus')}
+                  <span className="sr-only"> {t('barang {n}', { n: k + 1 })}</span>
+                </Button>
+              </div>
+              <Field label={t('Nama')} className="col-span-full sm:col-span-3">
+                <Input value={r.name} maxLength={60} onChange={(ev) => set(k, { name: ev.target.value })} />
+              </Field>
+              <Field label={t('Barang')} optional className="col-span-full sm:col-span-3">
+                <Select
+                  value={r.ingredientId}
+                  onChange={(ev) => {
+                    const next = barang.find((b) => b.id === ev.target.value);
+                    set(k, { ingredientId: ev.target.value, ...(next && !r.name.trim() ? { name: next.name } : {}), ...(next?.counted ? {} : { stockQty: '' }) });
+                  }}
+                >
+                  <option value="">{t('Barang lain')}</option>
+                  {barang.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                      {b.counted ? '' : ' (' + t('tidak dihitung stoknya') + ')'}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              {picked?.counted && (
+                <Field label={`${t('Masuk stok')} (${picked.baseUnit})`} optional help={t('Isi nanti bila belum tahu.')} className="col-span-full sm:col-span-3">
+                  <Input
+                    value={r.stockQty}
+                    inputMode="decimal"
+                    className="font-mono"
+                    onChange={(ev) => set(k, { stockQty: ev.target.value.replace(/[^\d.,]/g, '').slice(0, 10) })}
+                  />
+                </Field>
+              )}
+              <Field label={t('Kategori')} optional className="col-span-full sm:col-span-3">
+                <Select value={r.category} onChange={(ev) => set(k, { category: ev.target.value })}>
+                  <option value="">{t('Tanpa kategori')}</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label={t('Jumlah')} className="sm:col-span-2">
+                <Input value={r.quantity} inputMode="decimal" className="font-mono" onChange={(ev) => set(k, { quantity: ev.target.value.replace(/[^\d.,]/g, '') })} />
+              </Field>
+              <Field label={t('Satuan')} className="sm:col-span-2">
+                <Select value={r.unit} onChange={(ev) => set(k, { unit: ev.target.value })}>
+                  {EXPENSE_UNITS.map((u) => (
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label={t('Harga total')} className="col-span-full sm:col-span-2">
                 <Input
-                  value={r.stockQty}
-                  inputMode="decimal"
+                  value={r.amount && Number(r.amount).toLocaleString('id-ID')}
+                  inputMode="numeric"
+                  maxLength={13}
                   className="font-mono"
-                  placeholder={t('Kosongkan untuk diisi nanti')}
-                  onChange={(ev) => set(k, { stockQty: ev.target.value.replace(/[^\d.,]/g, '').slice(0, 10) })}
+                  onChange={(ev) => set(k, { amount: ev.target.value.replace(/\D/g, '') })}
                 />
-              </label>
-            )}
-            <label className="col-span-full grid min-w-0 gap-1.5 sm:col-span-2">
-              <span className="text-small font-semibold">{t('Kategori')}</span>
-              <Select value={r.category} onChange={(ev) => set(k, { category: ev.target.value })}>
-                <option value="">{t('Pilih kategori')}</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.name}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
-            </label>
-            <label className="grid min-w-0 gap-1.5 sm:col-span-1">
-              <span className="text-small font-semibold">{t('Jumlah|barang')}</span>
-              <Input
-                value={r.quantity}
-                inputMode="decimal"
-                className="font-mono"
-                onChange={(ev) => set(k, { quantity: ev.target.value.replace(/[^\d.,]/g, '') })}
-              />
-            </label>
-            <label className="grid min-w-0 gap-1.5 sm:col-span-1">
-              <span className="text-small font-semibold">{t('Satuan')}</span>
-              <Select value={r.unit} onChange={(ev) => set(k, { unit: ev.target.value })}>
-                {EXPENSE_UNITS.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-              </Select>
-            </label>
-            <label className="col-span-full grid min-w-0 gap-1.5 sm:col-span-2">
-              <span className="text-small font-semibold">{t('Harga total')}</span>
-              <Input
-                value={r.amount && Number(r.amount).toLocaleString('id-ID')}
-                inputMode="numeric"
-                maxLength={13}
-                className="font-mono"
-                onChange={(ev) => set(k, { amount: ev.target.value.replace(/\D/g, '') })}
-              />
-            </label>
-            {errors[k] && (
-              <p role="alert" className="col-span-full text-small font-semibold text-error">
-                {t(errors[k])}
-              </p>
-            )}
-          </fieldset>
-        ))}
+              </Field>
+              {errors[k] && (
+                <p role="alert" className="col-span-full text-small font-semibold text-error">
+                  {t(errors[k])}
+                </p>
+              )}
+            </fieldset>
+          );
+        })}
         {rows.length < 30 && (
           <Button className="justify-self-start" onClick={() => setRows((rs) => [...rs, blank()])}>
             {t('Tambah baris')}

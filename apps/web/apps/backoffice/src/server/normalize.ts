@@ -141,7 +141,7 @@ function toExpenseItem(i: Row): ExpenseItem {
   return {
     id: str(i.id),
     name: str(i.name),
-    category: str(i.category),
+    category: i.category ? str(i.category) : null,
     quantity: num(i.quantity),
     unit: str(i.unit),
     amount: num(i.amount),

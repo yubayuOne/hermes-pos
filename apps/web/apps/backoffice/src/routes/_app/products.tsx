@@ -82,7 +82,7 @@ function Products() {
         search={
           <SearchBox
             label={t('Cari produk')}
-            placeholder={t('Cari nama produk')}
+            placeholder={t('Cari produk')}
             value={q}
             onChange={(v) => {
               setQ(v);

@@ -149,7 +149,7 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
         search={
           <SearchBox
             label={t('Cari bill')}
-            placeholder={t('Cari nomor, nama, atau meja')}
+            placeholder={t('Cari nomor atau nama')}
             value={q}
             onChange={setQ}
             onSubmit={() => (q.trim() || undefined) !== search.q && set({ q: q.trim() || undefined, page: undefined })}
@@ -612,7 +612,7 @@ function ProductsTab({
         search={
           <SearchBox
             label={t('Cari produk')}
-            placeholder={t('Cari nama produk')}
+            placeholder={t('Cari produk')}
             value={q}
             onChange={(v) => {
               setQ(v);

@@ -2,6 +2,10 @@
 -- Every line of output must start with PASS.
 \set ON_ERROR_STOP on
 set client_min_messages = notice;
+-- The owner's list of expense categories is not given by default (100): the test businesses get the two names the tests use.
+create or replace function pg_temp.cats() returns void language sql security definer as $$
+  insert into public.expense_categories(business_id, name) select b.id, n.name from public.businesses b cross join (values ('operasional'), ('belanja')) n(name) on conflict do nothing
+$$;
 
 create or replace function pg_temp.ok(label text, cond boolean) returns void language plpgsql as $$
 begin raise notice '%', (case when coalesce(cond, false) then 'PASS ' else 'FAIL ' end) || label; end $$;
@@ -36,6 +40,7 @@ insert into auth.users(id, email) values ('f0000000-0000-0000-0000-000000000001'
 select set_config('request.jwt.claim.sub', 'f0000000-0000-0000-0000-000000000001', false);
 set role authenticated;
 select set_config('t.reg', public.register_business('Warung Tia', 'Pusat', null)::text, false);
+select pg_temp.cats();
 select set_config('t.b', current_setting('t.reg')::jsonb ->> 'business_id', false);
 select set_config('t.o', current_setting('t.reg')::jsonb ->> 'outlet_id', false);
 reset role;
@@ -101,6 +106,7 @@ select pg_temp.ok('L5 empty shift: no refunds', public.list_shift_refunds(curren
 -- Another business cannot see, edit, or list any of it.
 select set_config('request.jwt.claim.sub', 'f0000000-0000-0000-0000-000000000002', false);
 select public.register_business('Toko Budi', 'Satu', null);
+select pg_temp.cats();
 select pg_temp.ok('X1 other owner sees no expenses', jsonb_array_length(public.owner_list_expenses() -> 'rows') = 0);
 select pg_temp.fails('X3 other account cannot list the shifts', 'select pg_temp.shifts()', 'Sesi kasir tidak valid');
 select pg_temp.fails('X4 other account cannot read the refunds', format('select public.list_bill_refunds(%L)', current_setting('t.bb')), 'Sesi kasir tidak valid');

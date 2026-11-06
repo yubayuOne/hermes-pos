@@ -60,14 +60,14 @@ test('the Bahan page texts are translated', async () => {
 
 const RESEP_TEXTS = [
   'HPP (modal per porsi)', 'HPP = harga pokok penjualan, modal untuk satu porsi. Dipakai untuk menghitung laba.', 'dari resep', 'perkiraan',
-  'Berubah sendiri kalau harga bahan diubah.', 'Resep per porsi', 'Pilih bahan', '+ Bahan baru', 'Tambah bahan ke resep', 'Jumlah', 'Hapus baris {n}',
+  'Berubah sendiri kalau harga bahan diubah.', 'Resep per porsi', 'Pilih bahan', '+ Bahan baru', 'Tambah bahan', 'Jumlah', 'Hapus baris {n}',
   'Untung per porsi', 'Modal {pct}% dari harga jual', 'Menghitung...', 'Bahan {n}', 'Jumlah bahan {n}', 'Satuan bahan {n}',
   'Modal lebih besar dari harga jual. Cek jumlah atau harga bahan.', 'Ada bahan berharga Rp0, angka ini perkiraan.',
   'Resep belum diisi. Tambah minimal satu bahan, atau hapus resep.',
   'Satuan tidak cocok dengan bahan. Pilih satuan dari jenis yang sama: berat, volume, atau pcs.', 'Jumlah bahan tidak valid', 'Resep maksimal 40 bahan', 'Satu bahan hanya boleh sekali di resep', 'Bahan tidak ditemukan di outlet ini',
   // The Resep tab and the recipe page
   'Bagian bahan dan resep', 'Resep', 'Menu', '+ Barang baru', 'Resep|menu', 'Harga jual', 'Belum ada resep', 'Atur resep', 'Buat resep', 'Belum ada menu.',
-  'Tambah menu di halaman Produk, lalu atur resepnya di sini.', 'Kembali ke daftar resep', 'Resep {name}', 'Simpan resep', 'Hapus resep',
+  'Tambah menu di halaman Produk, lalu atur resepnya di sini.', 'Kembali', 'Resep {name}', 'Simpan resep', 'Hapus resep',
   'Resep {name} disimpan.', 'Resep {name} dihapus.', 'Hapus resep {name}?', 'HPP terakhir tetap dipakai sebagai HPP ketikan. Ubah di halaman Produk.',
   'Menu tidak ditemukan.', 'HPP dari resep. Ubah lewat tab Resep.', 'Produk tidak ditemukan',
 ];

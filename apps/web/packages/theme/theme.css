@@ -721,12 +721,25 @@
     transform: translate(-50%, -50%);
     width: min(480px, calc(100vw - 32px));
     max-height: calc(100dvh - 120px);
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     background: var(--color-slip);
     border: 1.5px solid var(--color-ink);
     border-radius: 4px;
     box-shadow: var(--shadow-hard-6);
     padding: 24px;
+  }
+  /* Header and footer stay in view; only the body scrolls when the form is taller than the screen. */
+  .dlg-body {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 2px;
+  }
+  .dlg-foot {
+    flex: none;
   }
   .dlg[data-state='open'] {
     animation: pop 0.25s var(--ease-out) both;

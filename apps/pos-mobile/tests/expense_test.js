@@ -47,10 +47,7 @@ ok(
   'C4 a new line uses a known unit and the previous category',
 );
 
-ok(
-  checkLines([{ ...good, category: '' }]).errors[0].category === 'Pilih kategori.' && checkLines([{ ...good, category: '' }]).items === null,
-  'C5 a category from the owner list is required',
-);
+ok(checkLines([{ ...good, category: '' }]).items[0].category === null, 'C5 a category is optional (100): none is sent as null');
 const withBarang = checkLines([{ ...good, ingredientId: 'b1' }]).items;
 ok(withBarang && withBarang[0].ingredientId === 'b1' && checkLines([good]).items[0].ingredientId === null, 'C6 the barang goes with the item, or null when none');
 
