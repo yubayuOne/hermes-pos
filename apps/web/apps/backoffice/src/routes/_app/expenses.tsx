@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { isoDay } from '@hermes-pos/ui';
-import { Button, Card, Dialog, Empty, Field, FormAlert, Input, Loading, Select, SkCard, Tag, dateLong, dateShort, money, time, useI18n } from '@hermes-pos/ui';
+import { Button, Card, Dialog, Empty, Field, FormAlert, Input, Loading, Select, SkCard, Tag, dateLong, money, useI18n } from '@hermes-pos/ui';
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { Pagination } from '../../components/Pagination';
@@ -11,17 +11,18 @@ import { listExpenseCategories, setExpenseStock } from '../../server/expenses';
 import { getSummary } from '../../server/summary';
 import { parseCount } from '../../lib/amount';
 import { describeError } from '../../lib/errors';
-import { addExpenseItems, cancelExpenseItem, listExpenses } from '../../server/expenses';
+import { addExpenseItems, listExpenses } from '../../server/expenses';
+import { ExpenseItemDialog } from '../../components/ExpenseItemDialog';
+import { BarangPicker, LAIN } from '../../components/BarangPicker';
 import { getDay } from '../../server/closing';
 import { OutletField } from '../../components/Filters';
-import { EXPENSE_UNITS, expenseCancelSchema, expenseItemSchema, expenseStockSchema } from '../../lib/schemas';
+import { EXPENSE_UNITS, expenseItemSchema, expenseStockSchema } from '../../lib/schemas';
 import { useApp, useLock } from '../../lib/app';
 import { useAction } from '../../lib/useAction';
 import { pageHead } from '../../lang';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { FilterBar } from '../../components/Filters';
 import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
-import { ReasonChips } from '../../components/ReasonChips';
 
 type Search = PeriodSearch & { outlet?: string };
 
@@ -190,10 +191,9 @@ function Expenses() {
 }
 
 function ExpenseCard({ expense: e }: { expense: Expense }) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const lock = useLock();
-  const tz = useApp().business.timezone;
-  const [cancelling, setCancelling] = useState<ExpenseItem | null>(null);
+  const [editing, setEditing] = useState<ExpenseItem | null>(null);
   const [stocking, setStocking] = useState<ExpenseItem | null>(null);
   const [adding, setAdding] = useState(false);
   return (
@@ -264,8 +264,8 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                         <span className="sr-only"> {i.name}</span>
                       </Button>
                     )}
-                    <Button sm onClick={() => setCancelling(i)} {...lock.props}>
-                      {t('Batalkan')}
+                    <Button sm onClick={() => setEditing(i)} {...lock.props}>
+                      {t('Ubah')}
                       <span className="sr-only"> {i.name}</span>
                     </Button>
                   </td>
@@ -275,19 +275,7 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
           </table>
         </div>
       )}
-      {e.cancelled.length > 0 && (
-        <ul className="mt-4 grid gap-1 border-t border-rule pt-3 text-small text-mute" aria-label={t('Barang yang dibatalkan')}>
-          {e.cancelled.map((i) => (
-            <li key={i.id}>
-              <span className="line-through">
-                {i.name} · {money(i.amount)}
-              </span>{' '}
-              · {t('dibatalkan {date}: {reason}', { date: `${dateShort(i.cancelledAt, lang, tz)} ${time(i.cancelledAt, tz)}`, reason: i.reason })}
-            </li>
-          ))}
-        </ul>
-      )}
-      {cancelling && <CancelDialog expense={e} item={cancelling} onClose={() => setCancelling(null)} />}
+      {editing && <ExpenseItemDialog item={editing} shiftNumber={e.shiftNumber} outletId={e.outletId} onClose={() => setEditing(null)} />}
       {stocking && <StockDialog item={stocking} onClose={() => setStocking(null)} />}
       {adding && <AddDialog shift={{ id: e.shiftId, number: e.shiftNumber }} onClose={() => setAdding(false)} />}
     </Card>
@@ -335,52 +323,8 @@ function StockDialog({ item: i, onClose }: { item: ExpenseItem; onClose: () => v
   );
 }
 
-/** The item stops counting (and leaves the drawer's books if it was paid from there) but stays visible with the reason. */
-function CancelDialog({ expense: e, item: i, onClose }: { expense: Expense; item: ExpenseItem; onClose: () => void }) {
-  const { t } = useI18n();
-  const act = useAction();
-  const [reason, setReason] = useState('');
-  async function save(ev: React.FormEvent) {
-    ev.preventDefault();
-    const check = expenseCancelSchema.safeParse({ itemId: i.id, reason });
-    if (!check.success) return act.setError(check.error.issues[0]?.message ?? 'Data tidak valid.');
-    const res = await act.run(() => cancelExpenseItem({ data: check.data }), { success: t('{name} dibatalkan.', { name: i.name }) });
-    if (res) onClose();
-  }
-  return (
-    <Dialog
-      open
-      onOpenChange={(o) => !o && onClose()}
-      title={t('Batalkan {name}?', { name: i.name })}
-      description={
-        i.paidFrom === 'drawer'
-          ? t('{amount} kembali ke kas seharusnya shift {n}.', { amount: money(i.amount), n: e.shiftNumber })
-          : t('{amount} tidak lagi dihitung.', { amount: money(i.amount) })
-      }
-      footer={
-        <>
-          <Button onClick={onClose} disabled={act.busy}>
-            {t('Batal')}
-          </Button>
-          <Button type="submit" form="cancel-expense" variant="ink" busy={act.busy} busyLabel={t('Menyimpan...')}>
-            {t('Batalkan barang')}
-          </Button>
-        </>
-      }
-    >
-      <form id="cancel-expense" noValidate onSubmit={save} className="grid gap-4">
-        <ReasonChips options={['Salah catat', 'Dicatat dua kali', 'Nominal salah']} onPick={setReason} />
-        <Field label={t('Alasan')} help={t('Contoh: dicatat dua kali.')}>
-          <Input autoFocus maxLength={200} value={reason} onChange={(ev) => setReason(ev.target.value)} />
-        </Field>
-        <FormAlert>{act.error && t(act.error)}</FormAlert>
-      </form>
-    </Dialog>
-  );
-}
 
 /** `ingredientId` is a barang's id, LAIN for "Barang lain" (typed name, category, and unit), or '' until one is picked. */
-const LAIN = '__lain';
 type Draft = { ingredientId: string; name: string; category: string; unit: string; quantity: string; amount: string; stockQty: string };
 const blank = (): Draft => ({ ingredientId: '', name: '', category: '', unit: 'pcs', quantity: '1', amount: '', stockQty: '' });
 
@@ -545,15 +489,7 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
                 </Button>
               </div>
               <Field label={t('Barang')} className="col-span-full sm:col-span-3">
-                <Select value={r.ingredientId} onChange={(ev) => set(k, { ingredientId: ev.target.value, stockQty: '' })}>
-                  <option value="">{t('Pilih barang')}</option>
-                  {barang.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                  <option value={LAIN}>{t('Barang lain')}</option>
-                </Select>
+                <BarangPicker items={barang} value={r.ingredientId} onChange={(v) => set(k, { ingredientId: v, stockQty: '' })} allowFree />
               </Field>
               {free && (
                 <Field label={t('Nama')} className="col-span-full sm:col-span-3">

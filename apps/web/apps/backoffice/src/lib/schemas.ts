@@ -224,6 +224,9 @@ export const expenseCategorySchema = z.object({
   name: req('Isi nama kategori.', 40, 'Nama kategori maksimal 40 huruf.'),
   active: z.boolean({ error: 'Pilih aktif atau tidak.' }),
 });
+/** An item the owner changes or deletes (102): the same fields as a new entry. */
+export const expenseEditSchema = expenseItemSchema.extend({ itemId: uuid });
+export const expenseItemRefSchema = z.object({ itemId: uuid });
 export const expenseCancelSchema = z.object({
   itemId: uuid,
   reason: z.string().trim().min(3, 'Tulis alasan, minimal 3 huruf.').max(200, 'Maksimal 200 karakter.'),

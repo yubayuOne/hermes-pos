@@ -57,6 +57,7 @@ select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', js
 select pg_temp.ok('B3 the average follows the weighed amount, not the label: 2.050 ml at Rp 20,487805',
   pg_temp.qb(format('select stock = 2050 and price = 20.487805 from public.ingredients where id = %L', current_setting('t.minyak'))));
 select set_config('t.botol2', pg_temp.q(format('select id::text from public.expense_items where name = %L', 'Minyak botol 2')), false);
+select set_config('t.botol1', pg_temp.q(format('select id::text from public.expense_items where name = %L', 'Minyak botol 1')), false);
 
 -- B4: an expense without a stock amount keeps the stock as it is; the owner fills the amount later.
 select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(jsonb_build_object(
@@ -74,7 +75,7 @@ select pg_temp.ok('B5 clearing the amount takes the stock and the average back e
 
 -- B6: an older item cannot be cancelled while a later move of the barang stands.
 select pg_temp.fails('B6 an older item is refused while a later move stands',
-  format('select public.owner_cancel_expense_item(%L, %L)', current_setting('t.botol2'), 'salah input'), 'Sudah ada pergerakan stok setelahnya');
+  format('select public.owner_cancel_expense_item(%L, %L)', current_setting('t.botol1'), 'salah input'), 'Sudah ada pergerakan stok setelahnya');
 
 -- B7: the latest item is cancelled: stock and average go back to what they were before it.
 select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(jsonb_build_object(

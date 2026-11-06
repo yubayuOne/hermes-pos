@@ -675,6 +675,8 @@ const RPC = {
   ],
   owner_save_barang: () => 'mock-barang-id',
   owner_set_expense_stock: () => null,
+  owner_update_expense_item: () => null,
+  owner_delete_expense_item: () => null,
   owner_list_expense_categories: () => [
     { id: 'mock-cat-1', name: 'operasional', active: true },
     { id: 'mock-cat-2', name: 'belanja', active: true },

@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { addDays } from '@hermes-pos/ui';
-import { expenseAddSchema, expenseCancelSchema, expenseCategorySchema, expenseListSchema, expenseStockSchema, parser } from '../lib/schemas';
+import { expenseAddSchema, expenseCategorySchema, expenseEditSchema, expenseItemRefSchema, expenseListSchema, expenseStockSchema, parser } from '../lib/schemas';
 import type { ActionResult, ExpenseCategory, ExpenseList } from '../lib/types';
 import { toExpenseList } from './normalize';
 import { startOf } from './summary';
@@ -21,12 +21,30 @@ export const listExpenses = createServerFn({ method: 'GET' })
     );
   });
 
-/** Cancels one item (073): it stops counting but stays on record with the reason; the shift's cash follows. */
-export const cancelExpenseItem = createServerFn({ method: 'POST' })
-  .validator(parser(expenseCancelSchema))
+/** Changes one item of a shift's expenses (102): the barang, name, category, unit, quantity, amount, and stock amount. */
+export const updateExpenseItem = createServerFn({ method: 'POST' })
+  .validator(parser(expenseEditSchema))
   .handler(async ({ data }): Promise<ActionResult> => {
     const { callRpc } = await import('./supabase.server');
-    const res = await callRpc('owner_cancel_expense_item', { p_item_id: data.itemId, p_reason: data.reason });
+    const res = await callRpc('owner_update_expense_item', {
+      p_item_id: data.itemId,
+      p_ingredient_id: data.ingredientId ?? null,
+      p_name: data.name,
+      p_category: data.category,
+      p_unit: data.unit,
+      p_quantity: data.quantity,
+      p_amount: data.amount,
+      p_stock_qty: data.stockQty ?? null,
+    });
+    return res.ok ? { ok: true } : res;
+  });
+
+/** Deletes one item of a shift's expenses (102). Its stock and the shift's cash go back; nothing is kept on record. */
+export const deleteExpenseItem = createServerFn({ method: 'POST' })
+  .validator(parser(expenseItemRefSchema))
+  .handler(async ({ data }): Promise<ActionResult> => {
+    const { callRpc } = await import('./supabase.server');
+    const res = await callRpc('owner_delete_expense_item', { p_item_id: data.itemId });
     return res.ok ? { ok: true } : res;
   });
 
