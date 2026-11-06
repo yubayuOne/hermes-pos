@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Button, Dialog, Field, FormAlert, Input, Select, useI18n } from '@hermes-pos/ui';
-import { parseCount } from '../lib/amount';
 import { EXPENSE_UNITS, expenseEditSchema } from '../lib/schemas';
 import type { ExpenseCategory, ExpenseItem, Ingredient } from '../lib/types';
 import { useAction } from '../lib/useAction';
@@ -32,7 +31,6 @@ export function ExpenseItemDialog({
   const [unit, setUnit] = useState(item.unit);
   const [quantity, setQuantity] = useState(String(item.quantity));
   const [amount, setAmount] = useState(String(item.amount));
-  const [stockQty, setStockQty] = useState(item.stockQty === null ? '' : String(item.stockQty));
   const [confirming, setConfirming] = useState(false);
   const [barang, setBarang] = useState<Ingredient[]>([]);
 
@@ -58,7 +56,6 @@ export function ExpenseItemDialog({
       quantity: Number(quantity.trim().replace(',', '.')),
       amount: Number(amount.replace(/\./g, '')),
       ingredientId: picked ? picked.id : null,
-      stockQty: picked?.counted && stockQty.trim() !== '' ? parseCount(stockQty.trim()) : null,
     });
     if (!check.success) return act.setError(check.error.issues[0]?.message ?? 'Data tidak valid.');
     if (!picked && !check.data.name) return act.setError('Tulis nama barang atau biaya.');
@@ -152,11 +149,6 @@ export function ExpenseItemDialog({
               />
             </Field>
           </div>
-          {picked?.counted && (
-            <Field label={`${t('Masuk stok')} (${picked.baseUnit})`} optional help={t('Kosongkan bila belum tahu.')}>
-              <Input inputMode="decimal" className="font-mono" value={stockQty} onChange={(e) => setStockQty(e.target.value.replace(/[^\d.,]/g, '').slice(0, 10))} />
-            </Field>
-          )}
           <FormAlert>{act.error && t(act.error)}</FormAlert>
         </form>
       )}

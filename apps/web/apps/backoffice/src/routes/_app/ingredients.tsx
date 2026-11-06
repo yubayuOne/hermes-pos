@@ -86,10 +86,8 @@ function IngredientList({
   const { t, lang } = useI18n();
   const lock = useLock();
   const [removing, setRemoving] = useState<Ingredient | null>(null);
-  const counted = items.filter((i) => i.counted);
   return (
     <>
-      {counted.some((i) => !i.stockStarted) && <p className="mt-4">{t('Stok mulai saat ada pengeluaran dengan jumlah stok.')}</p>}
       {items.length === 0 && searching ? (
         <Empty className="mt-6" title={t('Tidak ada yang cocok.')} />
       ) : items.length === 0 ? (

@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { addDays } from '@hermes-pos/ui';
-import { expenseAddSchema, expenseCategorySchema, expenseEditSchema, expenseItemRefSchema, expenseListSchema, expenseStockSchema, parser } from '../lib/schemas';
+import { expenseAddSchema, expenseCategorySchema, expenseEditSchema, expenseItemRefSchema, expenseListSchema, parser } from '../lib/schemas';
 import type { ActionResult, ExpenseCategory, ExpenseList } from '../lib/types';
 import { toExpenseList } from './normalize';
 import { startOf } from './summary';
@@ -34,7 +34,7 @@ export const updateExpenseItem = createServerFn({ method: 'POST' })
       p_unit: data.unit,
       p_quantity: data.quantity,
       p_amount: data.amount,
-      p_stock_qty: data.stockQty ?? null,
+      p_stock_qty: null,
     });
     return res.ok ? { ok: true } : res;
   });
@@ -54,15 +54,6 @@ export const addExpenseItems = createServerFn({ method: 'POST' })
   .handler(async ({ data }): Promise<ActionResult> => {
     const { callRpc } = await import('./supabase.server');
     const res = await callRpc('owner_add_expense_items', { p_shift_id: data.shiftId, p_paid_from: data.paidFrom, p_items: data.items });
-    return res.ok ? { ok: true } : res;
-  });
-
-/** Sets (or clears, with null) the amount that came into stock for an item of an expense (099). */
-export const setExpenseStock = createServerFn({ method: 'POST' })
-  .validator(parser(expenseStockSchema))
-  .handler(async ({ data }): Promise<ActionResult> => {
-    const { callRpc } = await import('./supabase.server');
-    const res = await callRpc('owner_set_expense_stock', { p_item_id: data.itemId, p_qty: data.qty });
     return res.ok ? { ok: true } : res;
   });
 

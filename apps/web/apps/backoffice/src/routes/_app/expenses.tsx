@@ -7,16 +7,15 @@ import { Page } from '../../components/Page';
 import { Pagination } from '../../components/Pagination';
 import type { DayShift, Expense, ExpenseCategory, ExpenseItem, Ingredient } from '../../lib/types';
 import { listIngredients } from '../../server/ingredients';
-import { listExpenseCategories, setExpenseStock } from '../../server/expenses';
+import { listExpenseCategories } from '../../server/expenses';
 import { getSummary } from '../../server/summary';
-import { parseCount } from '../../lib/amount';
 import { describeError } from '../../lib/errors';
 import { addExpenseItems, listExpenses } from '../../server/expenses';
 import { ExpenseItemDialog } from '../../components/ExpenseItemDialog';
 import { BarangPicker, LAIN } from '../../components/BarangPicker';
 import { getDay } from '../../server/closing';
 import { OutletField } from '../../components/Filters';
-import { EXPENSE_UNITS, expenseItemSchema, expenseStockSchema } from '../../lib/schemas';
+import { EXPENSE_UNITS, expenseItemSchema } from '../../lib/schemas';
 import { useApp, useLock } from '../../lib/app';
 import { useAction } from '../../lib/useAction';
 import { pageHead } from '../../lang';
@@ -194,7 +193,6 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
   const { t } = useI18n();
   const lock = useLock();
   const [editing, setEditing] = useState<ExpenseItem | null>(null);
-  const [stocking, setStocking] = useState<ExpenseItem | null>(null);
   const [adding, setAdding] = useState(false);
   return (
     <Card as="article" aria-label={t('Pengeluaran shift {n}, {amount}', { n: e.shiftNumber, amount: money(e.total) })}>
@@ -237,12 +235,7 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                 <tr key={i.id}>
                   <td data-l={t('Barang atau biaya')}>
                     {i.name}
-                    {i.ingredientId && (
-                      <span className="block text-small text-mute">
-                        {i.ingredientName} ·{' '}
-                        {!i.ingredientCounted ? t('tidak dihitung stoknya') : i.stockQty === null ? t('belum masuk stok') : t('masuk stok {qty}', { qty: `${qty(i.stockQty)} ${i.ingredientUnit ?? ''}` })}
-                      </span>
-                    )}
+                    {i.ingredientId && <span className="block text-small text-mute">{i.ingredientName}</span>}
                     <details className="text-small text-mute">
                       <summary className="cursor-pointer">{t('Lihat detail')}</summary>
                       <p>
@@ -258,12 +251,6 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                     {money(i.amount)}
                   </td>
                   <td data-l="" className="text-right">
-                    {i.ingredientCounted && (
-                      <Button sm onClick={() => setStocking(i)} {...lock.props}>
-                        {i.stockQty === null ? t('Isi stok') : t('Ubah stok')}
-                        <span className="sr-only"> {i.name}</span>
-                      </Button>
-                    )}
                     <Button sm onClick={() => setEditing(i)} {...lock.props}>
                       {t('Ubah')}
                       <span className="sr-only"> {i.name}</span>
@@ -276,57 +263,16 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
         </div>
       )}
       {editing && <ExpenseItemDialog item={editing} shiftNumber={e.shiftNumber} outletId={e.outletId} onClose={() => setEditing(null)} />}
-      {stocking && <StockDialog item={stocking} onClose={() => setStocking(null)} />}
       {adding && <AddDialog shift={{ id: e.shiftId, number: e.shiftNumber }} onClose={() => setAdding(false)} />}
     </Card>
   );
 }
 
-/** The amount that came into a barang's stock with this item, in the barang's unit. It may differ from the package (a bottle weighed without its packaging). */
-function StockDialog({ item: i, onClose }: { item: ExpenseItem; onClose: () => void }) {
-  const { t } = useI18n();
-  const act = useAction();
-  const [qty, setQty] = useState(i.stockQty === null ? '' : String(i.stockQty));
-  const unit = i.ingredientUnit ?? '';
-  async function save(ev: React.FormEvent) {
-    ev.preventDefault();
-    const typed = qty.trim();
-    const check = expenseStockSchema.safeParse({ itemId: i.id, qty: typed === '' ? null : parseCount(typed) });
-    if (!check.success) return act.setError(check.error.issues[0]?.message ?? 'Data tidak valid.');
-    const res = await act.run(() => setExpenseStock({ data: check.data }), { success: t('Stok {name} dicatat.', { name: i.ingredientName ?? i.name }) });
-    if (res) onClose();
-  }
-  return (
-    <Dialog
-      open
-      onOpenChange={(o) => !o && onClose()}
-      title={t('Jumlah masuk stok')}
-      description={t('Jumlah nyata yang masuk stok, dalam satuan barang.')}
-      footer={
-        <>
-          <Button onClick={onClose} disabled={act.busy}>
-            {t('Batal')}
-          </Button>
-          <Button type="submit" form="stock-expense" variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')}>
-            {t('Simpan')}
-          </Button>
-        </>
-      }
-    >
-      <form id="stock-expense" noValidate onSubmit={save} className="grid gap-4">
-        <Field label={`${i.ingredientName ?? ''} (${unit})`}>
-          <Input autoFocus inputMode="decimal" className="font-mono" value={qty} onChange={(ev) => setQty(ev.target.value.replace(/[^\d.,]/g, '').slice(0, 10))} />
-        </Field>
-        <FormAlert>{act.error && t(act.error)}</FormAlert>
-      </form>
-    </Dialog>
-  );
-}
 
 
 /** `ingredientId` is a barang's id, LAIN for "Barang lain" (typed name, category, and unit), or '' until one is picked. */
-type Draft = { ingredientId: string; name: string; category: string; unit: string; quantity: string; amount: string; stockQty: string };
-const blank = (): Draft => ({ ingredientId: '', name: '', category: '', unit: 'pcs', quantity: '1', amount: '', stockQty: '' });
+type Draft = { ingredientId: string; name: string; category: string; unit: string; quantity: string; amount: string };
+const blank = (): Draft => ({ ingredientId: '', name: '', category: '', unit: 'pcs', quantity: '1', amount: '' });
 
 /**
  * New items for a shift. With `shift` (Tambah barang on a shift's card) that shift; without it (Catat pengeluaran) the owner
@@ -402,7 +348,6 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
         quantity: Number(r.quantity.trim().replace(',', '.')),
         amount: Number(r.amount.replace(/\./g, '')),
         ingredientId: free ? null : r.ingredientId,
-        stockQty: free || r.stockQty.trim() === '' ? null : parseCount(r.stockQty.trim()),
       });
     });
     const errs = checks.map((c) => (c.success ? '' : (c.error.issues[0]?.message ?? 'Data tidak valid.')));
@@ -489,7 +434,7 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
                 </Button>
               </div>
               <Field label={t('Barang')} className="col-span-full sm:col-span-3">
-                <BarangPicker items={barang} value={r.ingredientId} onChange={(v) => set(k, { ingredientId: v, stockQty: '' })} allowFree />
+                <BarangPicker items={barang} value={r.ingredientId} onChange={(v) => set(k, { ingredientId: v })} allowFree />
               </Field>
               {free && (
                 <Field label={t('Nama')} className="col-span-full sm:col-span-3">
@@ -525,16 +470,6 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
                       </option>
                     ))}
                   </Select>
-                </Field>
-              )}
-              {picked?.counted && (
-                <Field label={`${t('Masuk stok')} (${picked.baseUnit})`} optional help={t('Isi nanti bila belum tahu.')} className="sm:col-span-2">
-                  <Input
-                    value={r.stockQty}
-                    inputMode="decimal"
-                    className="font-mono"
-                    onChange={(ev) => set(k, { stockQty: ev.target.value.replace(/[^\d.,]/g, '').slice(0, 10) })}
-                  />
                 </Field>
               )}
               <Field label={t('Harga total')} className="col-span-full sm:col-span-2">

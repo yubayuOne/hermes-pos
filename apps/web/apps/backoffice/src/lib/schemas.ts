@@ -208,9 +208,8 @@ export const expenseItemSchema = z.object({
     .int('Harga total tanpa koma.')
     .gt(0, 'Harga total harus lebih dari Rp0.')
     .max(100_000_000, 'Harga total maksimal Rp100.000.000.'),
-  /** A barang the item is for; with stockQty the amount that came into its stock (in the barang's base unit). */
+  /** The barang of the item, if any. */
   ingredientId: uuid.nullish(),
-  stockQty: amount3('Jumlah masuk stok').nullish(),
 });
 export const expenseAddSchema = z.object({
   shiftId: uuid,
@@ -218,7 +217,6 @@ export const expenseAddSchema = z.object({
   items: z.array(expenseItemSchema).min(1, 'Isi minimal satu barang.').max(30, 'Maksimal 30 barang sekali simpan.'),
 });
 /** The amount that came into stock for an item; null clears it (the item waits again). */
-export const expenseStockSchema = z.object({ itemId: uuid, qty: amount3('Jumlah masuk stok').nullable() });
 export const expenseCategorySchema = z.object({
   id: uuid.nullish(),
   name: req('Isi nama kategori.', 40, 'Nama kategori maksimal 40 huruf.'),

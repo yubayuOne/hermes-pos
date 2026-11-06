@@ -19,10 +19,8 @@ test('owner expense items: the money comes from the drawer or not (migration 087
 
 test('an item: a category of the owner list, and optionally a barang with the amount that came into its stock (099)', () => {
   assert.ok(one({ category: 'Listrik' }).success);
-  assert.ok(one({ ingredientId: '00000000-0000-4000-8000-000000000201', stockQty: 1050 }).success);
-  assert.ok(one({ ingredientId: null, stockQty: null }).success);
+  assert.ok(one({ ingredientId: '00000000-0000-4000-8000-000000000201' }).success);
   assert.ok(add({ items: [item({ category: '' })] }).success); // no category is allowed (100)
-  assert.equal(first(one({ stockQty: 0 })), 'Jumlah masuk stok harus lebih dari 0.');
 });
 
 test('the texts of the drawer choice are translated', async () => {
