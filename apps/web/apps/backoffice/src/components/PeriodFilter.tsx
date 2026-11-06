@@ -35,39 +35,39 @@ export function PeriodFilter({
   const { t, lang } = useI18n();
   const options = allTime ? [['all', 'Semua waktu'] as const, ...OPTIONS] : OPTIONS;
   const current = value.period ?? 'today';
+  // One element that spans the filter dialog's grid: the period on its own row, the dates (custom range) 50:50 beneath it.
   return (
-    <>
-      <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
-        <Field label={t('Periode')} className="w-full" help={note}>
-          <Select
-            value={current}
-            onChange={(e) => {
-              const v = e.target.value as Period;
-              // Pilih tanggal starts from the period on screen; the dates are checked at Selesai.
-              if (v === 'custom') return onChange({ period: 'custom', from: value.from ?? range.from, to: value.to ?? range.to });
-              onChange({ period: v, from: undefined, to: undefined });
-            }}
-          >
-            {options.map(([v, l]) => (
-              <option key={v} value={v}>
-                {v === 'custom' && value.period === 'custom' ? dateRange(range.from, range.to, lang) : t(l)}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        {children}
-      </div>
+    // The period takes its own row; the rest pair 50:50, and an odd last field takes the full row.
+    <div className="col-span-full grid gap-4 sm:grid-cols-2 [&>:last-child:nth-child(even)]:sm:col-span-2">
+      <Field label={t('Periode')} className="col-span-full" help={note}>
+        <Select
+          value={current}
+          onChange={(e) => {
+            const v = e.target.value as Period;
+            // Pilih tanggal starts from the period on screen; the dates are checked at Selesai.
+            if (v === 'custom') return onChange({ period: 'custom', from: value.from ?? range.from, to: value.to ?? range.to });
+            onChange({ period: v, from: undefined, to: undefined });
+          }}
+        >
+          {options.map(([v, l]) => (
+            <option key={v} value={v}>
+              {v === 'custom' && value.period === 'custom' ? dateRange(range.from, range.to, lang) : t(l)}
+            </option>
+          ))}
+        </Select>
+      </Field>
       {current === 'custom' && (
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <>
           <Field label={t('Dari')}>
             <Input type="date" max={today} value={value.from ?? range.from} onChange={(e) => e.target.value && onChange({ from: e.target.value })} />
           </Field>
           <Field label={t('Sampai')}>
             <Input type="date" max={today} value={value.to ?? range.to} onChange={(e) => e.target.value && onChange({ to: e.target.value })} />
           </Field>
-        </div>
+        </>
       )}
-    </>
+      {children}
+    </div>
   );
 }
 

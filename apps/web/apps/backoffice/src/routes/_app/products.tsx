@@ -123,7 +123,7 @@ function Products() {
       >
         {(d) => (
           <>
-            <PeriodFilter value={d.values} range={range} today={today} onChange={d.set} note={t('Periode untuk kolom Terjual, dari bill selesai.')} />
+            <PeriodFilter value={d.values} range={range} today={today} onChange={d.set} note={t('Periode untuk kolom Terjual, dari bill selesai.')}>
             {/* A dropdown, not a row of chips: an outlet can have many categories (owner's request, 17 Oct 2026). */}
             <Field label={t('Kategori')}>
               <Select value={d.values.cat ?? ''} onChange={(e) => d.set({ cat: e.target.value || undefined })}>
@@ -135,6 +135,7 @@ function Products() {
                 ))}
               </Select>
             </Field>
+            </PeriodFilter>
           </>
         )}
       </FilterBar>

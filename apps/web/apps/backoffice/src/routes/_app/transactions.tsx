@@ -164,7 +164,7 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
       >
         {(d) => (
           <>
-            <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set} />
+            <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set}>
             <Field label={t('Status bill')}>
               <Select value={d.values.status ?? 'completed'} onChange={(e) => d.set({ status: e.target.value === 'completed' ? undefined : (e.target.value as Search['status']) })}>
                 {STATUSES.map((s) => (
@@ -174,6 +174,7 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
                 ))}
               </Select>
             </Field>
+            </PeriodFilter>
           </>
         )}
       </FilterBar>
@@ -628,7 +629,7 @@ function ProductsTab({
       >
         {(d) => (
           <>
-            <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set} />
+            <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set}>
             <Field label={t('Urutkan')}>
               <Select value={d.values.sort ?? 'qty'} onChange={(e) => d.set({ sort: e.target.value === 'qty' ? undefined : (e.target.value as Search['sort']) })}>
                 {SORTS.map((s) => (
@@ -639,6 +640,7 @@ function ProductsTab({
               </Select>
             </Field>
             <p className="text-small text-mute">{t('Dari bill selesai. Penjualan setelah semua diskon, refund belum dikurangi.')}</p>
+            </PeriodFilter>
           </>
         )}
       </FilterBar>
