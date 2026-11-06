@@ -1,7 +1,5 @@
-import { useState } from 'react';
-import { Button, Field, Select, dateRange, useI18n } from '@hermes-pos/ui';
+import { Field, Input, Select, dateRange, useI18n } from '@hermes-pos/ui';
 import type { Period, PeriodSearch } from '../lib/period';
-import { CustomRange } from './CustomRange';
 
 const OPTIONS: ReadonlyArray<readonly [Period, string]> = [
   ['today', 'Hari ini'],
@@ -11,8 +9,9 @@ const OPTIONS: ReadonlyArray<readonly [Period, string]> = [
 ];
 
 /**
- * Hari ini, Bulan ini, Bulan lalu, Pilih tanggal as one dropdown (owner's request, 18 Oct 2026: fewer buttons in a row).
- * Pilih tanggal opens the date form under it; it closes once the dates are shown, and Ubah tanggal opens it again. `children` sits next to the dropdown (a note, or a link such as Laporan).
+ * Hari ini, Bulan ini, Bulan lalu, Pilih tanggal as one dropdown. Used inside a FilterBar dialog (prompt 3): `value` is the
+ * draft and `onChange` stages a change. Pilih tanggal shows Dari and Sampai right here, filled from the period on screen.
+ * The dialog's Selesai checks and applies the dates. `children` sits next to the dropdown.
  */
 export function PeriodFilter({
   value,
@@ -31,9 +30,8 @@ export function PeriodFilter({
   children?: React.ReactNode;
 }) {
   const { t, lang } = useI18n();
-  const [editing, setEditing] = useState(false);
   const options = allTime ? [['all', 'Semua waktu'] as const, ...OPTIONS] : OPTIONS;
-  const current = editing ? 'custom' : (value.period ?? 'today');
+  const current = value.period ?? 'today';
   return (
     <>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
@@ -42,9 +40,8 @@ export function PeriodFilter({
             value={current}
             onChange={(e) => {
               const v = e.target.value as Period;
-              setEditing(v === 'custom');
-              if (v === 'custom') return;
-              // 'today' goes out too: the lists that do not know it drop it, so they still show today.
+              // Pilih tanggal starts from the period on screen; the dates are checked at Selesai.
+              if (v === 'custom') return onChange({ period: 'custom', from: value.from ?? range.from, to: value.to ?? range.to });
               onChange({ period: v, from: undefined, to: undefined });
             }}
           >
@@ -55,22 +52,17 @@ export function PeriodFilter({
             ))}
           </Select>
         </Field>
-        {value.period === 'custom' && !editing && (
-          <Button sm className="mb-1" onClick={() => setEditing(true)}>
-            {t('Ubah tanggal')}
-          </Button>
-        )}
         {children}
       </div>
-      {editing && (
-        <CustomRange
-          today={today}
-          initial={value.period === 'custom' ? range : undefined}
-          onApply={(from, to) => {
-            setEditing(false);
-            onChange({ period: 'custom', from, to });
-          }}
-        />
+      {current === 'custom' && (
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <Field label={t('Dari')}>
+            <Input type="date" max={today} value={value.from ?? range.from} onChange={(e) => e.target.value && onChange({ from: e.target.value })} />
+          </Field>
+          <Field label={t('Sampai')}>
+            <Input type="date" max={today} value={value.to ?? range.to} onChange={(e) => e.target.value && onChange({ to: e.target.value })} />
+          </Field>
+        </div>
       )}
     </>
   );

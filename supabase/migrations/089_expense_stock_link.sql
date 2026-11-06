@@ -2,7 +2,7 @@
 --
 -- A belanja item the cashier paid for is recorded once, as an expense. The owner then puts it into stock: the link makes
 -- a purchase through owner_save_purchase (088) with the item's amount as the total, so the cash of the shift stays as
--- it is and only the stock, the average price and the HPP move. The link lives on the purchase line; an item is linked
+-- it is and only the stock, the average price and thea HPP move. The link lives on the purchase line; an item is linked
 -- while its purchase is active, and cancelling the purchase releases it. 040 and 073 are not changed.
 
 -- Set null: an item linked only to cancelled purchases may still be cancelled (073 deletes it); active links are

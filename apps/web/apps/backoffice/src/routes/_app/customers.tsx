@@ -8,7 +8,7 @@ import { PageLoading } from '../../components/PageLoading';
 import { Pagination } from '../../components/Pagination';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { useApp } from '../../lib/app';
-import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
+import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
 import { CUSTOMER_PAGE, listCustomers } from '../../server/customers';
 import { pageHead } from '../../lang';
 
@@ -65,9 +65,11 @@ function Customers() {
         outlet={<OutletFilter all value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />}
         active={search.period && search.period !== 'all' ? 1 : 0}
         summary={[outletName, usePeriodLabel(search, data.range), t('{n} pelanggan', { n: data.list.total })].join(' · ')}
-        onReset={() => set({ period: undefined, from: undefined, to: undefined, page: undefined })}
+        current={search}
+        validate={(v) => periodError(v, data.today)}
+        onApply={(c) => set({ ...c, page: undefined })}
       >
-        <PeriodFilter value={search} range={data.range} today={data.today} allTime onChange={(patch) => set({ ...patch, page: undefined })} />
+        {(d) => <PeriodFilter value={d.values} range={data.range} today={data.today} allTime onChange={d.set} />}
       </FilterBar>
       {data.list.rows.length === 0 ? (
         <Empty className="mt-6" title={search.q ? t('Tidak ada pelanggan yang cocok.') : t('Belum ada pelanggan di periode ini.')}>

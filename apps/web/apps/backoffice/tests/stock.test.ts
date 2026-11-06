@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { stockDocumentSchema } from '../src/lib/schemas.ts';
+import { stockDocumentSchema, stockSheetSchema } from '../src/lib/schemas.ts';
 
 const outletId = '00000000-0000-4000-8000-000000000001';
 const p1 = '00000000-0000-4000-8000-000000000002';
@@ -41,8 +41,36 @@ test('adjustment: signed, not 0, with a reason', () => {
   assert.equal(first(doc('adjustment', [{ productId: p1, qty: 0 }], 'Roti basi')), 'Jumlah penyesuaian tidak boleh 0.');
 });
 
-test('count: 0 or more, no reason needed', () => {
-  assert.ok(doc('opname', [{ productId: p1, qty: 0 }]).success);
-  assert.equal(first(doc('opname', [{ productId: p1, qty: -1 }])), 'Hasil hitung tidak boleh minus.');
+test('stock in and adjustment only: a count goes through the sheet (096)', () => {
+  assert.ok(!stockDocumentSchema.safeParse({ outletId, kind: 'opname', reason: '', lines: [{ productId: p1, qty: 0 }] }).success);
   assert.ok(!stockDocumentSchema.safeParse({ outletId, kind: 'opening', reason: '', lines: [{ productId: p1, qty: 1 }] }).success);
+});
+
+const sheetLine = (productId: string, over: Record<string, unknown> = {}) => ({
+  productId, opening: null, received: null, issued: null, counted: null, note: '', ...over,
+});
+const sheet = (lines: unknown[], date: string | null = '2026-11-04') => stockSheetSchema.safeParse({ outletId, date, lines });
+
+test('count sheet: blank cells are fine, at least one count, no minus, notes up to 200 (096)', () => {
+  assert.ok(sheet([sheetLine(p1, { counted: 75, opening: 70, received: 30, issued: 3, note: 'Hitung sore' }), sheetLine(p2)]).success);
+  assert.ok(sheet([sheetLine(p1, { counted: 0 })], null).success);
+  assert.equal(first(sheet([sheetLine(p1), sheetLine(p2)])), 'Isi hasil hitung minimal satu produk.');
+  assert.equal(first(sheet([sheetLine(p1, { counted: -1 })])), 'Jumlah tidak boleh minus.');
+  assert.equal(first(sheet([sheetLine(p1, { counted: 1, received: -2 })])), 'Jumlah tidak boleh minus.');
+  assert.equal(first(sheet([sheetLine(p1, { counted: 1, note: 'x'.repeat(201) })])), 'Catatan maksimal 200 karakter.');
+  assert.equal(first(sheet([sheetLine(p1, { counted: 1 }), sheetLine(p1, { counted: 2 })])), 'Satu produk hanya boleh sekali.');
+  assert.equal(first(sheet([sheetLine(p1, { counted: 1.2345 })])), 'Jumlah maksimal 3 angka di belakang koma.');
+  assert.equal(first(sheet([sheetLine(p1, { counted: 1 })], '4 Nov')), 'Pilih tanggal.');
+});
+
+test('every text on the Stok page has an English translation, including the count sheet (096)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { EN } = await import('../src/dict.ts');
+  const src = readFileSync(new URL('../src/routes/_app/stock.tsx', import.meta.url), 'utf8');
+  const keys = [...src.matchAll(/\bt\('((?:[^'\\]|\\.)*)'/g)].map((m) => m[1]);
+  assert.ok(keys.length > 20);
+  assert.deepEqual(
+    keys.filter((k) => !(k in EN)),
+    [],
+  );
 });

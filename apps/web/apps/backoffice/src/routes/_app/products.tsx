@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, Tag, amount, isoDay, money, useI18n } from '@hermes-pos/ui';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
-import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
+import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
 import { listProductSales } from '../../server/summary';
 import { FilterBar, SearchBox } from '../../components/Filters';
 import { OutletFilter } from '../../components/OutletFilter';
@@ -101,7 +101,9 @@ function Products() {
         ]
           .filter(Boolean)
           .join(' · ')}
-        onReset={() => set({ period: undefined, from: undefined, to: undefined, cat: undefined, page: undefined })}
+        current={search}
+        validate={(v) => periodError(v, today)}
+        onApply={(c) => set({ ...c, page: undefined })}
         action={
           products.length > 0 && (
             <Button variant="fire" className="w-full sm:w-auto" onClick={() => setEditing('new')} {...lock.props}>
@@ -110,19 +112,23 @@ function Products() {
           )
         }
       >
-        <PeriodFilter value={search} range={range} today={today} onChange={(patch) => set({ ...patch, page: undefined })} />
-        <p className="-mt-2 text-small text-mute">{t('Periode untuk kolom Terjual, dari bill selesai.')}</p>
-        {/* A dropdown, not a row of chips: an outlet can have many categories (owner's request, 17 Oct 2026). */}
-        <Field label={t('Kategori')}>
-          <Select value={search.cat ?? ''} onChange={(e) => set({ cat: e.target.value || undefined, page: undefined })}>
-            <option value="">{t('Semua kategori')}</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
+        {(d) => (
+          <>
+            <PeriodFilter value={d.values} range={range} today={today} onChange={d.set} />
+            <p className="-mt-2 text-small text-mute">{t('Periode untuk kolom Terjual, dari bill selesai.')}</p>
+            {/* A dropdown, not a row of chips: an outlet can have many categories (owner's request, 17 Oct 2026). */}
+            <Field label={t('Kategori')}>
+              <Select value={d.values.cat ?? ''} onChange={(e) => d.set({ cat: e.target.value || undefined })}>
+                <option value="">{t('Semua kategori')}</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </>
+        )}
       </FilterBar>
       {sold === null && (
         <p role="status" className="mt-3 text-small font-semibold text-error">

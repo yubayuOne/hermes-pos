@@ -27,7 +27,7 @@ import { useApp } from '../../lib/app';
 import type { SalesSummary } from '../../lib/types';
 import { getSummary } from '../../server/summary';
 import { pageHead } from '../../lang';
-import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
+import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
 
 type Search = PeriodSearch & { outlet?: string };
 
@@ -102,7 +102,9 @@ function Summary() {
         outlet={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}
         active={search.period ? 1 : 0}
         summary={[app.outlets.find((o) => o.id === search.outlet)?.name ?? t('Semua outlet'), periodLabel].join(' · ')}
-        onReset={() => set({ period: undefined, from: undefined, to: undefined })}
+        current={search}
+        validate={(v) => periodError(v, data.today)}
+        onApply={set}
         action={
           /* The full report (A4, print or PDF) for the same period and outlet as this page. */
           <Link to="/reports" search={search} className={btn('plain')}>
@@ -110,7 +112,7 @@ function Summary() {
           </Link>
         }
       >
-        <PeriodFilter value={search} range={data.range} today={data.today} onChange={set} />
+        {(d) => <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set} />}
       </FilterBar>
       <p className="mt-3 text-small text-mute">{t('Grafik selalu 7 hari terakhir dan jam hari ini.')}</p>
       {nothingYet ? (

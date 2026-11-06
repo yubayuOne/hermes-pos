@@ -332,11 +332,11 @@ const stockQty = z
   .number({ error: 'Jumlah harus angka.' })
   .refine((v) => Number.isFinite(v) && Math.abs(v * 1000 - Math.round(v * 1000)) < 1e-6, 'Jumlah maksimal 3 angka di belakang koma.')
   .refine((v) => Math.abs(v) < 1_000_000, 'Jumlah terlalu besar.');
-/** Same rules as owner_stock_document: stock in > 0, an adjustment signed and not 0 with a reason, a count >= 0. */
+/** Same rules as owner_stock_document: stock in > 0, an adjustment signed and not 0 with a reason. Counts use stockSheetSchema. */
 export const stockDocumentSchema = z
   .object({
     outletId: uuid,
-    kind: z.enum(['stock_in', 'adjustment', 'opname']),
+    kind: z.enum(['stock_in', 'adjustment']),
     reason: z.string().trim().max(200, 'Maksimal 200 karakter.'),
     lines: z
       .array(z.object({ productId: uuid, qty: stockQty }))
@@ -349,9 +349,31 @@ export const stockDocumentSchema = z
     for (const l of v.lines) {
       if (v.kind === 'stock_in' && l.qty <= 0) ctx.addIssue({ code: 'custom', path: ['lines'], message: 'Jumlah stok masuk harus lebih dari 0.' });
       if (v.kind === 'adjustment' && l.qty === 0) ctx.addIssue({ code: 'custom', path: ['lines'], message: 'Jumlah penyesuaian tidak boleh 0.' });
-      if (v.kind === 'opname' && l.qty < 0) ctx.addIssue({ code: 'custom', path: ['lines'], message: 'Hasil hitung tidak boleh minus.' });
     }
   });
+/** Count sheet (096): one row per product. Blank cells are null; a row without a count is skipped by the server. */
+const sheetAmount = stockQty.refine((v) => v >= 0, 'Jumlah tidak boleh minus.').nullable();
+export const stockSheetSchema = z
+  .object({
+    outletId: uuid,
+    date: day.nullable(),
+    lines: z
+      .array(
+        z.object({
+          productId: uuid,
+          opening: sheetAmount,
+          received: sheetAmount,
+          issued: sheetAmount,
+          counted: sheetAmount,
+          note: z.string().trim().max(200, 'Catatan maksimal 200 karakter.'),
+        }),
+      )
+      .min(1, 'Isi minimal satu produk.')
+      .max(500, 'Maksimal 500 produk.')
+      .refine((ls) => new Set(ls.map((l) => l.productId)).size === ls.length, 'Satu produk hanya boleh sekali.'),
+  })
+  .refine((v) => v.lines.some((l) => l.counted !== null), { message: 'Isi hasil hitung minimal satu produk.', path: ['lines'] });
+export const stockOpeningsSchema = z.object({ outletId: uuid, date: day });
 export const stockDocumentListSchema = z
   .object({ outletId: uuid, from: day, to: day, tz: z.enum(timezones), page: z.number().int().min(1).max(10_000) })
   .refine(...rangeCheck);

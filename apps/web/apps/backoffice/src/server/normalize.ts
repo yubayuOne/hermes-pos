@@ -11,6 +11,7 @@ import type {
   RecipeCost,
   StockDocument,
   StockDocumentList,
+  StockOpening,
   StockItem,
   ExpenseItem,
   Bill,
@@ -467,8 +468,17 @@ export function toStockDocument(r: Row): StockDocument {
       counted: nullable(l.counted),
       bookQty: nullable(l.bookQty),
       value: num(l.value),
+      opening: num(l.opening),
+      received: num(l.received),
+      issued: num(l.issued),
+      note: str(l.note),
+      variance: nullable(l.variance),
     })),
   };
+}
+
+export function toStockOpenings(raw: unknown): StockOpening[] {
+  return rows(raw).map((r) => ({ productId: str(r.id), opening: nullable(r.opening) }));
 }
 
 export function toStockDocumentList(raw: unknown): StockDocumentList {

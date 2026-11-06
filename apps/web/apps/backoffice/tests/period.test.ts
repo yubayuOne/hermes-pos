@@ -43,3 +43,32 @@ test('the server refuses reversed or over-long ranges', () => {
   assert.equal(ok('2026-10-05', '2026-10-01'), false);
   assert.equal(ok('1900-01-01', '2026-10-18'), false);
 });
+
+test('a custom range is checked when Selesai is pressed (prompt 3)', async () => {
+  const { periodError, changedOnly } = await import('../src/lib/period.ts');
+  const today = '2026-11-06';
+  assert.equal(periodError({ period: 'today' }, today), null);
+  assert.equal(periodError({ period: 'custom', from: undefined, to: '2026-11-01' }, today), 'Pilih tanggal mulai.');
+  assert.equal(periodError({ period: 'custom', from: '2026-11-01', to: undefined }, today), 'Pilih tanggal akhir.');
+  assert.equal(periodError({ period: 'custom', from: '2026-11-01', to: '2026-11-07' }, today), 'Tanggal akhir tidak boleh setelah hari ini.');
+  assert.equal(periodError({ period: 'custom', from: '2026-11-05', to: '2026-11-04' }, today), 'Tanggal akhir tidak boleh sebelum tanggal mulai.');
+  // 366 days inclusive is the limit; 367 is refused.
+  assert.equal(periodError({ period: 'custom', from: '2025-11-06', to: '2026-11-06' }, today), null);
+  assert.equal(periodError({ period: 'custom', from: '2025-11-05', to: '2026-11-06' }, today), 'Rentang maksimal 366 hari.');
+  assert.equal(periodError({ period: 'custom', from: '2026-02-28', to: '2026-03-01' }, today), null);
+});
+
+test('Selesai applies only the fields that changed (prompt 3)', async () => {
+  const { changedOnly } = await import('../src/lib/period.ts');
+  const current = { period: 'month' as const, from: undefined, to: undefined, q: 'kopi' };
+  assert.deepEqual(changedOnly({ period: 'month' as const }, current), {});
+  assert.deepEqual(changedOnly({ period: 'custom' as const, from: '2026-11-01', to: '2026-11-03' }, current), { period: 'custom', from: '2026-11-01', to: '2026-11-03' });
+  assert.deepEqual(changedOnly({ period: 'today' as const, from: undefined }, current), { period: 'today' });
+});
+
+test('the custom range messages have English translations (prompt 3)', async () => {
+  const { EN } = await import('../src/dict.ts');
+  for (const m of ['Pilih tanggal mulai.', 'Pilih tanggal akhir.', 'Tanggal akhir tidak boleh setelah hari ini.', 'Tanggal akhir tidak boleh sebelum tanggal mulai.', 'Rentang maksimal 366 hari.', 'Dari', 'Sampai', 'Selesai', 'Periode']) {
+    assert.ok(m in EN, m);
+  }
+});

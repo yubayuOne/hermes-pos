@@ -569,7 +569,7 @@ Semua isi Ringkasan datang dari satu panggilan `owner_dashboard` (migrasi 062).
 
 ## D5. Laporan
 
-**Yang sudah dibangun.** Halaman `/reports` menampilkan laporan sebagai enam lembar A4 (bagian F), dari satu panggilan `owner_report_page` (migrasi 063). Halaman ini tidak punya menu: dibuka dari tombol Laporan di Ringkasan dengan periode dan outlet yang sama, dan "Kembali ke Ringkasan" kembali ke periode yang sama. Tanpa periode, laporan memakai Hari ini. Tombol **Cetak / simpan PDF** (`btn-ink`) mencetak lembar yang sama lewat browser. Teks terkecil di lembar laporan 12px.
+**Yang sudah dibangun.** Halaman `/reports` menampilkan laporan dalam empat BAB A4: 1 Penjualan (angka utama, bulan, pembayaran, menu, mingguan, pola mingguan, menu per minggu, laporan tiap bulan, pola waktu dan pelanggan), 2 Pengeluaran (sama alurnya), 3 Ringkasan (penjualan dibanding pengeluaran, laba rugi, kas, per outlet dan kasir, kinerja produk, void dan diskon), 4 Insight (kalimat otomatis dengan sumber BAB, catatan dan definisi, tanda tangan). Angka BAB 1 dan 2 dihitung di `src/lib/reportBook.ts` dari baris `owner_report_detail` (migrasi 098). Angka laba rugi dan kas tetap dari `owner_report_page` (migrasi 063, 071), dipanggil bersamaan. Grafik dibuat dari div dan SVG kecil (`ReportCharts.tsx`), tanpa dependensi baru. Halaman ini tidak punya menu: dibuka dari tombol Laporan di Ringkasan dengan periode dan outlet yang sama, dan "Kembali ke Ringkasan" kembali ke periode yang sama. Tanpa periode, laporan memakai Hari ini. Tombol **Cetak / simpan PDF** (`btn-ink`) mencetak lembar yang sama lewat browser. Teks terkecil di lembar laporan 12px. Tiap BAB dan tiap bulan (mulai bulan kedua) diawali halaman baru saat dicetak.
 
 **Rancangan berikut (belum dibangun):**
 

@@ -399,8 +399,23 @@ export type StockDocument = {
   kind: StockDocumentKind;
   reason: string;
   createdAt: string;
-  lines: { productId: string; productName: string; qty: number; counted: number | null; bookQty: number | null; value: number }[];
+  lines: {
+    productId: string;
+    productName: string;
+    qty: number;
+    counted: number | null;
+    bookQty: number | null;
+    value: number;
+    /** Count sheet columns (096); 0 and '' for other kinds. Variance is set only for a count. */
+    opening: number;
+    received: number;
+    issued: number;
+    note: string;
+    variance: number | null;
+  }[];
 };
+/** The opening (Awal) a count sheet starts from; null when the product was never counted (096). */
+export type StockOpening = { productId: string; opening: number | null };
 export type StockDocumentList = { rows: StockDocument[]; total: number };
 
 /** Customers by the name typed on paid bills (owner_customers, migration 081). */

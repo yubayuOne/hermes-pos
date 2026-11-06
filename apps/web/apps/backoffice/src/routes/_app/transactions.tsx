@@ -27,7 +27,7 @@ import { Pagination, pageOf } from '../../components/Pagination';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { useApp, useLock } from '../../lib/app';
 import { describeError } from '../../lib/errors';
-import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
+import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
 import type { Bill, BillEdit, BillItem, BillRefund, BillSnapshot, Product } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
 import { BILL_PAGE, correctBill, getBill, listBills, voidBill } from '../../server/bills';
@@ -119,12 +119,6 @@ function TxOutlet({ all, set }: { all: boolean; set: (p: Partial<Search>) => voi
 }
 
 /** The period, the filter both tabs keep in their Filter dialog. */
-function PeriodField({ set }: { set: (p: Partial<Search>) => void }) {
-  const search = Route.useSearch();
-  const data = Route.useLoaderData();
-  return <PeriodFilter value={search} range={data.range} today={data.today} onChange={(patch) => set({ ...patch, page: undefined })} />;
-}
-
 /** Dialog filters that differ from the default, and the outlet and period part of the summary line. */
 function useCommon() {
   const { t } = useI18n();
@@ -135,7 +129,6 @@ function useCommon() {
   return {
     active: search.period ? 1 : 0,
     summary: [outletName, usePeriodLabel(search, data.range)],
-    reset: { period: undefined, from: undefined, to: undefined, page: undefined } satisfies Partial<Search>,
   };
 }
 
@@ -143,6 +136,7 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
   const { t, lang } = useI18n();
   const app = useApp();
   const search = Route.useSearch();
+  const data = Route.useLoaderData();
   const [q, setQ] = useState(search.q ?? '');
   const [open, setOpen] = useState<Bill | null>(null);
   const tz = app.business.timezone;
@@ -164,21 +158,24 @@ function BillsTab({ bills, set }: { bills: { rows: Bill[]; total: number }; set:
         outlet={<TxOutlet all set={set} />}
         active={common.active + (search.status ? 1 : 0)}
         summary={[...common.summary, t(STATUSES.find((s) => s.value === status)?.label ?? ''), t('{n} bill', { n: bills.total })].join(' · ')}
-        onReset={() => set({ ...common.reset, status: undefined })}
+        current={search}
+        validate={(v) => periodError(v, data.today)}
+        onApply={(c) => set({ ...c, page: undefined })}
       >
-        <PeriodField set={set} />
-        <Field label={t('Status bill')}>
-          <Select
-            value={status}
-            onChange={(e) => set({ status: e.target.value === 'completed' ? undefined : (e.target.value as Search['status']), page: undefined })}
-          >
-            {STATUSES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {t(s.label)}
-              </option>
-            ))}
-          </Select>
-        </Field>
+        {(d) => (
+          <>
+            <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set} />
+            <Field label={t('Status bill')}>
+              <Select value={d.values.status ?? 'completed'} onChange={(e) => d.set({ status: e.target.value === 'completed' ? undefined : (e.target.value as Search['status']) })}>
+                {STATUSES.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {t(s.label)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </>
+        )}
       </FilterBar>
       {bills.rows.length === 0 ? (
         <Empty className="mt-6" title={search.q ? t('Tidak ada bill yang cocok.') : t('Tidak ada bill di periode ini.')}>
@@ -598,6 +595,7 @@ function ProductsTab({
 }) {
   const { t } = useI18n();
   const search = Route.useSearch();
+  const data = Route.useLoaderData();
   const common = useCommon();
   // Searched in the browser: the tab already holds every product of the outlet.
   const [q, setQ] = useState('');
@@ -625,19 +623,25 @@ function ProductsTab({
         outlet={<TxOutlet all={false} set={set} />}
         active={common.active + (search.sort ? 1 : 0)}
         summary={[...common.summary, t(SORTS.find((s) => s.value === sort)?.label ?? ''), t('{n} produk', { n: sorted.length })].join(' · ')}
-        onReset={() => set({ ...common.reset, sort: undefined })}
+        current={search}
+        validate={(v) => periodError(v, data.today)}
+        onApply={(c) => set({ ...c, page: undefined })}
       >
-        <PeriodField set={set} />
-        <Field label={t('Urutkan')}>
-          <Select value={sort} onChange={(e) => set({ sort: e.target.value === 'qty' ? undefined : (e.target.value as Search['sort']), page: undefined })}>
-            {SORTS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {t(s.label)}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <p className="text-small text-mute">{t('Dari bill selesai. Penjualan setelah semua diskon, refund belum dikurangi.')}</p>
+        {(d) => (
+          <>
+            <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set} />
+            <Field label={t('Urutkan')}>
+              <Select value={d.values.sort ?? 'qty'} onChange={(e) => d.set({ sort: e.target.value === 'qty' ? undefined : (e.target.value as Search['sort']) })}>
+                {SORTS.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {t(s.label)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <p className="text-small text-mute">{t('Dari bill selesai. Penjualan setelah semua diskon, refund belum dikurangi.')}</p>
+          </>
+        )}
       </FilterBar>
       {sold === null && (
         <p role="status" className="mt-3 text-small font-semibold text-error">

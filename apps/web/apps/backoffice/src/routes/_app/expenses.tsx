@@ -17,7 +17,7 @@ import { useAction } from '../../lib/useAction';
 import { pageHead } from '../../lang';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { FilterBar } from '../../components/Filters';
-import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
+import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
 import { ReasonChips } from '../../components/ReasonChips';
 
 type Search = PeriodSearch & { outlet?: string };
@@ -115,14 +115,16 @@ function Expenses() {
         outlet={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}
         active={search.period ? 1 : 0}
         summary={[app.outlets.find((o) => o.id === search.outlet)?.name ?? t('Semua outlet'), periodLabel].join(' · ')}
-        onReset={() => set({ period: undefined, from: undefined, to: undefined })}
+        current={search}
+        validate={(v) => periodError(v, data.today)}
+        onApply={set}
         action={
           <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
             {lock.label(t('Catat pengeluaran'))}
           </Button>
         }
       >
-        <PeriodFilter value={search} range={data.range} today={data.today} onChange={set} />
+        {(d) => <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set} />}
       </FilterBar>
       {recording && <AddDialog outletId={search.outlet ?? null} today={data.today} onClose={() => setRecording(false)} />}
 

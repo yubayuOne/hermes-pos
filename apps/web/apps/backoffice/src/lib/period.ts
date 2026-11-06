@@ -26,3 +26,20 @@ export function periodRange(s: PeriodSearch, today: string): { from: string; to:
   if (s.period === 'custom' && s.from && s.to) return { from: s.from, to: s.to };
   return { from: today, to: today };
 }
+
+/** Message for a custom range in the filter dialog (prompt 3), or null. Checked when Selesai is pressed. */
+export function periodError(s: PeriodSearch, today: string): string | null {
+  if (s.period !== 'custom') return null;
+  if (!s.from) return 'Pilih tanggal mulai.';
+  if (!s.to) return 'Pilih tanggal akhir.';
+  if (s.to > today) return 'Tanggal akhir tidak boleh setelah hari ini.';
+  if (s.to < s.from) return 'Tanggal akhir tidak boleh sebelum tanggal mulai.';
+  const days = Math.round((Date.parse(`${s.to}T00:00:00Z`) - Date.parse(`${s.from}T00:00:00Z`)) / 86_400_000) + 1;
+  if (days > 366) return 'Rentang maksimal 366 hari.';
+  return null;
+}
+
+/** The part of a dialog draft that differs from what the page shows; only these fields are applied. */
+export function changedOnly<T extends object>(draft: Partial<T>, current: Partial<T> | undefined): Partial<T> {
+  return Object.fromEntries(Object.entries(draft).filter(([k, v]) => v !== (current as Record<string, unknown> | undefined)?.[k])) as Partial<T>;
+}

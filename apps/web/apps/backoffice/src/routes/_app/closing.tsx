@@ -50,11 +50,14 @@ function Closing() {
         outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined })} />}
         active={data.date !== data.today ? 1 : 0}
         summary={dateLong(`${data.date}T12:00:00Z`, lang, 'UTC')}
-        onReset={() => set({ date: undefined })}
+        current={{ date: data.date }}
+        onApply={set}
       >
-        <Field label={t('Tanggal')}>
-          <Input type="date" max={data.today} value={data.date} onChange={(e) => e.target.value && set({ date: e.target.value })} />
-        </Field>
+        {(d) => (
+          <Field label={t('Tanggal')}>
+            <Input type="date" max={data.today} value={d.values.date} onChange={(e) => e.target.value && d.set({ date: e.target.value })} />
+          </Field>
+        )}
       </FilterBar>
       {!data.day ? null : (
         <>

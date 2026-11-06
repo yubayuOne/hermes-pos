@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button, Card, Chip, Dialog, Empty, Field, FormAlert, Input, Select, Tag, amount, dateShort, isoDay, money, time, useI18n } from '@hermes-pos/ui';
 import { FilterBar } from '../../components/Filters';
@@ -7,16 +7,18 @@ import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination } from '../../components/Pagination';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
+import { describeError } from '../../lib/errors';
 import { useApp, useLock } from '../../lib/app';
-import { type PeriodSearch, parsePeriod, periodRange } from '../../lib/period';
-import { stockDocumentSchema } from '../../lib/schemas';
+import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
+import { stockDocumentSchema, stockSheetSchema } from '../../lib/schemas';
+import { sheetAmount, sheetVariance } from '../../lib/stockSheet';
 import type { StockDocument, StockItem } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
-import { listStock, listStockDocuments, saveStockDocument } from '../../server/stock';
+import { listStock, listStockDocuments, listStockOpenings, saveStockDocument, saveStockSheet } from '../../server/stock';
 import { pageHead } from '../../lang';
 
 type Search = PeriodSearch & { outlet?: string; tab?: 'history'; page?: number };
-type Kind = 'stock_in' | 'adjustment' | 'opname';
+type Kind = 'stock_in' | 'adjustment';
 /** Documents per page, as the server sends them (owner_list_stock_documents). */
 const PAGE = 50;
 
@@ -59,6 +61,7 @@ function Stock() {
   const periodLabel = usePeriodLabel(search, data.range);
   const set = (patch: Partial<Search>) => navigate({ search: (s: Search) => ({ ...s, ...patch }), replace: true });
   const [kind, setKind] = useState<Kind | null>(null);
+  const [counting, setCounting] = useState(false);
   return (
     <Page title={t('Stok produk|menu')}>
       <nav aria-label={t('Bagian stok')} className="flex flex-wrap gap-2">
@@ -74,11 +77,11 @@ function Stock() {
           outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />}
           active={search.tab === 'history' && search.period ? 1 : 0}
           summary={[app.outlets.find((o) => o.id === data.outletId)?.name, search.tab === 'history' ? periodLabel : undefined].filter(Boolean).join(' · ')}
-          onReset={() => set({ period: undefined, from: undefined, to: undefined, page: undefined })}
+          current={search}
+          validate={(v) => periodError(v, data.today)}
+          onApply={(c) => set({ ...c, page: undefined })}
         >
-          {search.tab === 'history' ? (
-            <PeriodFilter value={search} range={data.range} today={data.today} onChange={(patch) => set({ ...patch, page: undefined })} />
-          ) : undefined}
+          {search.tab === 'history' ? (d) => <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set} /> : undefined}
         </FilterBar>
       </div>
 
@@ -99,7 +102,7 @@ function Stock() {
             <Button onClick={() => setKind('adjustment')} {...lock.props}>
               {lock.label(t('Penyesuaian'))}
             </Button>
-            <Button onClick={() => setKind('opname')} {...lock.props}>
+            <Button onClick={() => setCounting(true)} {...lock.props}>
               {lock.label(t('Hitung stok'))}
             </Button>
           </div>
@@ -107,6 +110,7 @@ function Stock() {
         </>
       )}
       {kind && data.outletId && <DocumentDialog outletId={data.outletId} kind={kind} items={data.items} onClose={() => setKind(null)} />}
+      {counting && data.outletId && <CountSheet outletId={data.outletId} items={data.items} today={data.today} onClose={() => setCounting(false)} />}
     </Page>
   );
 }
@@ -193,7 +197,7 @@ function History({ docs, total, set }: { docs: StockDocument[]; total: number; s
                   <span>{l.productName}</span>
                   <span className="font-mono">
                     {d.kind === 'opname' && l.counted !== null
-                      ? t('dihitung {count}, sistem {book}, selisih {diff}', { count: amount(l.counted), book: amount(l.bookQty ?? 0), diff: signed(l.qty) })
+                      ? t('dihitung {count}, sistem {book}, selisih {diff}', { count: amount(l.counted), book: amount(l.bookQty ?? 0), diff: signed(l.variance ?? 0) })
                       : signed(l.qty)}
                   </span>
                 </li>
@@ -204,6 +208,155 @@ function History({ docs, total, set }: { docs: StockDocument[]; total: number; s
       </div>
       <Pagination page={search.page ?? 1} pages={Math.max(1, Math.ceil(total / PAGE))} onPage={(p) => set({ page: p > 1 ? p : undefined })} />
     </>
+  );
+}
+
+/** Count sheet (096): Awal, Masuk, Keluar, Akhir, and Selisih per product, for any day up to today. */
+type SheetRow = { opening: string; received: string; issued: string; counted: string; note: string };
+const BLANK_ROW: SheetRow = { opening: '', received: '', issued: '', counted: '', note: '' };
+const sheetInput = (v: string) => v.replace(/[^\d.,]/g, '').slice(0, 10);
+
+function CountSheet({ outletId, items, today, onClose }: { outletId: string; items: StockItem[]; today: string; onClose: () => void }) {
+  const { t } = useI18n();
+  const act = useAction();
+  const [date, setDate] = useState(today);
+  /** Opening per product for the chosen day; null in the map = never counted, the admin types it. */
+  const [openings, setOpenings] = useState<Record<string, number | null> | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [rows, setRows] = useState<Record<string, SheetRow>>({});
+  const [q, setQ] = useState('');
+  const shown = useMemo(() => items.filter((p) => !q.trim() || p.name.toLowerCase().includes(q.trim().toLowerCase())), [items, q]);
+
+  useEffect(() => {
+    let alive = true;
+    setOpenings(null);
+    setRows({});
+    setLoadError(null);
+    listStockOpenings({ data: { outletId, date } })
+      .then((list) => alive && setOpenings(Object.fromEntries(list.map((o) => [o.productId, o.opening]))))
+      .catch((e) => alive && setLoadError(describeError(e)));
+    return () => {
+      alive = false;
+    };
+  }, [outletId, date]);
+
+  const known = (id: string) => openings?.[id] ?? null;
+  const setCell = (id: string, field: keyof SheetRow, value: string) =>
+    setRows((r) => ({ ...r, [id]: { ...BLANK_ROW, ...r[id], [field]: value } }));
+  /** Selisih as the server computes it; null while a number is missing. */
+  const varianceOf = (id: string) => {
+    const r = rows[id] ?? BLANK_ROW;
+    const counted = sheetAmount(r.counted);
+    const opening = known(id) ?? sheetAmount(r.opening);
+    if (counted === null || opening === null || Number.isNaN(counted) || Number.isNaN(opening)) return null;
+    return sheetVariance({ opening, received: sheetAmount(r.received) ?? 0, issued: sheetAmount(r.issued) ?? 0, counted });
+  };
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    const lines = items.flatMap((p) => {
+      const r = rows[p.productId];
+      if (!r || Object.values(r).every((v) => v.trim() === '')) return [];
+      return [
+        {
+          productId: p.productId,
+          opening: known(p.productId) === null ? sheetAmount(r.opening) : null,
+          received: sheetAmount(r.received),
+          issued: sheetAmount(r.issued),
+          counted: sheetAmount(r.counted),
+          note: r.note.trim(),
+        },
+      ];
+    });
+    const check = stockSheetSchema.safeParse({ outletId, date, lines });
+    if (!check.success) return act.setError(check.error.issues[0]?.message ?? 'Data tidak valid.');
+    const res = await act.run(() => saveStockSheet({ data: check.data }), {
+      success: t('Hitung stok disimpan untuk {n} produk.', { n: lines.length }),
+    });
+    if (res) onClose();
+  }
+
+  return (
+    <Dialog
+      open
+      wide
+      onOpenChange={(o) => !o && onClose()}
+      title={t('Hitung stok')}
+      description={t('Isi hasil hitung di rak. Selisih dihitung otomatis. Kosongkan produk yang tidak dihitung.')}
+      footer={
+        <>
+          <Button onClick={onClose} disabled={act.busy}>
+            {t('Batal')}
+          </Button>
+          <Button type="submit" form="count-sheet" variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')} disabled={openings === null}>
+            {t('Simpan hitung stok')}
+          </Button>
+        </>
+      }
+    >
+      <form id="count-sheet" noValidate onSubmit={save} className="grid gap-4">
+        <div className="grid gap-3 sm:grid-cols-[auto_1fr] sm:items-end">
+          <Field label={t('Tanggal hitung')}>
+            <Input type="date" max={today} value={date} onChange={(e) => e.target.value && setDate(e.target.value)} />
+          </Field>
+          <Input type="search" aria-label={t('Cari produk')} placeholder={t('Cari nama produk')} value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
+        {date < today && <Tag className="justify-self-start">{t('Hitung untuk hari lalu dicatat di akhir hari itu.')}</Tag>}
+        {loadError && <FormAlert>{loadError}</FormAlert>}
+        <div className="tbl-wrap max-h-[46vh] overflow-y-auto">
+          <table className="tbl tbl-card">
+            <thead>
+              <tr>
+                <th scope="col">{t('Produk')}</th>
+                <th scope="col" className="num">{t('Awal')}</th>
+                <th scope="col" className="num">{t('Stok masuk')}</th>
+                <th scope="col" className="num">{t('Stok keluar')}</th>
+                <th scope="col" className="num">{t('Akhir')}</th>
+                <th scope="col" className="num">{t('Selisih')}</th>
+                <th scope="col">{t('Catatan selisih')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shown.map((p) => {
+                const r = rows[p.productId] ?? BLANK_ROW;
+                const k = known(p.productId);
+                const v = varianceOf(p.productId);
+                return (
+                  <tr key={p.productId}>
+                    <td data-l={t('Produk')} className="font-semibold">{p.name}</td>
+                    <td data-l={t('Awal')} className="num">
+                      {openings === null ? (
+                        <span className="text-mute">{t('Memuat...')}</span>
+                      ) : k !== null ? (
+                        amount(k)
+                      ) : (
+                        <Input aria-label={`${t('Awal')} ${p.name}`} inputMode="decimal" className="w-[96px] text-right font-mono" value={r.opening} onChange={(e) => setCell(p.productId, 'opening', sheetInput(e.target.value))} />
+                      )}
+                    </td>
+                    <td data-l={t('Stok masuk')} className="num">
+                      <Input aria-label={`${t('Stok masuk')} ${p.name}`} inputMode="decimal" className="w-[96px] text-right font-mono" value={r.received} onChange={(e) => setCell(p.productId, 'received', sheetInput(e.target.value))} />
+                    </td>
+                    <td data-l={t('Stok keluar')} className="num">
+                      <Input aria-label={`${t('Stok keluar')} ${p.name}`} inputMode="decimal" className="w-[96px] text-right font-mono" value={r.issued} onChange={(e) => setCell(p.productId, 'issued', sheetInput(e.target.value))} />
+                    </td>
+                    <td data-l={t('Akhir')} className="num">
+                      <Input aria-label={`${t('Akhir')} ${p.name}`} inputMode="decimal" className="w-[96px] text-right font-mono" value={r.counted} onChange={(e) => setCell(p.productId, 'counted', sheetInput(e.target.value))} />
+                    </td>
+                    <td data-l={t('Selisih')} className="num font-mono">
+                      {v === null ? <span className="text-mute">—</span> : <span className={v === 0 ? undefined : 'text-error'}>{signed(v)}</span>}
+                    </td>
+                    <td data-l={t('Catatan selisih')}>
+                      <Input aria-label={`${t('Catatan selisih')} ${p.name}`} maxLength={200} value={r.note} onChange={(e) => setCell(p.productId, 'note', e.target.value)} />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <FormAlert>{act.error && t(act.error)}</FormAlert>
+      </form>
+    </Dialog>
   );
 }
 
@@ -221,12 +374,6 @@ const KIND_TEXT: Record<Kind, { title: string; help: string; input: string; save
     help: 'Barang rusak, hilang, kedaluwarsa, atau dipakai sendiri (kurangi), atau ditemukan (tambah). Nilainya dicatat sebagai biaya.',
     input: 'Jumlah',
     save: 'Simpan penyesuaian',
-  },
-  opname: {
-    title: 'Hitung stok',
-    help: 'Hitung barang di rak lalu isi jumlahnya. Selisih dengan stok sistem dicatat otomatis. Kosongkan produk yang tidak dihitung.',
-    input: 'Hasil hitung',
-    save: 'Simpan hasil hitung',
   },
 };
 
@@ -301,7 +448,6 @@ function DocumentDialog({ outletId, kind, items, onClose }: { outletId: string; 
         <Field label={kind === 'adjustment' ? t('Alasan') : t('Keterangan')} optional={kind !== 'adjustment'}>
           <Input maxLength={200} value={reason} onChange={(e) => setReason(e.target.value)} />
         </Field>
-        {kind === 'opname' && <Tag className="justify-self-start">{t('Produk yang dikosongkan tidak diubah.')}</Tag>}
         <FormAlert>{act.error && t(act.error)}</FormAlert>
       </form>
     </Dialog>

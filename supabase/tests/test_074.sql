@@ -90,7 +90,9 @@ select pg_temp.ok('M1 kopi 80 - 5 + 5 - 3 + 1 = 78, roti 27 - 2 + 2 - 1 = 26, te
   pg_temp.stock('t.kopi') = 78 and pg_temp.stock('t.roti') = 26 and pg_temp.stock('t.teh') = 10 and pg_temp.p7() = '[]'::jsonb);
 
 -- ===== count (opname)
-select set_config('t.op', pg_temp.doc('opname', jsonb_build_array(pg_temp.line('t.kopi', 75), pg_temp.line('t.roti', 26)), 'Hitung akhir minggu')::text, false);
+select set_config('t.op', public.owner_stock_opname_sheet(current_setting('t.o')::uuid, jsonb_build_array(
+  jsonb_build_object('productId', current_setting('t.kopi'), 'counted', 75), jsonb_build_object('productId', current_setting('t.roti'), 'counted', 26))
+)::text, false);
 select pg_temp.ok('O1 count: kopi 3 short booked, roti matches; the document shows book and count',
   pg_temp.stock('t.kopi') = 75 and pg_temp.p7() = '[]'::jsonb
   and (select (l ->> 'qty')::numeric = -3 and (l ->> 'counted')::numeric = 75 and (l ->> 'bookQty')::numeric = 78
