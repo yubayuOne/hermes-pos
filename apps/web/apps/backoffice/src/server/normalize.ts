@@ -9,6 +9,7 @@ import type {
   StockDocumentList,
   StockOpening,
   StockItem,
+  DayShift,
   ExpenseItem,
   Bill,
   CheckFailure,
@@ -369,6 +370,50 @@ export function toBillEdit(r: Row): BillEdit {
 
 const TRAIL_KINDS: TrailEntry['kind'][] = ['void', 'correction', 'refund', 'expense_cancel', 'stock_adjustment', 'stock_opname'];
 
+/** One shift of the day or of a period (owner_day_close, owner_list_shifts). */
+export function toDayShift(s: Row): DayShift {
+  return {
+    id: str(s.id),
+    businessDate: s.businessDate ? str(s.businessDate) : undefined,
+    shiftNumber: num(s.shiftNumber),
+    open: s.open === true,
+    openedAt: str(s.openedAt),
+    closedAt: s.closedAt ? str(s.closedAt) : null,
+    cashierName: str(s.cashierName),
+    bills: num(s.bills),
+    opening: num(s.opening),
+    cashSales: num(s.cashSales),
+    cashRefunds: num(s.cashRefunds),
+    drawerExpenses: num(s.drawerExpenses),
+    cashIn: num(s.cashIn),
+    cashOut: num(s.cashOut),
+    expected: num(s.expected),
+    counted: nullable(s.counted),
+    variance: nullable(s.variance),
+    qrisSales: num(s.qrisSales),
+    qrisRefunds: num(s.qrisRefunds),
+    qrisExpected: num(s.qrisExpected),
+    qrisReported: nullable(s.qrisReported),
+    qrisVariance: nullable(s.qrisVariance),
+    netSales: num(s.netSales),
+    movements: rows(s.movements).map((m) => ({
+      id: str(m.id),
+      direction: m.direction === 'in' ? 'in' : 'out',
+      amount: num(m.amount),
+      reason: str(m.reason),
+      createdAt: str(m.createdAt),
+    })),
+    oldCorrections: rows(s.oldCorrections).map((a) => ({
+      id: str(a.id),
+      kind: a.kind === 'expense' ? 'expense' : 'sales',
+      category: a.category === 'operasional' || a.category === 'belanja' ? a.category : null,
+      amount: num(a.amount),
+      reason: str(a.reason),
+      createdAt: str(a.createdAt),
+    })),
+  };
+}
+
 export function toDayClose(raw: unknown): DayClose {
   const r = (raw ?? {}) as Row;
   const c = r.closed as Row | null | undefined;
@@ -401,45 +446,7 @@ export function toDayClose(raw: unknown): DayClose {
       ref: f.ref ? str(f.ref) : null,
       detail: (f.detail ?? {}) as CheckFailure['detail'],
     })),
-    shifts: rows(r.shifts).map((s) => ({
-      id: str(s.id),
-      shiftNumber: num(s.shiftNumber),
-      open: s.open === true,
-      openedAt: str(s.openedAt),
-      closedAt: s.closedAt ? str(s.closedAt) : null,
-      cashierName: str(s.cashierName),
-      bills: num(s.bills),
-      opening: num(s.opening),
-      cashSales: num(s.cashSales),
-      cashRefunds: num(s.cashRefunds),
-      drawerExpenses: num(s.drawerExpenses),
-      cashIn: num(s.cashIn),
-      cashOut: num(s.cashOut),
-      expected: num(s.expected),
-      counted: nullable(s.counted),
-      variance: nullable(s.variance),
-      qrisSales: num(s.qrisSales),
-      qrisRefunds: num(s.qrisRefunds),
-      qrisExpected: num(s.qrisExpected),
-      qrisReported: nullable(s.qrisReported),
-      qrisVariance: nullable(s.qrisVariance),
-      netSales: num(s.netSales),
-      movements: rows(s.movements).map((m) => ({
-        id: str(m.id),
-        direction: m.direction === 'in' ? 'in' : 'out',
-        amount: num(m.amount),
-        reason: str(m.reason),
-        createdAt: str(m.createdAt),
-      })),
-      oldCorrections: rows(s.oldCorrections).map((a) => ({
-        id: str(a.id),
-        kind: a.kind === 'expense' ? 'expense' : 'sales',
-        category: a.category === 'operasional' || a.category === 'belanja' ? a.category : null,
-        amount: num(a.amount),
-        reason: str(a.reason),
-        createdAt: str(a.createdAt),
-      })),
-    })),
+    shifts: rows(r.shifts).map(toDayShift),
   };
 }
 

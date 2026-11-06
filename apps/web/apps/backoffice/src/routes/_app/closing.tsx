@@ -2,31 +2,42 @@ import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button, Card, Dialog, Empty, Field, FormAlert, Input, Tag, cn, dateLong, isoDay, money, time, useI18n } from '@hermes-pos/ui';
 import { FilterBar } from '../../components/Filters';
+import { Pagination } from '../../components/Pagination';
+import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
+import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { useApp, useLock } from '../../lib/app';
 import { cashMovementSchema } from '../../lib/schemas';
-import type { CheckFailure, DayShift, TrailEntry } from '../../lib/types';
+import type { CheckFailure, DayClose, DayShift, ShiftList, TrailEntry } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
-import { addCashMovement, getDay } from '../../server/closing';
+import { addCashMovement, getDay, listShifts } from '../../server/closing';
 import { pageHead } from '../../lang';
 
-type Search = { outlet?: string; date?: string };
-const isDay = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
+type Search = PeriodSearch & { outlet?: string; page?: number };
 
+/** The shifts of a period, ten a page. Opens on this month, with the same period filter as the other lists. */
 export const Route = createFileRoute('/_app/closing')({
   validateSearch: (s: Record<string, unknown>): Search => ({
+    ...parsePeriod(s),
+    period: parsePeriod(s).period ?? 'month',
     outlet: typeof s.outlet === 'string' ? s.outlet : undefined,
-    date: isDay(s.date) ? s.date : undefined,
+    page: Number.isInteger(s.page) && (s.page as number) > 1 ? (s.page as number) : undefined,
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ deps, context }) => {
     const today = isoDay(new Date(), context.app.business.timezone);
-    const date = deps.date && deps.date <= today ? deps.date : today;
+    const range = periodRange(deps, today);
     const outletId = deps.outlet ?? context.app.outlets[0]?.id ?? null;
-    if (!outletId) return { outletId, date, today, day: null };
-    return { outletId, date, today, day: await getDay({ data: { outletId, date } }) };
+    const page = deps.page ?? 1;
+    if (!outletId) return { outletId, range, today, page, list: { total: 0, rows: [] } as ShiftList, day: null as DayClose | null };
+    const [list, day] = await Promise.all([
+      listShifts({ data: { outletId, from: range.from, to: range.to, page } }),
+      // One day only: its checks and the corrections of that day.
+      range.from === range.to ? getDay({ data: { outletId, date: range.from } }) : Promise.resolve(null),
+    ]);
+    return { outletId, range, today, page, list, day };
   },
   pendingMs: 150,
   pendingComponent: () => <PageLoading title="Shift|menu" />,
@@ -41,41 +52,57 @@ export const Route = createFileRoute('/_app/closing')({
 function Closing() {
   const { t, lang } = useI18n();
   const data = Route.useLoaderData();
+  const search = Route.useSearch();
   const navigate = useNavigate({ from: '/closing' });
   const set = (patch: Partial<Search>) => navigate({ search: (s: Search) => ({ ...s, ...patch }), replace: true });
   const [moving, setMoving] = useState<{ shift: DayShift; direction: 'in' | 'out' } | null>(null);
+  const app = useApp();
+  const periodLabel = usePeriodLabel(search, data.range);
+  const pages = Math.max(1, Math.ceil(data.list.total / 10));
+  const outletName = app.outlets.find((o) => o.id === data.outletId)?.name;
+  // Shifts of the page, grouped by business day (newest day first, as the server sends them).
+  const byDay = data.list.rows.reduce<[string, DayShift[]][]>((acc, s) => {
+    const day = s.businessDate ?? '';
+    const last = acc[acc.length - 1];
+    if (last && last[0] === day) last[1].push(s);
+    else acc.push([day, [s]]);
+    return acc;
+  }, []);
   return (
     <Page title={t('Shift|menu')}>
       <FilterBar
-        outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined })} />}
-        active={data.date !== data.today ? 1 : 0}
-        summary={dateLong(`${data.date}T12:00:00Z`, lang, 'UTC')}
-        current={{ date: data.date }}
-        onApply={set}
+        outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => set({ outlet: id ?? undefined, page: undefined })} />}
+        active={search.period && search.period !== 'month' ? 1 : 0}
+        summary={[outletName, periodLabel, t('{n} shift', { n: data.list.total })].filter(Boolean).join(' · ')}
+        current={search}
+        validate={(v) => periodError(v, data.today)}
+        onApply={(c) => set({ ...c, page: undefined })}
       >
-        {(d) => (
-          <Field label={t('Tanggal')}>
-            <Input type="date" max={data.today} value={d.values.date} onChange={(e) => e.target.value && d.set({ date: e.target.value })} />
-          </Field>
-        )}
+        {(d) => <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set} />}
       </FilterBar>
-      {!data.day ? null : (
-        <>
-          <Checks failures={data.day.checks} shifts={data.day.shifts} />
-          {data.day.shifts.length === 0 ? (
-            <Empty className="mt-6" title={t('Tidak ada shift pada {date}.', { date: dateLong(`${data.date}T12:00:00Z`, lang, 'UTC') })}>
-              {t('Shift yang dibuka kasir di aplikasi muncul di sini.')}
-            </Empty>
-          ) : (
-            <div className="mt-6 grid gap-5">
-              {data.day.shifts.map((s) => (
-                <ShiftCard key={s.id} shift={s} onMove={(direction) => setMoving({ shift: s, direction })} />
-              ))}
-            </div>
-          )}
-          <Trail entries={data.day.trail} />
-        </>
+      {data.day && <Checks failures={data.day.checks} shifts={data.day.shifts} />}
+      {data.list.total === 0 ? (
+        <Empty className="mt-6" title={t('Tidak ada shift di periode ini.')}>
+          {t('Shift yang dibuka kasir di aplikasi muncul di sini.')}
+        </Empty>
+      ) : (
+        <div className="mt-6 grid gap-8">
+          {byDay.map(([day, list]) => (
+            <section key={day} aria-labelledby={`day-${day}`}>
+              <h2 id={`day-${day}`} className="border-b-[1.5px] border-ink pb-2 font-display text-title font-extrabold">
+                {dateLong(`${day}T12:00:00Z`, lang, 'UTC')}
+              </h2>
+              <div className="mt-4 grid gap-5">
+                {list.map((s) => (
+                  <ShiftCard key={s.id} shift={s} onMove={(direction) => setMoving({ shift: s, direction })} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
       )}
+      <Pagination page={data.page} pages={pages} onPage={(p) => set({ page: p > 1 ? p : undefined })} />
+      {data.day && <Trail entries={data.day.trail} />}
       {moving && <MoveDialog shift={moving.shift} direction={moving.direction} onClose={() => setMoving(null)} />}
     </Page>
   );

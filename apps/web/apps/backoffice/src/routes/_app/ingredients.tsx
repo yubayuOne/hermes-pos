@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, Dialog, Empty, FormAlert, PencilIcon, PlusIcon, Tag, TrashIcon, dateShort, money, useI18n } from '@hermes-pos/ui';
+import { Button, Dialog, Empty, FormAlert, PencilIcon, PlusIcon, Tag, TrashIcon, money, useI18n } from '@hermes-pos/ui';
 import { IconAction } from '../../components/IconAction';
 import { FilterBar, SearchBox } from '../../components/Filters';
 import { CategoriesDialog } from '../../components/CategoriesDialog';
@@ -42,14 +42,6 @@ function BarangPage() {
   const navigate = useNavigate({ from: '/ingredients' });
   return (
     <Page title={t('Barang|menu')}>
-      <details className="mt-4">
-        <summary className="cursor-pointer font-semibold">{t('Cara pakai')}</summary>
-        <ol className="mt-2 list-decimal pl-6">
-          <li>{t('Bahan atau biaya, misalnya minyak atau listrik.')}</li>
-          <li>{t('Pilih barang saat mencatat pengeluaran.')}</li>
-          <li>{t('Harga rata-rata mengikuti pengeluaran.')}</li>
-        </ol>
-      </details>
       <div className="mt-5">
         <FilterBar
           search={<SearchBox label={t('Cari barang')} placeholder={t('Cari nama')} value={q} onChange={setQ} />}
@@ -126,20 +118,6 @@ function IngredientList({
                     {!i.counted && <span className="ml-2 align-middle">
                       <Tag tone="mute">{t('tidak dihitung stoknya')}</Tag>
                     </span>}
-                    <details className="text-small text-mute">
-                      <summary className="cursor-pointer">{t('Lihat detail')}</summary>
-                      <p>
-                        {t('Satuan')}: {i.baseUnit}
-                      </p>
-                      {i.counted && (
-                        <p>
-                          {t('Terakhir dihitung')}: {i.lastCountedAt ? dateShort(i.lastCountedAt, lang) : t('belum pernah')}
-                        </p>
-                      )}
-                      <p>
-                        {t('Dipakai di')}: {i.usedBy === 0 ? t('belum dipakai') : t('{n} menu', { n: i.usedBy })}
-                      </p>
-                    </details>
                   </td>
                   <td data-l={t('Stok')} className="num">
                     {!i.counted ? (

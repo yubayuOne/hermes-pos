@@ -1602,4 +1602,6 @@ export const EN: Dict = {
   "Stok dan kas kembali seperti sebelum dicatat. Catatannya tidak disimpan.": "Stock and cash go back to what they were before. The entry is not kept.",
   "Kosongkan bila belum tahu.": "Leave empty if not known yet.",
   "Catatan kasir": "Cashier note",
+  "{n} shift": "{n} shifts",
+  "Tidak ada shift di periode ini.": "No shifts in this period.",
 };

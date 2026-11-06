@@ -208,6 +208,8 @@ export type OldCorrection = {
 /** One shift's reconciliation on the Tutup hari page (owner_day_close). All money from the database. */
 export type DayShift = {
   id: string;
+  /** The business day of the shift (the shift list, 104). */
+  businessDate?: string;
   shiftNumber: number;
   open: boolean;
   openedAt: string;
@@ -246,6 +248,8 @@ export type TrailEntry = {
   amount: number;
   reason: string;
 };
+/** A page of shifts over a period (owner_list_shifts, 104). */
+export type ShiftList = { total: number; rows: DayShift[] };
 export type DayClose = { date: string; closed: DayLock | null; log: DayLogEntry[]; trail: TrailEntry[]; shifts: DayShift[]; checks: CheckFailure[] };
 /** A bill from owner_list_bills (migrations 028, 034). Money comes from the database. */
 export type Bill = {

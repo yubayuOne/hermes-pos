@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
-import { cashMovementSchema, dayCloseSchema, parser } from '../lib/schemas';
-import type { ActionResult, DayClose } from '../lib/types';
-import { toDayClose } from './normalize';
+import { cashMovementSchema, dayCloseSchema, parser, shiftListSchema } from '../lib/schemas';
+import type { ActionResult, DayClose, ShiftList } from '../lib/types';
+import { toDayClose, toDayShift } from './normalize';
 
 /** One outlet, one business date: every shift's cash and QRIS reconciliation and the day's checks (073). */
 export const getDay = createServerFn({ method: 'GET' })
@@ -23,4 +23,18 @@ export const addCashMovement = createServerFn({ method: 'POST' })
       p_reason: data.reason,
     });
     return res.ok ? { ok: true } : res;
+  });
+
+/** The shifts of a period, ten a page, newest first; total counts every shift of the period (104). */
+export const listShifts = createServerFn({ method: 'GET' })
+  .validator(parser(shiftListSchema))
+  .handler(async ({ data }): Promise<ShiftList> => {
+    const { readRpc } = await import('./supabase.server');
+    const raw = await readRpc<{ total?: unknown; rows?: unknown[] } | null>('owner_list_shifts', {
+      p_outlet_id: data.outletId,
+      p_from: data.from,
+      p_to: data.to,
+      p_page: data.page,
+    });
+    return { total: Number(raw?.total ?? 0), rows: (raw?.rows ?? []).map((r) => toDayShift(r as Record<string, unknown>)) };
   });

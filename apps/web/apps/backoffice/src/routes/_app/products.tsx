@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { IconAction } from '../../components/IconAction';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { PencilIcon, Button, PlusIcon, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, Tag, amount, isoDay, money, useI18n } from '@hermes-pos/ui';
+import { PencilIcon, Button, PlusIcon, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, amount, isoDay, money, useI18n } from '@hermes-pos/ui';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
 import { listProductSales } from '../../server/summary';
@@ -199,11 +199,6 @@ function Products() {
                   </td>
                   <td data-l={t('Modal (HPP)')} className="num">
                     {money(p.hpp)}
-                    {p.hppSource === 'recipe' && (
-                      <Tag tone="pine" className="ml-2 font-sans">
-                        {t('dari resep')}
-                      </Tag>
-                    )}
                   </td>
                   <td data-l={t('Stok')} className="num">
                     {p.trackStock ? amount(p.stock) : <span className="font-sans text-mute">{t('tanpa stok')}</span>}
@@ -341,9 +336,6 @@ function ProductDialog({
                 <span className="fld-l">{t('HPP (modal per porsi)')}</span>
                 <p className="flex flex-wrap items-center gap-2 font-mono text-title font-semibold">
                   {money(product.hpp)}
-                  <Tag tone="pine" className="font-sans">
-                    {t('dari resep')}
-                  </Tag>
                 </p>
                 <p className="help">
                   {t('HPP dari resep. Ubah lewat tab Resep.')}{' '}

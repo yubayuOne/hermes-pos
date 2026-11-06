@@ -328,6 +328,8 @@ export const billCorrectionSchema = z.object({
 
 // ---------- Tutup hari (073) ----------
 export const dayCloseSchema = z.object({ outletId: uuid, date: day });
+/** A period of shifts, ten a page (owner_list_shifts, 104). */
+export const shiftListSchema = z.object({ outletId: uuid, from: day, to: day, page: z.number().int().min(1).max(10_000) });
 export const cashMovementSchema = z.object({
   shiftId: uuid,
   direction: z.enum(['in', 'out']),

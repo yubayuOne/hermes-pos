@@ -619,6 +619,11 @@ const RPC = {
       productCount: 2,
     };
   },
+  // The shift list (104): the day close shifts of the period start, as a sample.
+  owner_list_shifts: (a) => {
+    const day = RPC.owner_day_close({ p_outlet_id: a.p_outlet_id, p_date: a.p_from });
+    return { total: day.shifts.length, rows: day.shifts.map((x) => ({ ...x, businessDate: a.p_from })) };
+  },
   owner_day_close: (a) => ({
     date: a.p_date,
     closed: null,
