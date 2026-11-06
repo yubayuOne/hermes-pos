@@ -85,8 +85,8 @@ export function BarangPicker({
         autoComplete="off"
         autoFocus={autoFocus}
         placeholder={t('Cari barang')}
-        value={open ? query : label}
-        onFocus={() => {
+        value={open && query ? query : label}
+        onClick={() => {
           setOpen(true);
           setActive(0);
         }}

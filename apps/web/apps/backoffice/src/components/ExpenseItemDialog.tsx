@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Button, Dialog, Field, FormAlert, Input, Select, useI18n } from '@hermes-pos/ui';
 import { EXPENSE_UNITS, expenseEditSchema } from '../lib/schemas';
-import type { ExpenseCategory, ExpenseItem, Ingredient } from '../lib/types';
+import type { ExpenseItem, Ingredient } from '../lib/types';
 import { useAction } from '../lib/useAction';
-import { deleteExpenseItem, listExpenseCategories, updateExpenseItem } from '../server/expenses';
+import { deleteExpenseItem, updateExpenseItem } from '../server/expenses';
 import { listIngredients } from '../server/ingredients';
 import { BarangPicker, LAIN } from './BarangPicker';
 
 /**
- * Changes or deletes one item of a shift's expenses (102). A barang sets the name, category, and unit; "Barang lain"
- * types them. Delete is at the left, away from Simpan, and asks once more.
+ * Changes or deletes one item of a shift's expenses (102). One form: the barang, then quantity and price. A barang sets the
+ * name, category, and unit; "Barang lain" asks for the name and unit only. Delete is at the left and asks once more.
  */
 export function ExpenseItemDialog({
   item,
@@ -24,19 +24,16 @@ export function ExpenseItemDialog({
 }) {
   const { t } = useI18n();
   const act = useAction();
-  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  const [barang, setBarang] = useState<Ingredient[]>([]);
   const [ingredientId, setIngredientId] = useState(item.ingredientId ?? LAIN);
   const [name, setName] = useState(item.name);
-  const [category, setCategory] = useState(item.category ?? '');
   const [unit, setUnit] = useState(item.unit);
   const [quantity, setQuantity] = useState(String(item.quantity));
   const [amount, setAmount] = useState(String(item.amount));
   const [confirming, setConfirming] = useState(false);
-  const [barang, setBarang] = useState<Ingredient[]>([]);
 
   useEffect(() => {
     let live = true;
-    listExpenseCategories().then((c) => live && setCategories(c.filter((x) => x.active)), () => undefined);
     listIngredients({ data: { outletId } }).then((l) => live && setBarang(l), () => undefined);
     return () => {
       live = false;
@@ -51,7 +48,7 @@ export function ExpenseItemDialog({
     const check = expenseEditSchema.safeParse({
       itemId: item.id,
       name: picked ? '' : name.trim(),
-      category: picked ? '' : category,
+      category: '',
       unit: picked ? '' : unit,
       quantity: Number(quantity.trim().replace(',', '.')),
       amount: Number(amount.replace(/\./g, '')),
@@ -72,7 +69,6 @@ export function ExpenseItemDialog({
   return (
     <Dialog
       open
-      wide
       onOpenChange={(o) => !o && onClose()}
       title={confirming ? t('Hapus {name}?', { name: item.ingredientName ?? item.name }) : t('Ubah pengeluaran')}
       description={confirming ? t('Stok dan kas kembali seperti sebelum dicatat. Catatannya tidak disimpan.') : t('Shift {n}', { n: shiftNumber })}
@@ -113,23 +109,6 @@ export function ExpenseItemDialog({
               <Field label={t('Nama')}>
                 <Input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
               </Field>
-              <Field label={t('Kategori')} optional>
-                <Select value={category} onChange={(e) => setCategory(e.target.value)}>
-                  <option value="">{t('Tanpa kategori')}</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.name}>
-                      {c.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            </div>
-          )}
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Field label={`${t('Jumlah')} (${unitText || '-'})`}>
-              <Input inputMode="decimal" className="font-mono" value={quantity} onChange={(e) => setQuantity(e.target.value.replace(/[^\d.,]/g, ''))} />
-            </Field>
-            {!picked && (
               <Field label={t('Satuan')}>
                 <Select value={unit} onChange={(e) => setUnit(e.target.value)}>
                   {EXPENSE_UNITS.map((u) => (
@@ -139,14 +118,14 @@ export function ExpenseItemDialog({
                   ))}
                 </Select>
               </Field>
-            )}
+            </div>
+          )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={`${t('Jumlah')} (${unitText || '-'})`}>
+              <Input inputMode="decimal" className="font-mono" value={quantity} onChange={(e) => setQuantity(e.target.value.replace(/[^\d.,]/g, ''))} />
+            </Field>
             <Field label={t('Harga total')}>
-              <Input
-                inputMode="numeric"
-                className="font-mono"
-                value={amount && Number(amount).toLocaleString('id-ID')}
-                onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
-              />
+              <Input inputMode="numeric" className="font-mono" value={amount && Number(amount).toLocaleString('id-ID')} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} />
             </Field>
           </div>
           <FormAlert>{act.error && t(act.error)}</FormAlert>

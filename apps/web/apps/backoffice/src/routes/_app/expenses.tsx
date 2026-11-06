@@ -5,9 +5,9 @@ import { Button, Card, Dialog, Empty, Field, FormAlert, Input, Loading, Select, 
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { Pagination } from '../../components/Pagination';
-import type { DayShift, Expense, ExpenseCategory, ExpenseItem, Ingredient } from '../../lib/types';
+import type { DayShift, Expense, ExpenseItem, Ingredient } from '../../lib/types';
 import { listIngredients } from '../../server/ingredients';
-import { listExpenseCategories } from '../../server/expenses';
+
 import { getSummary } from '../../server/summary';
 import { describeError } from '../../lib/errors';
 import { addExpenseItems, listExpenses } from '../../server/expenses';
@@ -270,9 +270,9 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
 
 
 
-/** `ingredientId` is a barang's id, LAIN for "Barang lain" (typed name, category, and unit), or '' until one is picked. */
-type Draft = { ingredientId: string; name: string; category: string; unit: string; quantity: string; amount: string };
-const blank = (): Draft => ({ ingredientId: '', name: '', category: '', unit: 'pcs', quantity: '1', amount: '' });
+/** `ingredientId` is a barang's id, LAIN for "Barang lain" (typed name and unit), or '' until one is picked. */
+type Draft = { ingredientId: string; name: string; unit: string; quantity: string; amount: string };
+const blank = (): Draft => ({ ingredientId: '', name: '', unit: 'pcs', quantity: '1', amount: '' });
 
 /**
  * New items for a shift. With `shift` (Tambah barang on a shift's card) that shift; without it (Catat pengeluaran) the owner
@@ -290,15 +290,7 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
   const [shiftDay, setShiftDay] = useState('');
   const [shiftId, setShiftId] = useState('');
   const [paidFrom, setPaidFrom] = useState<'drawer' | 'other'>('other');
-  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [barang, setBarang] = useState<Ingredient[]>([]);
-  useEffect(() => {
-    let live = true;
-    listExpenseCategories().then((c) => live && setCategories(c.filter((x) => x.active)), () => undefined);
-    return () => {
-      live = false;
-    };
-  }, []);
   useEffect(() => {
     if (!outlet) return;
     let live = true;
@@ -343,7 +335,6 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
       if (free && !EXPENSE_UNITS.includes(r.unit as (typeof EXPENSE_UNITS)[number])) return { success: false as const, error: { issues: [{ message: 'Pilih satuan.' }] } };
       return expenseItemSchema.safeParse({
         name: free ? r.name.trim() : '',
-        category: free ? r.category : '',
         unit: free ? r.unit : '',
         quantity: Number(r.quantity.trim().replace(',', '.')),
         amount: Number(r.amount.replace(/\./g, '')),
@@ -439,18 +430,6 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
               {free && (
                 <Field label={t('Nama')} className="col-span-full sm:col-span-3">
                   <Input value={r.name} maxLength={60} onChange={(ev) => set(k, { name: ev.target.value })} />
-                </Field>
-              )}
-              {free && (
-                <Field label={t('Kategori')} optional className="col-span-full sm:col-span-3">
-                  <Select value={r.category} onChange={(ev) => set(k, { category: ev.target.value })}>
-                    <option value="">{t('Tanpa kategori')}</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.name}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </Select>
                 </Field>
               )}
               <Field label={picked ? `${t('Jumlah')} (${picked.baseUnit})` : t('Jumlah')} className="sm:col-span-2">

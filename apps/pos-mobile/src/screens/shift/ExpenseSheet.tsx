@@ -154,14 +154,6 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
                     maxLength={60}
                     error={e.name ? t(e.name) : null}
                   />
-                  {options.categories.length > 0 && (
-                    <View className="flex-row flex-wrap gap-2">
-                      <Chip label={t('Tanpa kategori')} selected={!l.category} onPress={() => set(i, { category: '' })} />
-                      {options.categories.map((c) => (
-                        <Chip key={c} label={c} selected={l.category === c} onPress={() => set(i, { category: c })} />
-                      ))}
-                    </View>
-                  )}
                   <View className="flex-row flex-wrap gap-2">
                     {EXPENSE_UNITS.map((u) => (
                       <Chip key={u} label={u} selected={l.unit === u} onPress={() => set(i, { unit: u })} />
