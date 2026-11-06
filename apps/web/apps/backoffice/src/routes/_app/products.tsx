@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
+import { IconAction } from '../../components/IconAction';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, PlusIcon, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, Tag, amount, isoDay, money, useI18n } from '@hermes-pos/ui';
+import { PencilIcon, Button, PlusIcon, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, Tag, amount, isoDay, money, useI18n } from '@hermes-pos/ui';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
 import { listProductSales } from '../../server/summary';
@@ -179,6 +180,9 @@ function Products() {
                   {t('Terjual')}
                 </th>
                 <th scope="col">{t('Aktif')}</th>
+                <th scope="col">
+                  <span className="sr-only">{t('Ubah')}</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -187,9 +191,6 @@ function Products() {
                   <td data-l={t('Produk')}>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold">{p.name}</span>
-                      <Button sm onClick={() => setEditing(p)} disabled={lock.locked} aria-label={t('Ubah produk {name}', { name: p.name })}>
-                        {t('Ubah')}
-                      </Button>
                     </div>
                     <span className="block text-small text-mute">{(p.categoryId && catName.get(p.categoryId)) || t('Tanpa kategori')}</span>
                   </td>
@@ -217,6 +218,11 @@ function Products() {
                       disabled={lock.locked || toggle.busy}
                       onChange={(v) => setActive(p, v)}
                     />
+                  </td>
+                  <td className="text-right">
+                    <IconAction label={t('Ubah produk {name}', { name: p.name })} onClick={() => setEditing(p)} disabled={lock.locked}>
+                      <PencilIcon size={18} />
+                    </IconAction>
                   </td>
                 </tr>
               ))}

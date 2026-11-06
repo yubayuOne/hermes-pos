@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import { IconAction } from '../../components/IconAction';
 import {
   Button,
   Check,
@@ -12,21 +13,20 @@ import {
   Input,
   Select,
   Switch,
-  Tag,
   addDays,
   dateShort,
   isoDay,
   money,
-  toast,
   useI18n,
   PlusIcon,
+  PencilIcon,
 } from '@hermes-pos/ui';
 import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination, pageOf } from '../../components/Pagination';
 import { useApp, useLock } from '../../lib/app';
 import { voucherSchema } from '../../lib/schemas';
-import type { Voucher, VoucherStatus } from '../../lib/types';
+import type { Voucher } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
 import { useForm } from '../../lib/useForm';
 import { listVoucherProducts, listVouchers, saveVoucher, setVoucherActive, type PickerProduct } from '../../server/vouchers';
@@ -39,13 +39,6 @@ export const Route = createFileRoute('/_app/vouchers')({
   head: ({ match }) => pageHead(match.context.lang, 'Voucher|menu'),
   component: Vouchers,
 });
-
-const STATUS: Record<VoucherStatus, { label: string; tone: 'pine' | 'fire' | 'mute' | 'plain' }> = {
-  active: { label: 'Aktif', tone: 'pine' },
-  expired: { label: 'Kedaluwarsa', tone: 'mute' },
-  used_up: { label: 'Habis', tone: 'fire' },
-  inactive: { label: 'Nonaktif', tone: 'mute' },
-};
 
 /** D10. Kasir types the code in the POS; the server checks and applies it (PRD C5). */
 function Vouchers() {
@@ -63,14 +56,6 @@ function Vouchers() {
       success: on ? t('Voucher {code} aktif.', { code: v.code }) : t('Voucher {code} dimatikan.', { code: v.code }),
       undo: () => setVoucherActive({ data: { id: v.id, active: !on } }),
     });
-  }
-  async function copy(code: string) {
-    try {
-      await navigator.clipboard.writeText(code);
-      toast.success(t('Kode {code} disalin.', { code }));
-    } catch {
-      toast.error(t('Kode belum bisa disalin. Pilih dan salin manual.'));
-    }
   }
 
   return (
@@ -108,8 +93,10 @@ function Vouchers() {
                   {t('Terpakai')}
                 </th>
                 <th scope="col">{t('Berlaku sampai')}</th>
-                <th scope="col">Status</th>
                 <th scope="col">{t('Aktif')}</th>
+                <th scope="col">
+                  <span className="sr-only">{t('Ubah')}</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -118,12 +105,6 @@ function Vouchers() {
                   <td data-l={t('Kode')}>
                     <span className="inline-flex flex-wrap items-center gap-2">
                       <span className="inline-flex items-center gap-1.5 rounded border-[1.5px] border-dashed border-ink px-2 py-1 font-mono text-body font-semibold tracking-wider hover:bg-tint-2 disabled:hover:bg-transparent">{v.code}</span>
-                      <Button sm disabled={lock.locked} onClick={() => setEditing(v)} aria-label={t('Ubah voucher {code}', { code: v.code })}>
-                        {t('Ubah')}
-                      </Button>
-                      <Button sm onClick={() => copy(v.code)} aria-label={t('Salin {code}', { code: v.code })}>
-                        {t('Salin')}
-                      </Button>
                     </span>
                   </td>
                   <td data-l={t('Potongan')}>
@@ -145,9 +126,6 @@ function Vouchers() {
                   <td data-l={t('Berlaku sampai')} className="font-mono text-body">
                     {dateShort(v.expiresOn, lang)}
                   </td>
-                  <td data-l="Status">
-                    <Tag tone={STATUS[v.status].tone}>{t(STATUS[v.status].label)}</Tag>
-                  </td>
                   <td data-l={t('Aktif')}>
                     <Switch
                       checked={v.isActive}
@@ -155,6 +133,11 @@ function Vouchers() {
                       disabled={lock.locked || toggle.busy}
                       onChange={(on) => setActive(v, on)}
                     />
+                  </td>
+                  <td className="text-right">
+                    <IconAction label={t('Ubah voucher {code}', { code: v.code })} onClick={() => setEditing(v)} disabled={lock.locked}>
+                      <PencilIcon size={18} />
+                    </IconAction>
                   </td>
                 </tr>
               ))}

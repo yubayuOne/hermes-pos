@@ -834,3 +834,17 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Every control shows the pointer (owner's request, 7 Nov 2026). Disabled buttons keep the default arrow. */
+button:not(:disabled),
+a[href],
+summary,
+select,
+label[for],
+[role='button'],
+[role='option'],
+[role='switch'],
+[role='checkbox'],
+[role='radio'] {
+  cursor: pointer;
+}

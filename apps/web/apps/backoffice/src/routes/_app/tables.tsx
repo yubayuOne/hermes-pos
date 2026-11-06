@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { IconAction } from '../../components/IconAction';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { PlusIcon, Button, Dialog, Empty, Field, FormAlert, Input, Switch, Tag, time, useI18n } from '@hermes-pos/ui';
+import { PencilIcon, PlusIcon, Button, Dialog, Empty, Field, FormAlert, Input, Switch, Tag, time, useI18n } from '@hermes-pos/ui';
 import { FilterBar } from '../../components/Filters';
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
@@ -101,9 +102,9 @@ function Tables() {
                       </span>
                     </td>
                     <td>
-                      <Button sm onClick={() => setEditing(tb)} disabled={lock.locked} aria-label={t('Ubah meja {name}', { name: tb.name })}>
-                        {t('Ubah')}
-                      </Button>
+                      <IconAction label={t('Ubah meja {name}', { name: tb.name })} onClick={() => setEditing(tb)} disabled={lock.locked}>
+                        <PencilIcon size={18} />
+                      </IconAction>
                     </td>
                   </tr>
                 ))}
