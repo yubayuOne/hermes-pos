@@ -12,7 +12,7 @@ import { readExpenseOptions, type ExpenseOptions } from '../../services/local/re
 import { CHECKOUT_TIMEOUT_MS, enqueueCheckout, queueFirst, waitsForQueue, withTimeout } from '../../services/transaction/offlineQueue';
 import { refreshSubscription } from '../../services/subscription/subscription';
 import { describeError, isExpiredError, isNetworkError } from '../../utils/errors';
-import { checkLines, emptyLine, ExpenseLine, parseAmount } from '../../utils/expense';
+import { checkLines, emptyLine, ExpenseLine, EXPENSE_UNITS, LAIN, parseAmount } from '../../utils/expense';
 import { haptic } from '../../utils/haptics';
 import { colors } from '../../theme';
 import { money, num, t, useT } from '../../i18n';
@@ -128,35 +128,63 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
                   />
                 ) : null}
               </View>
-              <TextField
-                label={t('Catatan: yang dibeli atau dibayar')}
-                value={l.name}
-                onChangeText={(v) => set(i, { name: v })}
-                placeholder={t('Gula pasir, galon, listrik')}
-                maxLength={60}
-                error={e.name ? t(e.name) : null}
-              />
-              {options.categories.length > 0 && (
-                <View className="flex-row flex-wrap gap-2">
-                  <Chip label={t('Tanpa kategori')} selected={!l.category} onPress={() => set(i, { category: '' })} />
-                  {options.categories.map((c) => (
-                    <Chip key={c} label={c} selected={l.category === c} onPress={() => set(i, { category: c })} />
-                  ))}
-                </View>
+              <View className="flex-row flex-wrap gap-2">
+                {options.barang.map((b) => (
+                  <Chip
+                    key={b.id}
+                    label={b.name}
+                    selected={l.ingredientId === b.id}
+                    onPress={() => set(i, { ingredientId: b.id, name: b.name, category: '', unit: b.unit })}
+                  />
+                ))}
+                <Chip label={t('Barang lain')} selected={l.ingredientId === LAIN} onPress={() => set(i, { ingredientId: LAIN, name: '', category: '', unit: 'pcs' })} />
+              </View>
+              {e.ingredientId ? (
+                <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
+                  {t(e.ingredientId)}
+                </Text>
+              ) : null}
+              {l.ingredientId === LAIN && (
+                <>
+                  <TextField
+                    label={t('Nama')}
+                    value={l.name}
+                    onChangeText={(v) => set(i, { name: v })}
+                    placeholder={t('Gula pasir, galon, listrik')}
+                    maxLength={60}
+                    error={e.name ? t(e.name) : null}
+                  />
+                  {options.categories.length > 0 && (
+                    <View className="flex-row flex-wrap gap-2">
+                      <Chip label={t('Tanpa kategori')} selected={!l.category} onPress={() => set(i, { category: '' })} />
+                      {options.categories.map((c) => (
+                        <Chip key={c} label={c} selected={l.category === c} onPress={() => set(i, { category: c })} />
+                      ))}
+                    </View>
+                  )}
+                  <View className="flex-row flex-wrap gap-2">
+                    {EXPENSE_UNITS.map((u) => (
+                      <Chip key={u} label={u} selected={l.unit === u} onPress={() => set(i, { unit: u })} />
+                    ))}
+                  </View>
+                  {e.unit ? (
+                    <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
+                      {t(e.unit)}
+                    </Text>
+                  ) : null}
+                </>
               )}
-              {options.barang.length > 0 && (
-                <View className="flex-row flex-wrap gap-2">
-                  <Chip label={t('Barang lain')} selected={!l.ingredientId} onPress={() => set(i, { ingredientId: '' })} />
-                  {options.barang.map((b) => (
-                    <Chip
-                      key={b.id}
-                      label={b.name}
-                      selected={l.ingredientId === b.id}
-                      onPress={() => set(i, { ingredientId: b.id, ...(l.name.trim() ? {} : { name: b.name }) })}
-                    />
-                  ))}
-                </View>
-              )}
+              {l.ingredientId ? (
+                <TextField
+                  label={l.ingredientId === LAIN ? t('Jumlah') : `${t('Jumlah')} (${l.unit})`}
+                  value={l.quantity}
+                  onChangeText={(v) => set(i, { quantity: v.replace(/[^\d.,]/g, '') })}
+                  keyboardType="decimal-pad"
+                  mono
+                  maxLength={10}
+                  error={e.quantity ? t(e.quantity) : null}
+                />
+              ) : null}
               <TextField
                 label={t('Harga total')}
                 value={l.amount ? num(Number(l.amount)) : ''}
@@ -171,9 +199,10 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
           );
         })}
         {lines.length < 30 ? (
-          <Button icon="plus" label={t('Tambah barang')} onPress={() => setLines((ls) => [...ls, emptyLine(ls[ls.length - 1]?.category)])} />
+          <Button icon="plus" label={t('Tambah barang')} onPress={() => setLines((ls) => [...ls, emptyLine()])} />
         ) : null}
 
+        <Text className="text-small text-mute">{t('Sumber uang: Kas Laci')}</Text>
         <View
           accessibilityLiveRegion="polite"
           className="flex-row items-center justify-between rounded-k px-3.5 py-3"

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button, Dialog, Empty, FormAlert, Tag, dateShort, money, useI18n } from '@hermes-pos/ui';
 import { FilterBar, SearchBox } from '../../components/Filters';
+import { CategoriesDialog } from '../../components/CategoriesDialog';
 import { IngredientDialog } from '../../components/IngredientDialog';
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
@@ -35,6 +36,7 @@ function BarangPage() {
   const data = Route.useLoaderData();
   const [q, setQ] = useState('');
   const [editing, setEditing] = useState<Ingredient | 'new' | null>(null);
+  const [categorizing, setCategorizing] = useState(false);
   const needle = q.trim().toLowerCase();
   const navigate = useNavigate({ from: '/ingredients' });
   return (
@@ -52,13 +54,19 @@ function BarangPage() {
           search={<SearchBox label={t('Cari barang')} placeholder={t('Cari nama')} value={q} onChange={setQ} />}
           outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => navigate({ search: (s: Search) => ({ ...s, outlet: id ?? undefined }), replace: true })} />}
           action={
-            <Button variant="fire" onClick={() => setEditing('new')} {...lock.props}>
-              {lock.label(t('Tambah barang'))}
-            </Button>
+            <>
+              <Button onClick={() => setCategorizing(true)} {...lock.props}>
+                {t('Kategori')}
+              </Button>
+              <Button variant="fire" onClick={() => setEditing('new')} {...lock.props}>
+                {lock.label(t('Tambah barang'))}
+              </Button>
+            </>
           }
         />
       </div>
       <IngredientList items={data.items.filter((i) => !needle || i.name.toLowerCase().includes(needle))} searching={needle !== ''} onAdd={() => setEditing('new')} onEdit={setEditing} />
+      {categorizing && <CategoriesDialog onClose={() => setCategorizing(false)} />}
       {editing && data.outletId && <IngredientDialog outletId={data.outletId} ingredient={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
     </Page>
   );

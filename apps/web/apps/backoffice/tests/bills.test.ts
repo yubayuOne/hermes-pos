@@ -64,7 +64,8 @@ test('expenses: items like the POS, a reason to cancel', () => {
   assert.ok(r.success);
   assert.equal(r.data.items[0].name, 'Gula');
   const bad = (patch: object) => first(expenseAddSchema.safeParse({ shiftId: id, paidFrom: 'drawer', items: [{ ...item, ...patch }] }));
-  assert.equal(bad({ unit: 'ton' }), 'Pilih satuan.');
+  // The unit of a "Barang lain" row is checked by the form; a barang row sends none (101).
+  assert.equal(bad({ unit: '' }), undefined);
   assert.equal(bad({ amount: 0 }), 'Harga total harus lebih dari Rp0.');
   assert.equal(bad({ quantity: 1.2345 }), 'Jumlah maksimal 3 angka di belakang koma.');
   assert.equal(first(expenseAddSchema.safeParse({ shiftId: id, paidFrom: 'drawer', items: [] })), 'Isi minimal satu barang.');

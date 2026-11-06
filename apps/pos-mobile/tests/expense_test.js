@@ -30,7 +30,7 @@ ok(
   'M2 zero, decimals, empty, over 100 million rejected',
 );
 
-const good = { name: ' Gula pasir ', category: 'belanja', quantity: '2', unit: 'kg', amount: '36000' };
+const good = { name: ' Gula pasir ', category: 'belanja', ingredientId: '__lain', quantity: '2', unit: 'kg', amount: '36000' };
 const r1 = checkLines([good, { ...good, name: 'Galon', category: 'operasional', quantity: '1,5', unit: 'pcs', amount: '20.000' }]);
 ok(
   r1.items && r1.items.length === 2 && r1.items[0].name === 'Gula pasir' && r1.items[1].quantity === 1.5 && r1.items[1].amount === 20000,
@@ -43,8 +43,8 @@ ok(
 );
 ok(checkLines([]).items === null, 'C3 no lines: nothing is sent');
 ok(
-  EXPENSE_UNITS.includes(emptyLine().unit) && emptyLine('operasional').category === 'operasional',
-  'C4 a new line uses a known unit and the previous category',
+  EXPENSE_UNITS.includes(emptyLine().unit) && emptyLine().ingredientId === '',
+  'C4 a new line starts with no barang picked and a known unit',
 );
 
 ok(checkLines([{ ...good, category: '' }]).items[0].category === null, 'C5 a category is optional (100): none is sent as null');

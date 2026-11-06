@@ -7,7 +7,8 @@ import { Page } from '../../components/Page';
 import { Pagination } from '../../components/Pagination';
 import type { DayShift, Expense, ExpenseCategory, ExpenseItem, Ingredient } from '../../lib/types';
 import { listIngredients } from '../../server/ingredients';
-import { listExpenseCategories, saveExpenseCategory, setExpenseStock } from '../../server/expenses';
+import { listExpenseCategories, setExpenseStock } from '../../server/expenses';
+import { getSummary } from '../../server/summary';
 import { parseCount } from '../../lib/amount';
 import { describeError } from '../../lib/errors';
 import { addExpenseItems, cancelExpenseItem, listExpenses } from '../../server/expenses';
@@ -25,8 +26,10 @@ import { ReasonChips } from '../../components/ReasonChips';
 type Search = PeriodSearch & { outlet?: string };
 
 export const Route = createFileRoute('/_app/expenses')({
+  // The expense page opens on this month (owner's request, 7 Nov 2026).
   validateSearch: (s: Record<string, unknown>): Search => ({
     ...parsePeriod(s),
+    period: parsePeriod(s).period ?? 'month',
     outlet: typeof s.outlet === 'string' ? s.outlet : undefined,
   }),
   loaderDeps: ({ search }) => search,
@@ -34,8 +37,12 @@ export const Route = createFileRoute('/_app/expenses')({
     const tz = context.app.business.timezone;
     const today = isoDay(new Date(), tz);
     const range = periodRange(deps, today);
-    const list = await listExpenses({ data: { outletId: deps.outlet ?? null, ...range, tz, before: null } });
-    return { ...list, range, today, tz };
+    // Kas Outlet is the sales of the same days and outlet (owner's definition, 7 Nov 2026); Sisa Kas is that minus the expenses.
+    const [list, summary] = await Promise.all([
+      listExpenses({ data: { outletId: deps.outlet ?? null, ...range, tz, before: null } }),
+      getSummary({ data: { outletId: deps.outlet ?? null, from: range.from, to: range.to, today, tz } }),
+    ]);
+    return { ...list, range, today, tz, kasOutlet: summary.period.sales };
   },
   pendingMs: 150,
   pendingComponent: ExpensesLoading,
@@ -43,7 +50,7 @@ export const Route = createFileRoute('/_app/expenses')({
   component: Expenses,
 });
 
-const PAID_FROM: Record<ExpenseItem['paidFrom'], string> = { drawer: 'Kas laci', other: 'Bukan dari laci' };
+const PAID_FROM: Record<ExpenseItem['paidFrom'], string> = { drawer: 'Kas Laci', other: 'Kas Outlet' };
 const qty = (n: number) => String(n).replace('.', ',');
 /** Shift records per page, as the server sends them (server/expenses.ts). */
 const EXPENSE_PAGE = 50;
@@ -74,7 +81,6 @@ function Expenses() {
   const periodLabel = usePeriodLabel(search, data.range);
   const lock = useLock();
   const [recording, setRecording] = useState(false);
-  const [categorizing, setCategorizing] = useState(false);
   // Pages of 50 shift records (server cursor: createdAt of the last row). Pages already seen are kept, so Sebelumnya
   // needs no request; a new filter or a saved edit starts again at page 1.
   const [pages, setPages] = useState<Expense[][]>([data.rows]);
@@ -115,30 +121,39 @@ function Expenses() {
     <Page title={t('Pengeluaran')}>
       <FilterBar
         outlet={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}
-        active={search.period ? 1 : 0}
+        active={search.period && search.period !== 'month' ? 1 : 0}
         summary={[app.outlets.find((o) => o.id === search.outlet)?.name ?? t('Semua outlet'), periodLabel].join(' · ')}
         current={search}
         validate={(v) => periodError(v, data.today)}
         onApply={set}
         action={
-          <>
-            <Button onClick={() => setCategorizing(true)} {...lock.props}>
-              {t('Kategori')}
-            </Button>
-            <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
-              {lock.label(t('Catat pengeluaran'))}
-            </Button>
-          </>
+          <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
+            {lock.label(t('Catat pengeluaran'))}
+          </Button>
         }
       >
         {(d) => <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set} />}
       </FilterBar>
       {recording && <AddDialog outletId={search.outlet ?? null} today={data.today} onClose={() => setRecording(false)} />}
-      {categorizing && <CategoriesDialog onClose={() => setCategorizing(false)} />}
 
-      <Card className="mt-5" aria-label={t('Total pengeluaran')}>
-        <p className="font-mono text-small text-mute">{t('Total pengeluaran · {period}', { period: periodLabel })}</p>
-        <p className="big-num mt-3 break-words">{money(data.totals.total)}</p>
+      <Card className="mt-5" aria-label={t('Ringkasan kas')}>
+        <p className="font-mono text-small text-mute">{periodLabel}</p>
+        <dl className="mt-4 grid gap-5 sm:grid-cols-3">
+          <div>
+            <dt className="font-mono text-small text-mute">{t('Kas Outlet')}</dt>
+            <dd className="mt-1 font-display text-2xl font-extrabold break-words">{money(data.kasOutlet)}</dd>
+          </div>
+          <div>
+            <dt className="font-mono text-small text-mute">{t('Pengeluaran')}</dt>
+            <dd className="mt-1 font-display text-2xl font-extrabold break-words">{money(data.totals.total)}</dd>
+          </div>
+          <div>
+            <dt className="font-mono text-small text-mute">{t('Sisa Kas')}</dt>
+            <dd className={`mt-1 font-display text-2xl font-extrabold break-words ${data.kasOutlet - data.totals.total < 0 ? 'text-error' : ''}`}>
+              {money(data.kasOutlet - data.totals.total)}
+            </dd>
+          </div>
+        </dl>
         {data.totals.adjustments !== 0 && (
           <p className="mt-4 text-small text-mute">{t('Termasuk koreksi pengeluaran lama: {amount}', { amount: money(data.totals.adjustments) })}</p>
         )}
@@ -231,7 +246,7 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                     <details className="text-small text-mute">
                       <summary className="cursor-pointer">{t('Lihat detail')}</summary>
                       <p>
-                        {t('Uang dari')}: {t(PAID_FROM[i.paidFrom])}
+                        {t('Sumber uang')}: {t(PAID_FROM[i.paidFrom])}
                       </p>
                     </details>
                   </td>
@@ -364,91 +379,10 @@ function CancelDialog({ expense: e, item: i, onClose }: { expense: Expense; item
   );
 }
 
-/** The owner's expense categories: add, rename, and switch off (a switched-off one is not offered, its items keep their name). */
-function CategoriesDialog({ onClose }: { onClose: () => void }) {
-  const { t } = useI18n();
-  const act = useAction();
-  const [list, setList] = useState<ExpenseCategory[] | null>(null);
-  const [name, setName] = useState('');
-  const [editing, setEditing] = useState<ExpenseCategory | null>(null);
-  const reload = () => listExpenseCategories().then(setList, (err) => act.setError(describeError(err)));
-  useEffect(() => {
-    let live = true;
-    listExpenseCategories().then((c) => live && setList(c), (err) => live && act.setError(describeError(err)));
-    return () => {
-      live = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  async function save(ev: React.FormEvent) {
-    ev.preventDefault();
-    const target = editing;
-    const res = await act.run(() => saveExpenseCategory({ data: { id: target?.id ?? null, name, active: target?.active ?? true } }), {
-      success: target ? t('Kategori diubah.') : t('Kategori ditambahkan.'),
-    });
-    if (res) {
-      setName('');
-      setEditing(null);
-      await reload();
-    }
-  }
-  async function toggle(c: ExpenseCategory) {
-    const res = await act.run(() => saveExpenseCategory({ data: { id: c.id, name: c.name, active: !c.active } }));
-    if (res) await reload();
-  }
-  return (
-    <Dialog
-      open
-      onOpenChange={(o) => !o && onClose()}
-      title={t('Kategori pengeluaran')}
-      description={t('Yang dimatikan tidak bisa dipilih lagi.')}
-      footer={
-        <Button onClick={onClose}>{t('Tutup')}</Button>
-      }
-    >
-      <div className="grid gap-4">
-        <form noValidate onSubmit={save} className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-          <Field label={editing ? t('Ubah nama kategori') : t('Kategori baru')}>
-            <Input value={name} maxLength={40} placeholder={editing?.name ?? t('Contoh: listrik')} onChange={(ev) => setName(ev.target.value)} />
-          </Field>
-          <div className="flex gap-2">
-            {editing && (
-              <Button onClick={() => setEditing(null)} disabled={act.busy}>
-                {t('Batal')}
-              </Button>
-            )}
-            <Button type="submit" variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')}>
-              {editing ? t('Simpan') : t('Tambah')}
-            </Button>
-          </div>
-        </form>
-        {list === null ? null : list.length === 0 ? (
-          <p className="text-mute">{t('Belum ada kategori.')}</p>
-        ) : (
-          <ul className="grid gap-2" aria-label={t('Kategori pengeluaran')}>
-            {list.map((c) => (
-              <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-rule pb-2">
-                <span className={c.active ? 'font-semibold' : 'text-mute line-through'}>{c.name}</span>
-                <span className="flex gap-2">
-                  <Button sm onClick={() => { setEditing(c); setName(c.name); }} disabled={act.busy} aria-label={`${t('Ubah')} ${c.name}`}>
-                    {t('Ubah')}
-                  </Button>
-                  <Button sm onClick={() => toggle(c)} disabled={act.busy}>
-                    {c.active ? t('Matikan') : t('Aktifkan')}
-                  </Button>
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-        <FormAlert>{act.error && t(act.error)}</FormAlert>
-      </div>
-    </Dialog>
-  );
-}
-
-type Draft = { name: string; category: string; quantity: string; unit: string; amount: string; ingredientId: string; stockQty: string };
-const blank = (): Draft => ({ name: '', category: '', quantity: '1', unit: 'pcs', amount: '', ingredientId: '', stockQty: '' });
+/** `ingredientId` is a barang's id, LAIN for "Barang lain" (typed name, category, and unit), or '' until one is picked. */
+const LAIN = '__lain';
+type Draft = { ingredientId: string; name: string; category: string; unit: string; quantity: string; amount: string; stockQty: string };
+const blank = (): Draft => ({ ingredientId: '', name: '', category: '', unit: 'pcs', quantity: '1', amount: '', stockQty: '' });
 
 /**
  * New items for a shift. With `shift` (Tambah barang on a shift's card) that shift; without it (Catat pengeluaran) the owner
@@ -512,17 +446,21 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
     setErrors((es) => es.map((x, j) => (j === k ? '' : x)));
   };
   async function save() {
-    const checks = rows.map((r) =>
-      expenseItemSchema.safeParse({
-        name: r.name,
-        category: r.category,
-        unit: r.unit,
+    const checks = rows.map((r) => {
+      const free = r.ingredientId === LAIN;
+      if (!r.ingredientId) return { success: false as const, error: { issues: [{ message: 'Pilih barang.' }] } };
+      if (free && !r.name.trim()) return { success: false as const, error: { issues: [{ message: 'Tulis nama barang atau biaya.' }] } };
+      if (free && !EXPENSE_UNITS.includes(r.unit as (typeof EXPENSE_UNITS)[number])) return { success: false as const, error: { issues: [{ message: 'Pilih satuan.' }] } };
+      return expenseItemSchema.safeParse({
+        name: free ? r.name.trim() : '',
+        category: free ? r.category : '',
+        unit: free ? r.unit : '',
         quantity: Number(r.quantity.trim().replace(',', '.')),
         amount: Number(r.amount.replace(/\./g, '')),
-        ingredientId: r.ingredientId || null,
-        stockQty: r.stockQty.trim() === '' ? null : parseCount(r.stockQty.trim()),
-      }),
-    );
+        ingredientId: free ? null : r.ingredientId,
+        stockQty: free || r.stockQty.trim() === '' ? null : parseCount(r.stockQty.trim()),
+      });
+    });
     const errs = checks.map((c) => (c.success ? '' : (c.error.issues[0]?.message ?? 'Data tidak valid.')));
     setErrors(errs);
     if (errs.some(Boolean) || !target) return;
@@ -580,14 +518,15 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
             )}
           </div>
         )}
-        <Field label={t('Uang dari')}>
+        <Field label={t('Sumber uang')}>
           <Select value={paidFrom} onChange={(ev) => setPaidFrom(ev.target.value === 'drawer' ? 'drawer' : 'other')}>
-            <option value="other">{t('Bukan dari laci')}</option>
-            <option value="drawer">{t('Kas laci')}</option>
+            <option value="drawer">{t('Kas Laci')}</option>
+            <option value="other">{t('Kas Outlet')}</option>
           </Select>
         </Field>
         {rows.map((r, k) => {
           const picked = barang.find((b) => b.id === r.ingredientId);
+          const free = r.ingredientId === LAIN;
           return (
             <fieldset key={k} className="grid gap-3 rounded border border-rule bg-slip p-3 sm:grid-cols-6">
               <legend className="sr-only">{t('Barang {n}', { n: k + 1 })}</legend>
@@ -605,28 +544,55 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
                   <span className="sr-only"> {t('barang {n}', { n: k + 1 })}</span>
                 </Button>
               </div>
-              <Field label={t('Nama')} className="col-span-full sm:col-span-3">
-                <Input value={r.name} maxLength={60} onChange={(ev) => set(k, { name: ev.target.value })} />
-              </Field>
-              <Field label={t('Barang')} optional className="col-span-full sm:col-span-3">
-                <Select
-                  value={r.ingredientId}
-                  onChange={(ev) => {
-                    const next = barang.find((b) => b.id === ev.target.value);
-                    set(k, { ingredientId: ev.target.value, ...(next && !r.name.trim() ? { name: next.name } : {}), ...(next?.counted ? {} : { stockQty: '' }) });
-                  }}
-                >
-                  <option value="">{t('Barang lain')}</option>
+              <Field label={t('Barang')} className="col-span-full sm:col-span-3">
+                <Select value={r.ingredientId} onChange={(ev) => set(k, { ingredientId: ev.target.value, stockQty: '' })}>
+                  <option value="">{t('Pilih barang')}</option>
                   {barang.map((b) => (
                     <option key={b.id} value={b.id}>
                       {b.name}
-                      {b.counted ? '' : ' (' + t('tidak dihitung stoknya') + ')'}
                     </option>
                   ))}
+                  <option value={LAIN}>{t('Barang lain')}</option>
                 </Select>
               </Field>
+              {free && (
+                <Field label={t('Nama')} className="col-span-full sm:col-span-3">
+                  <Input value={r.name} maxLength={60} onChange={(ev) => set(k, { name: ev.target.value })} />
+                </Field>
+              )}
+              {free && (
+                <Field label={t('Kategori')} optional className="col-span-full sm:col-span-3">
+                  <Select value={r.category} onChange={(ev) => set(k, { category: ev.target.value })}>
+                    <option value="">{t('Tanpa kategori')}</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              )}
+              <Field label={picked ? `${t('Jumlah')} (${picked.baseUnit})` : t('Jumlah')} className="sm:col-span-2">
+                <Input
+                  value={r.quantity}
+                  inputMode="decimal"
+                  className="font-mono"
+                  onChange={(ev) => set(k, { quantity: ev.target.value.replace(/[^\d.,]/g, '') })}
+                />
+              </Field>
+              {free && (
+                <Field label={t('Satuan')} className="sm:col-span-2">
+                  <Select value={r.unit} onChange={(ev) => set(k, { unit: ev.target.value })}>
+                    {EXPENSE_UNITS.map((u) => (
+                      <option key={u} value={u}>
+                        {u}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              )}
               {picked?.counted && (
-                <Field label={`${t('Masuk stok')} (${picked.baseUnit})`} optional help={t('Isi nanti bila belum tahu.')} className="col-span-full sm:col-span-3">
+                <Field label={`${t('Masuk stok')} (${picked.baseUnit})`} optional help={t('Isi nanti bila belum tahu.')} className="sm:col-span-2">
                   <Input
                     value={r.stockQty}
                     inputMode="decimal"
@@ -635,28 +601,6 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
                   />
                 </Field>
               )}
-              <Field label={t('Kategori')} optional className="col-span-full sm:col-span-3">
-                <Select value={r.category} onChange={(ev) => set(k, { category: ev.target.value })}>
-                  <option value="">{t('Tanpa kategori')}</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.name}>
-                      {c.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <Field label={t('Jumlah')} className="sm:col-span-2">
-                <Input value={r.quantity} inputMode="decimal" className="font-mono" onChange={(ev) => set(k, { quantity: ev.target.value.replace(/[^\d.,]/g, '') })} />
-              </Field>
-              <Field label={t('Satuan')} className="sm:col-span-2">
-                <Select value={r.unit} onChange={(ev) => set(k, { unit: ev.target.value })}>
-                  {EXPENSE_UNITS.map((u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
               <Field label={t('Harga total')} className="col-span-full sm:col-span-2">
                 <Input
                   value={r.amount && Number(r.amount).toLocaleString('id-ID')}

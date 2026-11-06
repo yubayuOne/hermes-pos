@@ -25,6 +25,7 @@ export const saveIngredient = createServerFn({ method: 'POST' })
       p_name: data.name,
       p_unit: data.unit,
       p_counted: data.counted,
+      p_category: data.category || null,
     });
     return res.ok ? { ok: true, data: res.data } : res;
   });

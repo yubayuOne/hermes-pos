@@ -131,6 +131,8 @@ export const barangSchema = z.object({
   name: req('Nama barang wajib diisi.', 60),
   unit: baseUnit,
   counted: z.boolean({ error: 'Pilih apakah barang ini dihitung stoknya.' }),
+  /** The expense category of this barang; blank = none (101). */
+  category: z.string().trim().max(40, 'Nama kategori maksimal 40 huruf.').default(''),
 });
 export const ingredientRefSchema = z.object({ id: uuid });
 // ---------- Tables (091) ----------
@@ -190,15 +192,17 @@ export const voucherActiveSchema = z.object({ id: uuid, active: z.boolean() });
 /** Same list as the check in migrations 040, 041 and the POS. */
 export const EXPENSE_UNITS = ['kg', 'gr', 'L', 'ml', 'pcs', 'pack', 'dus', 'botol', 'sachet', 'ikat', 'karung', 'lusin'] as const;
 export const expenseItemSchema = z.object({
-  name: req('Tulis nama barang atau biaya.', 60, 'Nama barang maksimal 60 huruf.'),
-  /** Optional: the owner's category, or blank (100: no default categories). */
+  /** Blank for a barang (the barang's name is used); required for "Barang lain", checked by the form. */
+  name: z.string().trim().max(60, 'Nama barang maksimal 60 huruf.'),
+  /** Blank for a barang (the barang's category); optional for "Barang lain". */
   category: z.string().trim().max(40, 'Nama kategori maksimal 40 huruf.'),
   quantity: z
     .number({ error: 'Jumlah harus angka.' })
     .gt(0, 'Jumlah harus lebih dari 0.')
     .max(100000, 'Jumlah maksimal 100.000.')
     .refine((v) => Math.abs(v * 1000 - Math.round(v * 1000)) < 1e-6, 'Jumlah maksimal 3 angka di belakang koma.'),
-  unit: z.enum(EXPENSE_UNITS, { error: 'Pilih satuan.' }),
+  /** Blank for a barang (its own unit); required for "Barang lain", checked by the form. */
+  unit: z.string().max(12),
   amount: z
     .number({ error: 'Harga total harus angka.' })
     .int('Harga total tanpa koma.')

@@ -1591,4 +1591,11 @@ export const EN: Dict = {
   "Tidak ada yang cocok.": "No matches.",
   "Cari barang": "Search items",
   "Cari menu": "Search menu",
+  "Sumber uang": "Source of money",
+  "Kas Laci": "Cash drawer",
+  "Kas Outlet": "Outlet cash",
+  "Pilih barang": "Choose an item",
+  "Dipakai sebagai kategori setiap pengeluaran barang ini.": "Used as the category of every expense of this item.",
+  "Ringkasan kas": "Cash summary",
+  "Sisa Kas": "Cash left",
 };

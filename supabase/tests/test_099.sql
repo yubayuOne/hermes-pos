@@ -163,7 +163,16 @@ select pg_temp.ok('B14 grants: purchases and the old barang save are closed, the
   and not has_function_privilege('authenticated', 'public.owner_cancel_purchase(uuid, text)', 'execute')
   and not has_function_privilege('authenticated', 'public.owner_link_expense_items(uuid, jsonb)', 'execute')
   and not has_function_privilege('authenticated', 'public.owner_save_ingredient(uuid, uuid, text, numeric, numeric, text, text)', 'execute')
-  and has_function_privilege('authenticated', 'public.owner_save_barang(uuid, uuid, text, text, boolean)', 'execute')
+  and has_function_privilege('authenticated', 'public.owner_save_barang(uuid, uuid, text, text, boolean, text)', 'execute')
   and has_function_privilege('authenticated', 'public.owner_set_expense_stock(uuid, numeric)', 'execute')
-  and not has_function_privilege('anon', 'public.owner_save_barang(uuid, uuid, text, text, boolean)', 'execute'));
+  and not has_function_privilege('anon', 'public.owner_save_barang(uuid, uuid, text, text, boolean, text)', 'execute'));
+
+-- B15 (101): the category and the unit come from the barang; the typed ones are ignored.
+select set_config('t.gula', public.owner_save_barang(current_setting('t.o')::uuid, null, 'Gula pasir', 'g', true, 'Belanja')::text, false);
+select public.owner_add_expense_items(current_setting('t.sh')::uuid, 'other', jsonb_build_array(jsonb_build_object(
+  'name', '', 'category', 'Listrik', 'quantity', 2, 'unit', 'botol', 'amount', 30000, 'ingredientId', current_setting('t.gula'))));
+select pg_temp.ok('B15 a barang gives its category and unit to the expense',
+  pg_temp.qb(format('select category = %L and unit = %L and name = %L from public.expense_items where ingredient_id = %L', 'Belanja', 'g', 'Gula pasir', current_setting('t.gula'))));
+select pg_temp.fails('B15b a category that is not on the list is refused for the barang',
+  $q$select public.owner_save_barang(current_setting('t.o')::uuid, null, 'Garam', 'g', true, 'Hiburan')$q$, 'Kategori tidak tersedia');
 reset role;

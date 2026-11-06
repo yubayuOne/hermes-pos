@@ -508,6 +508,7 @@ export function toIngredient(r: Row): Ingredient {
     stock: num(r.stock),
     stockStarted: r.stockStarted === true,
     counted: r.dihitungStok !== false,
+    kategori: r.kategori ? str(r.kategori) : null,
     packLabel: str(r.packLabel),
     lastCountedAt: r.lastCountedAt ? str(r.lastCountedAt) : null,
   };

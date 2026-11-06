@@ -1,9 +1,12 @@
 import { Button, Dialog, Field, FormAlert, Input, Select, useI18n } from '@hermes-pos/ui';
+import { useEffect, useState } from 'react';
 import { barangSchema } from '../lib/schemas';
 import type { Ingredient } from '../lib/types';
 import { useAction } from '../lib/useAction';
 import { useForm } from '../lib/useForm';
 import { saveIngredient } from '../server/ingredients';
+import { listExpenseCategories } from '../server/expenses';
+import type { ExpenseCategory } from '../lib/types';
 
 /**
  * Add or change a barang: its name, its base unit (g, ml or pcs), and whether its stock is counted. Its price is not
@@ -26,7 +29,16 @@ export function IngredientDialog({
     name: ingredient?.name ?? '',
     unit: (ingredient && ingredient.baseUnit) || 'g',
     counted: ingredient ? (ingredient.counted ? 'yes' : 'no') : 'yes',
+    category: ingredient?.kategori ?? '',
   });
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  useEffect(() => {
+    let live = true;
+    listExpenseCategories().then((c) => live && setCategories(c.filter((x) => x.active)), () => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
   // Once a barang has stock or a count, its unit and whether it is counted are kept (the database refuses changes too).
   const locked = ingredient?.stockStarted === true;
 
@@ -39,6 +51,7 @@ export function IngredientDialog({
       name: v.name,
       unit: v.unit,
       counted: v.counted === 'yes',
+      category: v.category,
     });
     if (!data) return;
     const res = await act.run(() => saveIngredient({ data }), {
@@ -86,6 +99,16 @@ export function IngredientDialog({
             </Select>
           </Field>
         </div>
+        <Field label={t('Kategori')} optional help={t('Dipakai sebagai kategori setiap pengeluaran barang ini.')}>
+          <Select value={f.values.category} onChange={(e) => f.set('category', e.target.value)}>
+            <option value="">{t('Tanpa kategori')}</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
         <FormAlert>{act.error && t(act.error)}</FormAlert>
       </form>
     </Dialog>

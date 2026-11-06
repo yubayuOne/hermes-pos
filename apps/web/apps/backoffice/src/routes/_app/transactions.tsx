@@ -335,7 +335,6 @@ function BillDialog({ bill: b, onClose }: { bill: Bill; onClose: () => void }) {
       onOpenChange={(o) => !o && onClose()}
       title={t('Bill {number}', { number: b.number })}
       description={`${dateShort(b.createdAt, lang, tz)} ${time(b.createdAt, tz)} · ${b.outletName} · ${b.cashierName}`}
-      footer={<Button onClick={onClose}>{t('Tutup')}</Button>}
     >
       <BillTags bill={b} />
       {b.status === 'voided' && b.voidReason && <p className="text-body">{t('Alasan batal: {reason}', { reason: b.voidReason })}</p>}

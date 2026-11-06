@@ -840,4 +840,6 @@ export const EN: Record<string, string | [string, string]> = {
   "Pilih kategori.": "Choose a category.",
   "Tanpa kategori": "No category",
   "Barang lain": "Other item",
+  "Pilih barang.": "Choose an item.",
+  "Sumber uang: Kas Laci": "Source: cash drawer",
 };

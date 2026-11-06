@@ -345,6 +345,8 @@ export type Ingredient = {
   stock: number;
   /** False until the first expense with stock or count; sales leave the stock alone until then (088). */
   stockStarted: boolean;
+  /** The expense category of the barang (101), or null. */
+  kategori: string | null;
   /** Whether the stock is counted at all. Only counted barang have stock, a price, a count and a place in a recipe (099). */
   counted: boolean;
   packLabel: string;
