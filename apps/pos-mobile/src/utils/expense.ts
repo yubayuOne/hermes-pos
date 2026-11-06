@@ -3,15 +3,17 @@ import { ExpenseCategory, ExpenseItem } from '../types/domain';
 /** Same list as the check in migration 040. */
 export const EXPENSE_UNITS = ['kg', 'gr', 'L', 'ml', 'pcs', 'pack', 'dus', 'botol', 'sachet', 'ikat', 'karung', 'lusin'] as const;
 
-/** One row while the cashier types: text as typed, checked on submit. */
+/** One row while the cashier types: text as typed, checked on submit. The category and barang come from the owner's lists. */
 export interface ExpenseLine {
   name: string;
   category: ExpenseCategory;
+  /** A barang of the outlet, or '' for none. */
+  ingredientId: string;
   quantity: string;
   unit: string;
   amount: string;
 }
-export const emptyLine = (category: ExpenseCategory = 'belanja'): ExpenseLine => ({ name: '', category, quantity: '1', unit: 'pcs', amount: '' });
+export const emptyLine = (category: ExpenseCategory = '', ingredientId = ''): ExpenseLine => ({ name: '', category, ingredientId, quantity: '1', unit: 'pcs', amount: '' });
 
 /** "1,5" or "1.5" -> 1.5. At most 3 decimals, more than 0, at most 100.000. Null when not valid. */
 export function parseQuantity(s: string): number | null {
@@ -37,12 +39,13 @@ export function checkLines(lines: ExpenseLine[]): { errors: Array<Partial<Record
     const name = l.name.trim();
     const quantity = parseQuantity(l.quantity);
     const amount = parseAmount(l.amount);
+    if (!l.category.trim()) e.category = 'Pilih kategori.';
     if (!name) e.name = 'Tulis nama barang atau biaya.';
     else if (name.length > 60) e.name = 'Nama barang maksimal 60 huruf.';
     if (quantity === null) e.quantity = 'Jumlah lebih dari 0, maksimal 3 angka di belakang koma.';
     if (!(EXPENSE_UNITS as readonly string[]).includes(l.unit)) e.unit = 'Pilih satuan.';
     if (amount === null) e.amount = 'Harga total lebih dari Rp0, tanpa koma.';
-    if (!Object.keys(e).length) items.push({ name, category: l.category, quantity: quantity!, unit: l.unit, amount: amount! });
+    if (!Object.keys(e).length) items.push({ name, category: l.category.trim(), ingredientId: l.ingredientId || null, quantity: quantity!, unit: l.unit, amount: amount! });
     return e;
   });
   return { errors, items: lines.length && items.length === lines.length ? items : null };

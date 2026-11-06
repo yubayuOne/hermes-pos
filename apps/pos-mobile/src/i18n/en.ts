@@ -836,4 +836,7 @@ export const EN: Record<string, string | [string, string]> = {
     'Cannot connect to the printer. Make sure it is on, nearby, and not in use by another device.',
   'Koneksi printer terputus saat mencetak.': 'The printer connection dropped while printing.',
   'Printer tidak menerima data. Periksa kertas dan koneksi printer.': 'The printer did not accept the data. Check the paper and the printer connection.',
+  "Belum ada kategori. Minta pemilik mengatur kategori di BackOffice.": "No categories yet. Ask the owner to set them up in the back office.",
+  "Tanpa barang": "No item",
+  "Pilih kategori.": "Choose a category.",
 };

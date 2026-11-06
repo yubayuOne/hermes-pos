@@ -10,7 +10,7 @@ import { Page } from '../../components/Page';
 import { PageLoading } from '../../components/PageLoading';
 import { Pagination, pageOf } from '../../components/Pagination';
 import { useApp, useLock } from '../../lib/app';
-import { groupRupiah } from '../../lib/purchase';
+import { groupRupiah } from '../../lib/amount';
 import { categorySchema, productSchema } from '../../lib/schemas';
 import type { Category, Product, ProductSale } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
@@ -330,7 +330,7 @@ function ProductDialog({
                 </p>
                 <p className="help">
                   {t('HPP dari resep. Ubah lewat tab Resep.')}{' '}
-                  <Link to="/ingredients" search={{ outlet: outletId, tab: 'resep', product: product.id }} className="lnk lnk-inline">
+                  <Link to="/resep" search={{ outlet: outletId, product: product.id }} className="lnk lnk-inline">
                     {t('Atur resep')}
                   </Link>
                 </p>

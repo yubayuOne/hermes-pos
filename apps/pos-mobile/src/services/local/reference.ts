@@ -37,6 +37,12 @@ export function syncReference(outletId: string): Promise<void> {
     const s = (data ?? {}) as Snapshot;
     // Online now: make sure this phone has its terminal code, so its bills can be numbered offline (054).
     await registerTerminal(outletId).catch(() => undefined);
+    // The owner's expense categories and barang (migration 099). Kept on their own: an older server without it keeps the last copy.
+    const options = await supabase.rpc('pos_expense_options', { p_outlet_id: outletId }).then(
+      (r) => (r.error ? null : r.data),
+      () => null,
+    );
+    if (options) await db.runAsync('insert or replace into meta (key, value) values (?, ?)', [expenseOptionsKey(outletId), JSON.stringify(options)]);
     if (s.unchanged) return;
     const before = await db.getAllAsync<{ cashier_id: string }>('select cashier_id from cashiers where outlet_id = ?', [outletId]);
     const cashiers = s.cashiers ?? [];
@@ -79,6 +85,21 @@ export function syncReference(outletId: string): Promise<void> {
   })().finally(() => running.delete(outletId));
   running.set(outletId, run);
   return run;
+}
+
+export type ExpenseOptions = { categories: string[]; barang: { id: string; name: string; unit: string; counted: boolean }[] };
+const expenseOptionsKey = (outletId: string) => `expense-options:${outletId}`;
+
+/** The categories and barang of the last sync; empty until the phone has synced once. */
+export async function readExpenseOptions(outletId: string): Promise<ExpenseOptions> {
+  const db = await localDb();
+  const row = await db.getFirstAsync<{ value: string }>('select value from meta where key = ?', [expenseOptionsKey(outletId)]);
+  try {
+    const o = JSON.parse(row?.value ?? 'null') as Partial<ExpenseOptions> | null;
+    return { categories: o?.categories ?? [], barang: o?.barang ?? [] };
+  } catch {
+    return { categories: [], barang: [] };
+  }
 }
 
 /** The menu as the server last sent it (same shape fetchCatalog always returned). */

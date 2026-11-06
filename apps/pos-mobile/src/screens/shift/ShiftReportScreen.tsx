@@ -113,7 +113,7 @@ export function ShiftReportBody({ d }: { d: ShiftReportData }) {
               <SlipRow left={i.name} right={num(i.amount)} />
               <SlipRow
                 sub
-                left={`   ${String(i.quantity).replace('.', ',')} ${i.unit} · ${i.category === 'operasional' ? t('Operasional') : t('Belanja')} · ${
+                left={`   ${String(i.quantity).replace('.', ',')} ${i.unit} · ${i.category} · ${
                   i.paidFrom === 'drawer' ? t('kas laci') : t('bukan dari laci')
                 }`}
               />

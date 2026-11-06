@@ -11,6 +11,20 @@ begin
 exception when others then
   raise notice '%', (case when sqlerrm ilike '%' || expect || '%' then 'PASS ' else 'FAIL ' end) || label || ' -> ' || sqlerrm;
 end $$;
+create or replace function pg_temp.barang(o text, n text, price numeric, qty numeric, unit text) returns text language plpgsql as $$
+declare bid uuid;
+begin
+  bid := public.owner_save_barang(o::uuid, null, n, case when unit in ('g', 'kg') then 'g' when unit in ('ml', 'l') then 'ml' else 'pcs' end, true);
+  perform pg_temp.reprice(bid::text, price, qty, unit);
+  return bid::text;
+end $$;
+create or replace function pg_temp.reprice(bid text, price numeric, qty numeric, unit text) returns void language plpgsql security definer set search_path = public as $$
+begin
+  update public.ingredients set price = round(reprice.price / (reprice.qty * public.unit_factor(reprice.unit)), 6), pack_qty = 1,
+    pack_unit = case when reprice.unit in ('g', 'kg') then 'g' when reprice.unit in ('ml', 'l') then 'ml' else 'pcs' end
+  where id = reprice.bid::uuid;
+  perform public.recompute_hpp_for(array[reprice.bid::uuid]);
+end $$;
 create or replace function pg_temp.prod(col text) returns text language plpgsql security definer as $$
 declare v text;
 begin execute format('select %I::text from public.products where id = %L', col, current_setting('t.p')) into v; return v; end $$;
@@ -25,8 +39,8 @@ reset role;
 update public.subscriptions set plan_code = 'monthly', expires_at = now() + interval '20 days' where business_id = current_setting('t.b')::uuid;
 set role authenticated;
 select set_config('t.p', public.create_product(current_setting('t.o')::uuid, null, 'Es teh', 4000, 10000, 100)::text, false);
-select set_config('t.teh', public.owner_save_ingredient(current_setting('t.o')::uuid, null, 'Teh', 30000, 1, 'kg')::text, false);
-select set_config('t.gula', public.owner_save_ingredient(current_setting('t.o')::uuid, null, 'Gula', 15000, 1, 'kg')::text, false);
+select set_config('t.teh', pg_temp.barang(current_setting('t.o'), 'Teh', 30000, 1, 'kg'), false);
+select set_config('t.gula', pg_temp.barang(current_setting('t.o'), 'Gula', 15000, 1, 'kg'), false);
 
 select pg_temp.ok('S1 owners may call it, anon may not',
   has_function_privilege('authenticated', 'public.owner_save_recipe(uuid, jsonb)', 'execute')

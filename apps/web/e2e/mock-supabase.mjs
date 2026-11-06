@@ -669,6 +669,13 @@ const RPC = {
   owner_save_product: () => 'id',
   owner_save_recipe: () => null,
   owner_list_ingredients: () => [],
+  owner_save_barang: () => 'mock-barang-id',
+  owner_set_expense_stock: () => null,
+  owner_list_expense_categories: () => [
+    { id: 'mock-cat-1', name: 'operasional', active: true },
+    { id: 'mock-cat-2', name: 'belanja', active: true },
+  ],
+  owner_save_expense_category: () => 'mock-cat-id',
   owner_save_purchase: () => null,
   owner_link_expense_items: () => null,
   owner_stock_links_for_expense: () => [],

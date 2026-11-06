@@ -6,12 +6,15 @@ import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { Pagination } from '../../components/Pagination';
 import { Stat } from '../../components/Stat';
-import type { DayShift, Expense, ExpenseItem } from '../../lib/types';
+import type { DayShift, Expense, ExpenseCategory, ExpenseItem, Ingredient } from '../../lib/types';
+import { listIngredients } from '../../server/ingredients';
+import { listExpenseCategories, saveExpenseCategory, setExpenseStock } from '../../server/expenses';
+import { parseCount } from '../../lib/amount';
 import { describeError } from '../../lib/errors';
 import { addExpenseItems, cancelExpenseItem, listExpenses } from '../../server/expenses';
 import { getDay } from '../../server/closing';
 import { OutletField } from '../../components/Filters';
-import { EXPENSE_UNITS, expenseCancelSchema, expenseItemSchema } from '../../lib/schemas';
+import { EXPENSE_UNITS, expenseCancelSchema, expenseItemSchema, expenseStockSchema } from '../../lib/schemas';
 import { useApp, useLock } from '../../lib/app';
 import { useAction } from '../../lib/useAction';
 import { pageHead } from '../../lang';
@@ -41,7 +44,6 @@ export const Route = createFileRoute('/_app/expenses')({
   component: Expenses,
 });
 
-const CATEGORY: Record<ExpenseItem['category'], string> = { operasional: 'Operasional', belanja: 'Belanja' };
 const PAID_FROM: Record<ExpenseItem['paidFrom'], string> = { drawer: 'Kas laci', other: 'Bukan dari laci' };
 const qty = (n: number) => String(n).replace('.', ',');
 /** Shift records per page, as the server sends them (server/expenses.ts). */
@@ -73,6 +75,7 @@ function Expenses() {
   const periodLabel = usePeriodLabel(search, data.range);
   const lock = useLock();
   const [recording, setRecording] = useState(false);
+  const [categorizing, setCategorizing] = useState(false);
   // Pages of 50 shift records (server cursor: createdAt of the last row). Pages already seen are kept, so Sebelumnya
   // needs no request; a new filter or a saved edit starts again at page 1.
   const [pages, setPages] = useState<Expense[][]>([data.rows]);
@@ -119,14 +122,20 @@ function Expenses() {
         validate={(v) => periodError(v, data.today)}
         onApply={set}
         action={
-          <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
-            {lock.label(t('Catat pengeluaran'))}
-          </Button>
+          <>
+            <Button onClick={() => setCategorizing(true)} {...lock.props}>
+              {t('Atur kategori')}
+            </Button>
+            <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
+              {lock.label(t('Catat pengeluaran'))}
+            </Button>
+          </>
         }
       >
         {(d) => <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set} />}
       </FilterBar>
       {recording && <AddDialog outletId={search.outlet ?? null} today={data.today} onClose={() => setRecording(false)} />}
+      {categorizing && <CategoriesDialog onClose={() => setCategorizing(false)} />}
 
       <Card className="mt-5" aria-label={t('Total pengeluaran')}>
         <p className="font-mono text-small text-mute">{t('Total pengeluaran · {period}', { period: periodLabel })}</p>
@@ -175,6 +184,7 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
   const lock = useLock();
   const tz = useApp().business.timezone;
   const [cancelling, setCancelling] = useState<ExpenseItem | null>(null);
+  const [stocking, setStocking] = useState<ExpenseItem | null>(null);
   const [adding, setAdding] = useState(false);
   return (
     <Card as="article" aria-label={t('Pengeluaran shift {n}, {amount}', { n: e.shiftNumber, amount: money(e.total) })}>
@@ -217,6 +227,12 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                 <tr key={i.id}>
                   <td data-l={t('Barang atau biaya')}>
                     {i.name}
+                    {i.ingredientId && (
+                      <span className="block text-small text-mute">
+                        {i.ingredientName} ·{' '}
+                        {!i.ingredientCounted ? t('tidak dihitung stoknya') : i.stockQty === null ? t('belum masuk stok') : t('masuk stok {qty}', { qty: `${qty(i.stockQty)} ${i.ingredientUnit ?? ''}` })}
+                      </span>
+                    )}
                     <details className="text-small text-mute">
                       <summary className="cursor-pointer">{t('Lihat detail')}</summary>
                       <p>
@@ -224,7 +240,7 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                       </p>
                     </details>
                   </td>
-                  <td data-l={t('Kategori')}>{t(CATEGORY[i.category])}</td>
+                  <td data-l={t('Kategori')}>{i.category}</td>
                   <td data-l={t('Jumlah|barang')} className="num">
                     {qty(i.quantity)} {i.unit}
                   </td>
@@ -232,6 +248,12 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
                     {money(i.amount)}
                   </td>
                   <td data-l="" className="text-right">
+                    {i.ingredientCounted && (
+                      <Button sm onClick={() => setStocking(i)} {...lock.props}>
+                        {i.stockQty === null ? t('Isi jumlah masuk stok') : t('Ubah jumlah masuk stok')}
+                        <span className="sr-only"> {i.name}</span>
+                      </Button>
+                    )}
                     <Button sm onClick={() => setCancelling(i)} {...lock.props}>
                       {t('Batalkan')}
                       <span className="sr-only"> {i.name}</span>
@@ -256,8 +278,50 @@ function ExpenseCard({ expense: e }: { expense: Expense }) {
         </ul>
       )}
       {cancelling && <CancelDialog expense={e} item={cancelling} onClose={() => setCancelling(null)} />}
+      {stocking && <StockDialog item={stocking} onClose={() => setStocking(null)} />}
       {adding && <AddDialog shift={{ id: e.shiftId, number: e.shiftNumber }} onClose={() => setAdding(false)} />}
     </Card>
+  );
+}
+
+/** The amount that came into a barang's stock with this item, in the barang's unit. It may differ from the package (a bottle weighed without its packaging). */
+function StockDialog({ item: i, onClose }: { item: ExpenseItem; onClose: () => void }) {
+  const { t } = useI18n();
+  const act = useAction();
+  const [qty, setQty] = useState(i.stockQty === null ? '' : String(i.stockQty));
+  const unit = i.ingredientUnit ?? '';
+  async function save(ev: React.FormEvent) {
+    ev.preventDefault();
+    const typed = qty.trim();
+    const check = expenseStockSchema.safeParse({ itemId: i.id, qty: typed === '' ? null : parseCount(typed) });
+    if (!check.success) return act.setError(check.error.issues[0]?.message ?? 'Data tidak valid.');
+    const res = await act.run(() => setExpenseStock({ data: check.data }), { success: t('Stok {name} dicatat.', { name: i.ingredientName ?? i.name }) });
+    if (res) onClose();
+  }
+  return (
+    <Dialog
+      open
+      onOpenChange={(o) => !o && onClose()}
+      title={t('Jumlah masuk stok')}
+      description={t('Jumlah yang benar-benar masuk stok, dalam satuan barang. Boleh berbeda dari kemasan, misalnya minyak yang ditimbang tanpa botolnya. Kosongkan untuk menunggu lagi.')}
+      footer={
+        <>
+          <Button onClick={onClose} disabled={act.busy}>
+            {t('Batal')}
+          </Button>
+          <Button type="submit" form="stock-expense" variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')}>
+            {t('Simpan jumlah')}
+          </Button>
+        </>
+      }
+    >
+      <form id="stock-expense" noValidate onSubmit={save} className="grid gap-4">
+        <Field label={`${i.ingredientName ?? ''} (${unit})`}>
+          <Input autoFocus inputMode="decimal" className="font-mono" value={qty} onChange={(ev) => setQty(ev.target.value.replace(/[^\d.,]/g, '').slice(0, 10))} />
+        </Field>
+        <FormAlert>{act.error && t(act.error)}</FormAlert>
+      </form>
+    </Dialog>
   );
 }
 
@@ -305,8 +369,91 @@ function CancelDialog({ expense: e, item: i, onClose }: { expense: Expense; item
   );
 }
 
-type Draft = { name: string; category: ExpenseItem['category']; quantity: string; unit: string; amount: string };
-const blank = (): Draft => ({ name: '', category: 'belanja', quantity: '1', unit: 'pcs', amount: '' });
+/** The owner's expense categories: add, rename, and switch off (a switched-off one is not offered, its items keep their name). */
+function CategoriesDialog({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n();
+  const act = useAction();
+  const [list, setList] = useState<ExpenseCategory[] | null>(null);
+  const [name, setName] = useState('');
+  const [editing, setEditing] = useState<ExpenseCategory | null>(null);
+  const reload = () => listExpenseCategories().then(setList, (err) => act.setError(describeError(err)));
+  useEffect(() => {
+    let live = true;
+    listExpenseCategories().then((c) => live && setList(c), (err) => live && act.setError(describeError(err)));
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  async function save(ev: React.FormEvent) {
+    ev.preventDefault();
+    const target = editing;
+    const res = await act.run(() => saveExpenseCategory({ data: { id: target?.id ?? null, name, active: target?.active ?? true } }), {
+      success: target ? t('Kategori diubah.') : t('Kategori ditambahkan.'),
+    });
+    if (res) {
+      setName('');
+      setEditing(null);
+      await reload();
+    }
+  }
+  async function toggle(c: ExpenseCategory) {
+    const res = await act.run(() => saveExpenseCategory({ data: { id: c.id, name: c.name, active: !c.active } }));
+    if (res) await reload();
+  }
+  return (
+    <Dialog
+      open
+      onOpenChange={(o) => !o && onClose()}
+      title={t('Kategori pengeluaran')}
+      description={t('Atur sendiri kategorinya. Kategori yang dimatikan tidak bisa dipilih lagi, tapi pengeluaran lama tetap memakainya.')}
+      footer={
+        <Button onClick={onClose}>{t('Tutup')}</Button>
+      }
+    >
+      <div className="grid gap-4">
+        <form noValidate onSubmit={save} className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+          <Field label={editing ? t('Ubah nama kategori') : t('Kategori baru')}>
+            <Input value={name} maxLength={40} placeholder={editing?.name ?? t('Contoh: listrik, iuran sampah')} onChange={(ev) => setName(ev.target.value)} />
+          </Field>
+          <div className="flex gap-2">
+            {editing && (
+              <Button onClick={() => setEditing(null)} disabled={act.busy}>
+                {t('Batal')}
+              </Button>
+            )}
+            <Button type="submit" variant="fire" busy={act.busy} busyLabel={t('Menyimpan...')}>
+              {editing ? t('Simpan') : t('Tambah')}
+            </Button>
+          </div>
+        </form>
+        {list === null ? null : list.length === 0 ? (
+          <p className="text-mute">{t('Belum ada kategori.')}</p>
+        ) : (
+          <ul className="grid gap-2" aria-label={t('Kategori pengeluaran')}>
+            {list.map((c) => (
+              <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-rule pb-2">
+                <span className={c.active ? 'font-semibold' : 'text-mute line-through'}>{c.name}</span>
+                <span className="flex gap-2">
+                  <Button sm onClick={() => { setEditing(c); setName(c.name); }} disabled={act.busy} aria-label={`${t('Ubah')} ${c.name}`}>
+                    {t('Ubah')}
+                  </Button>
+                  <Button sm onClick={() => toggle(c)} disabled={act.busy}>
+                    {c.active ? t('Matikan') : t('Aktifkan')}
+                  </Button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <FormAlert>{act.error && t(act.error)}</FormAlert>
+      </div>
+    </Dialog>
+  );
+}
+
+type Draft = { name: string; category: string; quantity: string; unit: string; amount: string; ingredientId: string; stockQty: string };
+const blank = (): Draft => ({ name: '', category: '', quantity: '1', unit: 'pcs', amount: '', ingredientId: '', stockQty: '' });
 
 /**
  * New items for a shift. With `shift` (Tambah barang on a shift's card) that shift; without it (Catat pengeluaran) the owner
@@ -324,6 +471,23 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
   const [shiftDay, setShiftDay] = useState('');
   const [shiftId, setShiftId] = useState('');
   const [paidFrom, setPaidFrom] = useState<'drawer' | 'other'>('other');
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  const [barang, setBarang] = useState<Ingredient[]>([]);
+  useEffect(() => {
+    let live = true;
+    listExpenseCategories().then((c) => live && setCategories(c.filter((x) => x.active)), () => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (!outlet) return;
+    let live = true;
+    listIngredients({ data: { outletId: outlet } }).then((list) => live && setBarang(list), () => undefined);
+    return () => {
+      live = false;
+    };
+  }, [outlet]);
   useEffect(() => {
     if (shift || !outlet || !date) return;
     let live = true;
@@ -354,7 +518,15 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
   };
   async function save() {
     const checks = rows.map((r) =>
-      expenseItemSchema.safeParse({ ...r, quantity: Number(r.quantity.trim().replace(',', '.')), amount: Number(r.amount.replace(/\./g, '')) }),
+      expenseItemSchema.safeParse({
+        name: r.name,
+        category: r.category,
+        unit: r.unit,
+        quantity: Number(r.quantity.trim().replace(',', '.')),
+        amount: Number(r.amount.replace(/\./g, '')),
+        ingredientId: r.ingredientId || null,
+        stockQty: r.stockQty.trim() === '' ? null : parseCount(r.stockQty.trim()),
+      }),
     );
     const errs = checks.map((c) => (c.success ? '' : (c.error.issues[0]?.message ?? 'Data tidak valid.')));
     setErrors(errs);
@@ -442,11 +614,47 @@ function AddDialog({ shift, outletId, today, onClose }: { shift?: { id: string; 
               <span className="text-small font-semibold">{t('Barang atau biaya')}</span>
               <Input value={r.name} maxLength={60} onChange={(ev) => set(k, { name: ev.target.value })} />
             </label>
+            <label className="col-span-full grid min-w-0 gap-1.5 sm:col-span-3">
+              <span className="text-small font-semibold">{t('Barang di daftar')}</span>
+              <Select
+                value={r.ingredientId}
+                onChange={(ev) => {
+                  const picked = barang.find((b) => b.id === ev.target.value);
+                  set(k, { ingredientId: ev.target.value, ...(picked && !r.name.trim() ? { name: picked.name } : {}), ...(picked?.counted ? {} : { stockQty: '' }) });
+                }}
+              >
+                <option value="">{t('Tidak dari daftar barang')}</option>
+                {barang.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                    {b.counted ? '' : ' (' + t('tidak dihitung stoknya') + ')'}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            {barang.find((b) => b.id === r.ingredientId)?.counted && (
+              <label className="col-span-full grid min-w-0 gap-1.5 sm:col-span-3">
+                <span className="text-small font-semibold">
+                  {t('Jumlah masuk stok')} ({barang.find((b) => b.id === r.ingredientId)?.baseUnit})
+                </span>
+                <Input
+                  value={r.stockQty}
+                  inputMode="decimal"
+                  className="font-mono"
+                  placeholder={t('Kosongkan untuk diisi nanti')}
+                  onChange={(ev) => set(k, { stockQty: ev.target.value.replace(/[^\d.,]/g, '').slice(0, 10) })}
+                />
+              </label>
+            )}
             <label className="col-span-full grid min-w-0 gap-1.5 sm:col-span-2">
               <span className="text-small font-semibold">{t('Kategori')}</span>
-              <Select value={r.category} onChange={(ev) => set(k, { category: ev.target.value === 'operasional' ? 'operasional' : 'belanja' })}>
-                <option value="belanja">{t('Belanja')}</option>
-                <option value="operasional">{t('Operasional')}</option>
+              <Select value={r.category} onChange={(ev) => set(k, { category: ev.target.value })}>
+                <option value="">{t('Pilih kategori')}</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
               </Select>
             </label>
             <label className="grid min-w-0 gap-1.5 sm:col-span-1">

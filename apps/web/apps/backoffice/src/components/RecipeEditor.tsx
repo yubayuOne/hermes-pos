@@ -99,12 +99,12 @@ export function RecipeEditor({
           <div key={r.key} className="grid gap-2 rounded border border-rule bg-slip p-2">
             <Select aria-label={t('Bahan {n}', { n: n + 1 })} value={r.ingredientId} onChange={(e) => pick(r.key, e.target.value)}>
               <option value="">{t('Pilih bahan')}</option>
-              {ingredients.map((i) => (
+              {ingredients.filter((i) => i.counted).map((i) => (
                 <option key={i.id} value={i.id} disabled={used.has(i.id) && i.id !== r.ingredientId}>
                   {i.name}
                 </option>
               ))}
-              <option value={NEW}>{t('+ Bahan baru')}</option>
+              <option value={NEW}>{t('+ Barang baru')}</option>
             </Select>
             <div className="flex flex-wrap items-center gap-2">
               <Input

@@ -112,14 +112,8 @@ export const cashierActiveSchema = z.object({ cashierId: uuid, active: z.boolean
 export const outletRefSchema = z.object({ outletId: uuid });
 export const productImageRefSchema = outletRefSchema.extend({ productId: uuid });
 export const categorySchema = z.object({ outletId: uuid, name: req('Isi nama kategori.', 20, 'Nama kategori maksimal 20 huruf.') });
-// ---------- Ingredients and recipes (084) ----------
+// ---------- Barang and recipes (084, 099) ----------
 /** Ingredient prices keep cents: a moving average (088) is stored with 2 decimals and the dialog sends it back. */
-const ingredientPrice = z
-  .number({ error: 'Harga beli harus angka, boleh Rp0.' })
-  .min(0, 'Harga beli harus angka, boleh Rp0.')
-  .max(1_000_000_000, 'Harga beli harus angka, boleh Rp0.')
-  .refine((v) => Math.abs(v * 100 - Math.round(v * 100)) < 1e-6, 'Harga beli harus angka, boleh Rp0.');
-const unit = z.enum(['g', 'kg', 'ml', 'l', 'pcs'], { error: 'Pilih satuan.' });
 /** Up to 3 decimals, above 0, below a million: the same limits as the database (apply_recipe, ingredients.pack_qty). */
 const amount3 = (label: string) =>
   z
@@ -127,16 +121,17 @@ const amount3 = (label: string) =>
     .refine((v) => !Number.isFinite(v) || Math.abs(v * 1000 - Math.round(v * 1000)) < 1e-6, `${label} maksimal 3 angka di belakang koma.`)
     .refine((v) => !Number.isFinite(v) || v > 0, `${label} harus lebih dari 0.`)
     .refine((v) => !Number.isFinite(v) || v < 1_000_000, `${label} terlalu besar.`);
-export const ingredientSchema = z.object({
+const unit = z.enum(['g', 'kg', 'ml', 'l', 'pcs'], { error: 'Pilih satuan.' });
+/** The base unit of a barang is fixed when it is created: stock is kept in it. */
+export const baseUnit = z.enum(['g', 'ml', 'pcs'], { error: 'Pilih satuan: g, ml, atau pcs.' });
+/** A barang has no price here: its price is the average of the expenses that brought it into stock. */
+export const barangSchema = z.object({
   id: uuid.nullish(),
   outletId: uuid,
-  name: req('Nama bahan wajib diisi.', 60),
-  price: ingredientPrice,
-  packQty: amount3('Isi kemasan'),
-  packUnit: unit,
-  packLabel: z.string().trim().max(20, 'Maksimal 20 karakter.').default(''),
+  name: req('Nama barang wajib diisi.', 60),
+  unit: baseUnit,
+  counted: z.boolean({ error: 'Pilih apakah barang ini dihitung stoknya.' }),
 });
-export const ingredientPreviewSchema = z.object({ id: uuid, price: ingredientPrice, packQty: amount3('Isi kemasan'), packUnit: unit });
 export const ingredientRefSchema = z.object({ id: uuid });
 // ---------- Tables (091) ----------
 export const tableSchema = z.object({ outletId: uuid, id: uuid.nullish(), name: req('Isi nama meja.', 20, 'Nama meja maksimal 20 huruf.') });
@@ -196,7 +191,7 @@ export const voucherActiveSchema = z.object({ id: uuid, active: z.boolean() });
 export const EXPENSE_UNITS = ['kg', 'gr', 'L', 'ml', 'pcs', 'pack', 'dus', 'botol', 'sachet', 'ikat', 'karung', 'lusin'] as const;
 export const expenseItemSchema = z.object({
   name: req('Tulis nama barang atau biaya.', 60, 'Nama barang maksimal 60 huruf.'),
-  category: z.enum(['operasional', 'belanja'], { error: 'Pilih kategori.' }),
+  category: z.string().trim().min(1, 'Pilih kategori.').max(40, 'Nama kategori maksimal 40 huruf.'),
   quantity: z
     .number({ error: 'Jumlah harus angka.' })
     .gt(0, 'Jumlah harus lebih dari 0.')
@@ -208,11 +203,21 @@ export const expenseItemSchema = z.object({
     .int('Harga total tanpa koma.')
     .gt(0, 'Harga total harus lebih dari Rp0.')
     .max(100_000_000, 'Harga total maksimal Rp100.000.000.'),
+  /** A barang the item is for; with stockQty the amount that came into its stock (in the barang's base unit). */
+  ingredientId: uuid.nullish(),
+  stockQty: amount3('Jumlah masuk stok').nullish(),
 });
 export const expenseAddSchema = z.object({
   shiftId: uuid,
   paidFrom: z.enum(['drawer', 'other'], { error: 'Pilih sumber uang.' }),
   items: z.array(expenseItemSchema).min(1, 'Isi minimal satu barang.').max(30, 'Maksimal 30 barang sekali simpan.'),
+});
+/** The amount that came into stock for an item; null clears it (the item waits again). */
+export const expenseStockSchema = z.object({ itemId: uuid, qty: amount3('Jumlah masuk stok').nullable() });
+export const expenseCategorySchema = z.object({
+  id: uuid.nullish(),
+  name: req('Isi nama kategori.', 40, 'Nama kategori maksimal 40 huruf.'),
+  active: z.boolean({ error: 'Pilih aktif atau tidak.' }),
 });
 export const expenseCancelSchema = z.object({
   itemId: uuid,
@@ -378,19 +383,8 @@ export const stockDocumentListSchema = z
   .object({ outletId: uuid, from: day, to: day, tz: z.enum(timezones), page: z.number().int().min(1).max(10_000) })
   .refine(...rangeCheck);
 
-// ---------- Ingredient purchases and counts (088) ----------
+// ---------- Ingredient counts (088, 099) ----------
 const oncePerIngredient = (ls: { ingredientId: string }[]) => new Set(ls.map((l) => l.ingredientId)).size === ls.length;
-export const purchaseSchema = z.object({
-  outletId: uuid,
-  boughtOn: day,
-  lines: z
-    .array(z.object({ ingredientId: uuid, packs: amount3('Jumlah'), total: rupiah('Total bayar harus angka, boleh Rp0.') }))
-    .min(1, 'Isi minimal satu bahan.')
-    .max(50, 'Belanja maksimal 50 bahan.')
-    .refine(oncePerIngredient, 'Satu bahan hanya boleh sekali.'),
-});
-export const purchaseCancelSchema = z.object({ id: uuid, reason: z.string().trim().min(3, 'Tulis alasan, minimal 3 huruf.').max(200, 'Maksimal 200 karakter.') });
-export const purchaseListSchema = z.object({ outletId: uuid, page: z.number().int().min(1).max(10_000) });
 /** A count may be 0 (the shelf is empty); same limits as owner_count_ingredients. */
 export const countSchema = z.object({
   outletId: uuid,
@@ -418,14 +412,3 @@ export const paymentSchema = z.object({
   note: z.string().trim().max(300, 'Maksimal 300 karakter.'),
 });
 
-// ---------- Expense items to stock (089) ----------
-export const linkExpenseItemsSchema = z.object({
-  outletId: uuid,
-  lines: z
-    .array(z.object({ expenseItemId: uuid, ingredientId: uuid, packs: amount3('Jumlah') }))
-    .min(1, 'Isi minimal satu bahan.')
-    .max(50, 'Maksimal 50 bahan.')
-    .refine((ls) => new Set(ls.map((l) => l.expenseItemId)).size === ls.length, 'Satu barang hanya boleh sekali.')
-    .refine(oncePerIngredient, 'Satu bahan hanya boleh sekali.'),
-});
-export const expenseRefSchema = z.object({ expenseId: uuid });

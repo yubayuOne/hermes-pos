@@ -48,8 +48,12 @@ const db = {
 };
 let snapshot = null;
 let rpcCalls = [];
+let expenseOptions = { categories: ["Listrik", "Belanja"], barang: [{ id: "b1", name: "Minyak goreng", unit: "ml", counted: true }] };
 const supabase = {
-  rpc: async (name, args) => (rpcCalls.push(args), snapshot instanceof Error ? { data: null, error: snapshot } : { data: snapshot, error: null }),
+  rpc: async (name, args) =>
+    name === 'pos_expense_options'
+      ? { data: expenseOptions, error: null }
+      : (rpcCalls.push(args), snapshot instanceof Error ? { data: null, error: snapshot } : { data: snapshot, error: null }),
 };
 // Since 059 the snapshot has no PIN hashes; a sync only drops the ones older versions kept.
 let dropped = [];
@@ -141,6 +145,8 @@ const toVoucher = (d) => ({ code: String(d.code).toUpperCase(), value: Number(d.
   rpcCalls = [];
   await Promise.all([R.syncReference('o1'), R.syncReference('o1')]);
   ok(rpcCalls.length === 1, 'R11 two syncs at once: one download');
+  const opts = await R.readExpenseOptions('o1');
+  ok(opts.categories.join() === 'Listrik,Belanja' && opts.barang[0].name === 'Minyak goreng', 'R18 categories and barang are kept for offline expenses (099)');
 
   const shiftRow = {
     id: 's9',

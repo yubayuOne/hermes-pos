@@ -8,6 +8,7 @@ import { Sheet, SheetBody, SheetHeader } from '../../components/Sheet';
 import { useAppStore } from '../../hooks/AppStore';
 import { useNotify } from '../../hooks/NotifyProvider';
 import { recordExpense } from '../../services/transaction/repository';
+import { readExpenseOptions, type ExpenseOptions } from '../../services/local/reference';
 import { CHECKOUT_TIMEOUT_MS, enqueueCheckout, queueFirst, waitsForQueue, withTimeout } from '../../services/transaction/offlineQueue';
 import { refreshSubscription } from '../../services/subscription/subscription';
 import { describeError, isExpiredError, isNetworkError } from '../../utils/errors';
@@ -19,7 +20,7 @@ import { money, num, t, useT } from '../../i18n';
 type RowErrors = Partial<Record<keyof ExpenseLine, string>>;
 
 /**
- * Catat pengeluaran (migrations 040, 041, 043): one or more notes, each with a name, operasional or belanja, and the total paid.
+ * Catat pengeluaran (migrations 040, 041, 043, 099): one or more notes, each with a name, the owner's category, an optional barang, and the total paid.
  * The quantity is 1 pcs, so the note is only what was bought, and the owner does not need to match it to stock. They join the shift's one expense record and count at once; from
  * the drawer they leave the shift's cash at once. No owner approval; the owner can edit it on the web. Offline: stored in
  * the offline queue with the same key and sent when the internet is back, so it is recorded once.
@@ -29,6 +30,8 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
   const notify = useNotify();
   const { shift, session } = useAppStore();
   const [lines, setLines] = useState<ExpenseLine[]>([emptyLine()]);
+  // The owner's categories and barang, as the last sync kept them (also when offline).
+  const [options, setOptions] = useState<ExpenseOptions>({ categories: [], barang: [] });
   const [errors, setErrors] = useState<RowErrors[]>([]);
   // The cashier's expenses always come out of the drawer (owner's decision, 23 Oct 2026); other money is the owner's in the backoffice.
   const paidFrom = 'drawer' as const;
@@ -43,6 +46,11 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
     // One key per opened sheet: a retry after a lost response records once.
     key.current = `expense:${session?.cashierId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
   }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!visible || !session) return;
+    readExpenseOptions(session.outletId).then(setOptions, () => undefined);
+  }, [visible, session?.outletId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const total = lines.reduce((n, l) => n + (parseAmount(l.amount) ?? 0), 0);
   const set = (i: number, patch: Partial<ExpenseLine>) => {
@@ -128,10 +136,31 @@ export function ExpenseSheet({ visible, onClose, onSaved }: { visible: boolean; 
                 maxLength={60}
                 error={e.name ? t(e.name) : null}
               />
-              <View className="flex-row gap-2">
-                <Chip grow label={t('Belanja')} selected={l.category === 'belanja'} onPress={() => set(i, { category: 'belanja' })} />
-                <Chip grow label={t('Operasional')} selected={l.category === 'operasional'} onPress={() => set(i, { category: 'operasional' })} />
+              <View className="flex-row flex-wrap gap-2">
+                {options.categories.length === 0 ? (
+                  <Text className="text-small text-mute">{t('Belum ada kategori. Minta pemilik mengatur kategori di BackOffice.')}</Text>
+                ) : (
+                  options.categories.map((c) => <Chip key={c} label={c} selected={l.category === c} onPress={() => set(i, { category: c })} />)
+                )}
               </View>
+              {e.category ? (
+                <Text accessibilityRole="alert" className="font-body-600 text-small text-error">
+                  {t(e.category)}
+                </Text>
+              ) : null}
+              {options.barang.length > 0 && (
+                <View className="flex-row flex-wrap gap-2">
+                  <Chip label={t('Tanpa barang')} selected={!l.ingredientId} onPress={() => set(i, { ingredientId: '' })} />
+                  {options.barang.map((b) => (
+                    <Chip
+                      key={b.id}
+                      label={b.name}
+                      selected={l.ingredientId === b.id}
+                      onPress={() => set(i, { ingredientId: b.id, ...(l.name.trim() ? {} : { name: b.name }) })}
+                    />
+                  ))}
+                </View>
+              )}
               <TextField
                 label={t('Harga total')}
                 value={l.amount ? num(Number(l.amount)) : ''}

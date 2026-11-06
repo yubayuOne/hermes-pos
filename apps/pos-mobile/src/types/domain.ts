@@ -132,10 +132,13 @@ export type PinResult =
   | { ok: false; reason: 'locked'; lockedUntil: string }
   | { ok: false; reason: 'no_pin' | 'not_found' };
 /** Expenses of one shift (migrations 040, 041, 043): every entry adds items to it and counts at once. The owner can edit it on the web. */
-export type ExpenseCategory = 'operasional' | 'belanja';
+/** The owner's category name (migration 099). */
+export type ExpenseCategory = string;
 export interface ExpenseItem {
   name: string;
   category: ExpenseCategory;
+  /** The barang of the item, if it is one of the outlet's barang (099). */
+  ingredientId?: string | null;
   quantity: number;
   unit: string;
   amount: number;

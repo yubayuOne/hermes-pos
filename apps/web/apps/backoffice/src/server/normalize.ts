@@ -1,13 +1,9 @@
 import { DEFAULT_TZ, dayDiff, isoDay } from '@hermes-pos/ui';
 import { UNITS, type Unit } from '../lib/units';
-import { expenseItemIdOf } from '../lib/purchase';
 import type {
   Ingredient,
   OutletTable,
-  IngredientImpact,
   CountResultLine,
-  Purchase,
-  PurchaseList,
   RecipeCost,
   StockDocument,
   StockDocumentList,
@@ -145,11 +141,16 @@ function toExpenseItem(i: Row): ExpenseItem {
   return {
     id: str(i.id),
     name: str(i.name),
-    category: i.category === 'operasional' ? 'operasional' : 'belanja',
+    category: str(i.category),
     quantity: num(i.quantity),
     unit: str(i.unit),
     amount: num(i.amount),
     paidFrom: i.paidFrom === 'other' ? 'other' : 'drawer',
+    ingredientId: i.ingredientId ? str(i.ingredientId) : null,
+    ingredientName: i.ingredientName ? str(i.ingredientName) : null,
+    ingredientUnit: i.ingredientUnit ? str(i.ingredientUnit) : null,
+    ingredientCounted: i.ingredientCounted === true,
+    stockQty: i.stockQty === null || i.stockQty === undefined ? null : num(i.stockQty),
   };
 }
 
@@ -506,33 +507,10 @@ export function toIngredient(r: Row): Ingredient {
     usedBy: num(r.usedBy),
     stock: num(r.stock),
     stockStarted: r.stockStarted === true,
+    counted: r.dihitungStok !== false,
     packLabel: str(r.packLabel),
     lastCountedAt: r.lastCountedAt ? str(r.lastCountedAt) : null,
   };
-}
-
-export function toPurchase(r: Row): Purchase {
-  return {
-    id: str(r.id),
-    boughtOn: str(r.boughtOn),
-    total: num(r.total),
-    cancelledAt: r.cancelledAt ? str(r.cancelledAt) : null,
-    lines: rows(r.lines).map((l) => ({
-      ingredientId: str(l.ingredientId),
-      name: str(l.name),
-      packLabel: str(l.packLabel),
-      packs: num(l.packs),
-      total: num(l.total),
-      priceBefore: num(l.priceBefore),
-      priceAfter: num(l.priceAfter),
-      expenseItemId: expenseItemIdOf(l.expenseItemId),
-    })),
-  };
-}
-
-export function toPurchaseList(raw: unknown): PurchaseList {
-  const r = (raw ?? {}) as Row;
-  return { total: num(r.total), rows: rows(r.rows).map(toPurchase) };
 }
 
 export function toCountLine(r: Row): CountResultLine {
@@ -556,6 +534,3 @@ export function toRecipeCost(r: Row | null): RecipeCost {
   };
 }
 
-export function toImpact(r: Row): IngredientImpact {
-  return { productId: str(r.productId), name: str(r.name), oldHpp: num(r.oldHpp), newHpp: num(r.newHpp) };
-}

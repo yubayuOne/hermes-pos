@@ -26,6 +26,22 @@ create or replace function pg_temp.hpp() returns numeric language sql security d
   select hpp from public.products where id = current_setting('t.p')::uuid
 $$;
 
+-- Barang with its price per base unit. In the app the price comes from expenses; the fixture sets it the same way.
+create or replace function pg_temp.barang(o text, n text, price numeric, qty numeric, unit text) returns text language plpgsql as $$
+declare bid uuid;
+begin
+  bid := public.owner_save_barang(o::uuid, null, n, case when unit in ('g', 'kg') then 'g' when unit in ('ml', 'l') then 'ml' else 'pcs' end, true);
+  perform pg_temp.reprice(bid::text, price, qty, unit);
+  return bid::text;
+end $$;
+create or replace function pg_temp.reprice(bid text, price numeric, qty numeric, unit text) returns void language plpgsql security definer set search_path = public as $$
+begin
+  update public.ingredients set price = round(reprice.price / (reprice.qty * public.unit_factor(reprice.unit)), 6), pack_qty = 1,
+    pack_unit = case when reprice.unit in ('g', 'kg') then 'g' when reprice.unit in ('ml', 'l') then 'ml' else 'pcs' end
+  where id = reprice.bid::uuid;
+  perform public.recompute_hpp_for(array[reprice.bid::uuid]);
+end $$;
+
 insert into auth.users(id, email) values ('e8400000-0000-0000-0000-000000000001', 'resep@kopi.id'), ('e8400000-0000-0000-0000-000000000002', 'lain@resep.id');
 select set_config('request.jwt.claim.sub', 'e8400000-0000-0000-0000-000000000001', false);
 set role authenticated;
@@ -83,48 +99,40 @@ select pg_temp.ok('G1 clients have no direct access to the new tables',
 -- ================================================================ ingredient RPCs
 select pg_temp.ok('I1 owners may call the ingredient functions, anon may not',
   has_function_privilege('authenticated', 'public.owner_list_ingredients(uuid)', 'execute')
-  and has_function_privilege('authenticated', 'public.owner_save_ingredient(uuid, uuid, text, numeric, numeric, text, text)', 'execute')
-  and has_function_privilege('authenticated', 'public.owner_preview_ingredient(uuid, numeric, numeric, text)', 'execute')
+  and has_function_privilege('authenticated', 'public.owner_save_barang(uuid, uuid, text, text, boolean)', 'execute')
+  and not has_function_privilege('authenticated', 'public.owner_save_ingredient(uuid, uuid, text, numeric, numeric, text, text)', 'execute')
   and has_function_privilege('authenticated', 'public.owner_delete_ingredient(uuid)', 'execute')
   and not has_function_privilege('anon', 'public.owner_list_ingredients(uuid)', 'execute')
-  and not has_function_privilege('anon', 'public.owner_save_ingredient(uuid, uuid, text, numeric, numeric, text, text)', 'execute'));
+  and not has_function_privilege('anon', 'public.owner_save_barang(uuid, uuid, text, text, boolean)', 'execute'));
 
 select set_config('request.jwt.claim.sub', 'e8400000-0000-0000-0000-000000000001', false);
 set role authenticated;
-select set_config('t.vanila', public.owner_save_ingredient(current_setting('t.o')::uuid, null, '  Sirup vanila ', 45000, 750, 'ml')::text, false);
+select set_config('t.vanila', pg_temp.barang(current_setting('t.o'), '  Sirup vanila ', 45000, 750, 'ml'), false);
 select pg_temp.ok('I2 created, trimmed, listed with its price per base unit',
   exists (
     select 1 from jsonb_array_elements(public.owner_list_ingredients(current_setting('t.o')::uuid)) e
     where e ->> 'name' = 'Sirup vanila' and (e ->> 'unitCost')::numeric = 60 and e ->> 'baseUnit' = 'ml'
-      and (e ->> 'packQty')::numeric = 750 and e ->> 'packUnit' = 'ml' and (e ->> 'usedBy')::int = 0));
+      and (e ->> 'packQty')::numeric = 1 and e ->> 'packUnit' = 'ml' and (e ->> 'usedBy')::int = 0));
 select pg_temp.ok('I2b Susu cair is used by one product',
   (select (e ->> 'usedBy')::int from jsonb_array_elements(public.owner_list_ingredients(current_setting('t.o')::uuid)) e where e ->> 'name' = 'Susu cair') = 1);
-select pg_temp.fails('I3a duplicate name, any case', format('select public.owner_save_ingredient(%L, null, %L, 1, 1, %L)', current_setting('t.o'), ' SIRUP VANILA', 'ml'), 'sudah dipakai');
-select pg_temp.fails('I3b empty name', format('select public.owner_save_ingredient(%L, null, %L, 1, 1, %L)', current_setting('t.o'), '   ', 'ml'), 'wajib diisi');
-select pg_temp.fails('I3c negative price', format('select public.owner_save_ingredient(%L, null, %L, -1, 1, %L)', current_setting('t.o'), 'X1', 'ml'), 'Harga');
-select pg_temp.fails('I3d pack size 0', format('select public.owner_save_ingredient(%L, null, %L, 1, 0, %L)', current_setting('t.o'), 'X2', 'ml'), 'Isi kemasan');
-select pg_temp.fails('I3e unknown unit', format('select public.owner_save_ingredient(%L, null, %L, 1, 1, %L)', current_setting('t.o'), 'X3', 'sdm'), 'Satuan tidak valid');
+select pg_temp.fails('I3a duplicate name, any case', format('select public.owner_save_barang(%L, null, %L, %L, true)', current_setting('t.o'), ' SIRUP VANILA', 'ml'), 'sudah dipakai');
+select pg_temp.fails('I3b empty name', format('select public.owner_save_barang(%L, null, %L, %L, true)', current_setting('t.o'), '   ', 'ml'), 'wajib diisi');
+select pg_temp.fails('I3c base unit kg is refused: the base is g, ml or pcs', format('select public.owner_save_barang(%L, null, %L, %L, true)', current_setting('t.o'), 'X1', 'kg'), 'Satuan dasar harus g, ml, atau pcs');
+select pg_temp.fails('I3d counted flag is required', format('select public.owner_save_barang(%L, null, %L, %L, null)', current_setting('t.o'), 'X2', 'ml'), 'Pilih apakah barang ini dihitung stoknya');
+select pg_temp.fails('I3e unknown unit', format('select public.owner_save_barang(%L, null, %L, %L, true)', current_setting('t.o'), 'X3', 'sdm'), 'Satuan dasar harus g, ml, atau pcs');
 
--- Preview does not write, and lists the affected recipe products with the old and new HPP.
-select pg_temp.ok('I5 preview of Susu at Rp 20.000 shows 6510 -> 6810',
-  public.owner_preview_ingredient(pg_temp.ing('Susu cair')::uuid, 20000, 1, 'l')
-    = jsonb_build_array(jsonb_build_object('productId', current_setting('t.p'), 'name', 'Es kopi susu', 'oldHpp', 6510, 'newHpp', 6810)));
-reset role;
-select pg_temp.ok('I5b preview did not change the product', pg_temp.hpp() = 6510);
-set role authenticated;
 
-select public.owner_save_ingredient(current_setting('t.o')::uuid, pg_temp.ing('Susu cair')::uuid, 'Susu cair', 20000, 1, 'l');
+select pg_temp.reprice(pg_temp.ing('Susu cair'), 20000, 1, 'l');
 reset role;
 select pg_temp.ok('I4 repricing an ingredient recalculates its recipe products', pg_temp.hpp() = 6810);
 select pg_temp.ok('I4b a manual product is not touched', (select hpp from public.products where id = current_setting('t.p2')::uuid) = 5000);
 set role authenticated;
 
 -- Review focus 1: a used ingredient cannot change family.
-select pg_temp.fails('I6a used ingredient: l -> kg refused', format('select public.owner_save_ingredient(%L, %L, %L, 20000, 1, %L)', current_setting('t.o'), pg_temp.ing('Susu cair'), 'Susu cair', 'kg'), 'tidak bisa berganti jenis');
-select pg_temp.fails('I6b preview refuses it too', format('select public.owner_preview_ingredient(%L, 20000, 1, %L)', pg_temp.ing('Susu cair'), 'kg'), 'tidak bisa berganti jenis');
-select public.owner_save_ingredient(current_setting('t.o')::uuid, current_setting('t.vanila')::uuid, 'Sirup vanila', 45000, 1, 'kg');
+select pg_temp.fails('I6a a barang with a price cannot change unit', format('select public.owner_save_barang(%L, %L, %L, %L, true)', current_setting('t.o'), pg_temp.ing('Susu cair'), 'Susu cair', 'g'), 'tidak bisa diubah karena barang sudah punya harga');
+select public.owner_save_barang(current_setting('t.o')::uuid, current_setting('t.vanila')::uuid, 'Sirup vanila', 'ml', true);
 reset role;
-select pg_temp.ok('I6c an unused ingredient may change family', (select pack_unit from public.ingredients where id = current_setting('t.vanila')::uuid) = 'kg');
+select pg_temp.ok('I6c saving the same unit keeps it', (select pack_unit from public.ingredients where id = current_setting('t.vanila')::uuid) = 'ml');
 set role authenticated;
 
 select pg_temp.fails('I7a delete of a used ingredient names the product', format('select public.owner_delete_ingredient(%L)', pg_temp.ing('Susu cair')), 'Dipakai di resep: Es kopi susu');
@@ -137,9 +145,8 @@ select set_config('request.jwt.claim.sub', 'e8400000-0000-0000-0000-000000000002
 set role authenticated;
 select public.register_business('Toko Lain', 'Satu', null);
 select pg_temp.fails('X1a list', format('select public.owner_list_ingredients(%L)', current_setting('t.o')), 'Sesi kasir tidak valid');
-select pg_temp.fails('X1b save', format('select public.owner_save_ingredient(%L, %L, %L, 1, 1, %L)', current_setting('t.o'), pg_temp.ing('Gelas'), 'Gelas', 'pcs'), 'Sesi kasir tidak valid');
+select pg_temp.fails('X1b save', format('select public.owner_save_barang(%L, %L, %L, %L, true)', current_setting('t.o'), pg_temp.ing('Gelas'), 'Gelas', 'pcs'), 'Sesi kasir tidak valid');
 select pg_temp.fails('X1c delete', format('select public.owner_delete_ingredient(%L)', pg_temp.ing('Gelas')), 'Sesi kasir tidak valid');
-select pg_temp.fails('X1d preview', format('select public.owner_preview_ingredient(%L, 1, 1, %L)', pg_temp.ing('Gelas'), 'pcs'), 'Sesi kasir tidak valid');
 reset role;
 select pg_temp.ok('X2 the ingredient is unchanged', (select price from public.ingredients where id = pg_temp.ing('Gelas')::uuid) = 1200);
 
@@ -168,7 +175,7 @@ select set_config('t.sh', public.open_shift(current_setting('t.c')::uuid, curren
 select set_config('t.tx', (public.complete_checkout(current_setting('t.sh')::uuid, current_setting('t.c')::uuid, current_setting('t.o')::uuid,
   jsonb_build_object('items', jsonb_build_array(jsonb_build_object('product_id', current_setting('t.latte'), 'quantity', 1))),
   'cash', 1000000, null, 'r-sale-1', null, null) ->> 'transactionId'), false);
-select public.owner_save_ingredient(current_setting('t.o')::uuid, pg_temp.ing('Susu cair')::uuid, 'Susu cair', 21000, 1, 'l');
+select pg_temp.reprice(pg_temp.ing('Susu cair'), 21000, 1, 'l');
 reset role;
 select pg_temp.ok('R5a repricing moved the product to 6960', (select hpp from public.products where id = current_setting('t.latte')::uuid) = 6960);
 select pg_temp.ok('R5b the past sale still holds hpp_unit 6810', (select hpp_unit from public.transaction_items where transaction_id = current_setting('t.tx')::uuid) = 6810);
@@ -255,7 +262,7 @@ $$;
 select set_config('request.jwt.claim.sub', 'e8400000-0000-0000-0000-000000000001', false);
 set role authenticated;
 select public.owner_save_product(current_setting('t.p')::uuid, current_setting('t.o')::uuid, null, 'Es kopi susu', 0, 22000, 100, 'kitchen', true, pg_temp.kopi_lines());
-select public.owner_save_ingredient(current_setting('t.o')::uuid, pg_temp.ing('Susu cair')::uuid, 'Susu cair', 25000, 1, 'l');
+select pg_temp.reprice(pg_temp.ing('Susu cair'), 25000, 1, 'l');
 reset role;
 select pg_temp.ok('P7a a tracked recipe product moved with the ingredient price (18000 -> 25000 per liter adds 1050)', pg_temp.hpp() = 7560);
 select pg_temp.ok('P7b the stock book has no P7 failure', pg_temp.p7() = '[]'::jsonb);

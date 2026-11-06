@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Dialog, FormAlert, Input, Select, money, useI18n } from '@hermes-pos/ui';
-import { parseCount } from '../lib/purchase';
+import { parseCount } from '../lib/amount';
 import { countSchema } from '../lib/schemas';
 import type { CountResultLine, Ingredient } from '../lib/types';
 import { UNIT_LABEL, type Unit, sameFamilyUnits, stockText } from '../lib/units';

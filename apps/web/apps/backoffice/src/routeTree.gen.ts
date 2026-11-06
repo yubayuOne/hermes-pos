@@ -25,6 +25,7 @@ import { Route as AppIngredientsRouteImport } from './routes/_app/ingredients'
 import { Route as AppOutletsRouteImport } from './routes/_app/outlets'
 import { Route as AppProductsRouteImport } from './routes/_app/products'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
+import { Route as AppResepRouteImport } from './routes/_app/resep'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppStockRouteImport } from './routes/_app/stock'
 import { Route as AppTablesRouteImport } from './routes/_app/tables'
@@ -111,6 +112,11 @@ const AppReportsRoute = AppReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AppRoute,
 } as any)
+const AppResepRoute = AppResepRouteImport.update({
+  id: '/resep',
+  path: '/resep',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/outlets': typeof AppOutletsRoute
   '/products': typeof AppProductsRoute
   '/reports': typeof AppReportsRoute
+  '/resep': typeof AppResepRoute
   '/settings': typeof AppSettingsRoute
   '/stock': typeof AppStockRoute
   '/tables': typeof AppTablesRoute
@@ -180,6 +187,7 @@ export interface FileRoutesByTo {
   '/outlets': typeof AppOutletsRoute
   '/products': typeof AppProductsRoute
   '/reports': typeof AppReportsRoute
+  '/resep': typeof AppResepRoute
   '/settings': typeof AppSettingsRoute
   '/stock': typeof AppStockRoute
   '/tables': typeof AppTablesRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/_app/outlets': typeof AppOutletsRoute
   '/_app/products': typeof AppProductsRoute
   '/_app/reports': typeof AppReportsRoute
+  '/_app/resep': typeof AppResepRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/stock': typeof AppStockRoute
   '/_app/tables': typeof AppTablesRoute
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/outlets'
     | '/products'
     | '/reports'
+    | '/resep'
     | '/settings'
     | '/stock'
     | '/tables'
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/outlets'
     | '/products'
     | '/reports'
+    | '/resep'
     | '/settings'
     | '/stock'
     | '/tables'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/_app/outlets'
     | '/_app/products'
     | '/_app/reports'
+    | '/_app/resep'
     | '/_app/settings'
     | '/_app/stock'
     | '/_app/tables'
@@ -411,6 +423,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReportsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/resep': {
+      id: '/_app/resep'
+      path: '/resep'
+      fullPath: '/resep'
+      preLoaderRoute: typeof AppResepRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
@@ -465,6 +484,7 @@ interface AppRouteChildren {
   AppOutletsRoute: typeof AppOutletsRoute
   AppProductsRoute: typeof AppProductsRoute
   AppReportsRoute: typeof AppReportsRoute
+  AppResepRoute: typeof AppResepRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppStockRoute: typeof AppStockRoute
   AppTablesRoute: typeof AppTablesRoute
@@ -482,6 +502,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppOutletsRoute: AppOutletsRoute,
   AppProductsRoute: AppProductsRoute,
   AppReportsRoute: AppReportsRoute,
+  AppResepRoute: AppResepRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppStockRoute: AppStockRoute,
   AppTablesRoute: AppTablesRoute,

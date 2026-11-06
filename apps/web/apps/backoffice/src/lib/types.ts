@@ -152,12 +152,22 @@ export type Report = {
 export type ExpenseItem = {
   id: string;
   name: string;
-  category: 'operasional' | 'belanja';
+  /** The owner's category name (099); older items keep the names they were recorded with. */
+  category: string;
   quantity: number;
   unit: string;
   amount: number;
   paidFrom: 'drawer' | 'other';
+  /** The barang the item is for, if any. */
+  ingredientId: string | null;
+  ingredientName: string | null;
+  /** Base unit of that barang (g, ml, pcs), and whether it is counted. */
+  ingredientUnit: string | null;
+  ingredientCounted: boolean;
+  /** The amount that came into the barang's stock, in its base unit; null = not in stock yet (099). */
+  stockQty: number | null;
 };
+export type ExpenseCategory = { id: string; name: string; active: boolean };
 /** A cancelled item: it no longer counts, but stays on record with the reason (073). */
 export type CancelledExpenseItem = ExpenseItem & { reason: string; cancelledAt: string };
 export type Expense = {
@@ -333,20 +343,17 @@ export type Ingredient = {
   baseUnit: 'g' | 'ml' | 'pcs';
   usedBy: number;
   stock: number;
-  /** False until the first purchase or count; sales leave the stock alone until then (088). */
+  /** False until the first expense with stock or count; sales leave the stock alone until then (088). */
   stockStarted: boolean;
-  /** What a pack is called ("kaleng"); the database falls back to "kemasan". */
+  /** Whether the stock is counted at all. Only counted barang have stock, a price, a count and a place in a recipe (099). */
+  counted: boolean;
   packLabel: string;
   lastCountedAt: string | null;
 };
-export type PurchaseLine = { ingredientId: string; name: string; packLabel: string; packs: number; total: number; priceBefore: number; priceAfter: number; expenseItemId: string | null };
-export type Purchase = { id: string; boughtOn: string; total: number; cancelledAt: string | null; lines: PurchaseLine[] };
-export type PurchaseList = { rows: Purchase[]; total: number };
 export type CountResultLine = { ingredientId: string; name: string; kind: 'opening' | 'count'; before: number; after: number; diff: number; value: number };
 export type RecipeLineInput = { ingredientId: string; qty: number; unit: Unit };
 export type RecipeCostLine = RecipeLineInput & { name: string; cost: number; incomplete: boolean };
 export type RecipeCost = { source: 'manual' | 'recipe'; lines: RecipeCostLine[]; hpp: number; incomplete: boolean };
-export type IngredientImpact = { productId: string; name: string; oldHpp: number; newHpp: number };
 
 export type VoucherStatus = 'active' | 'expired' | 'used_up' | 'inactive';
 export type Voucher = {
@@ -423,4 +430,3 @@ export type Customer = { name: string; bills: number; total: number; lastAt: str
 export type CustomerList = { rows: Customer[]; total: number };
 
 /** An expense item that went into stock as a purchase line (089); `active` is false once the purchase was cancelled. */
-export type ExpenseStockLink = { expenseItemId: string; purchaseId: string; ingredientId: string; ingredientName: string; packs: number; active: boolean };

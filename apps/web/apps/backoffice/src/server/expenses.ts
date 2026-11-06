@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { addDays } from '@hermes-pos/ui';
-import { expenseAddSchema, expenseCancelSchema, expenseListSchema, expenseRefSchema, linkExpenseItemsSchema, parser } from '../lib/schemas';
-import type { ActionResult, ExpenseList, ExpenseStockLink } from '../lib/types';
+import { expenseAddSchema, expenseCancelSchema, expenseCategorySchema, expenseListSchema, expenseStockSchema, parser } from '../lib/schemas';
+import type { ActionResult, ExpenseCategory, ExpenseList } from '../lib/types';
 import { toExpenseList } from './normalize';
 import { startOf } from './summary';
 
@@ -39,27 +39,27 @@ export const addExpenseItems = createServerFn({ method: 'POST' })
     return res.ok ? { ok: true } : res;
   });
 
-/** Records belanja items as one stock purchase (089). No cash moves: the expense already counted. The server refuses items older than 90 days. */
-export const linkExpenseItems = createServerFn({ method: 'POST' })
-  .validator(parser(linkExpenseItemsSchema))
+/** Sets (or clears, with null) the amount that came into stock for an item of an expense (099). */
+export const setExpenseStock = createServerFn({ method: 'POST' })
+  .validator(parser(expenseStockSchema))
   .handler(async ({ data }): Promise<ActionResult> => {
     const { callRpc } = await import('./supabase.server');
-    const res = await callRpc('owner_link_expense_items', { p_outlet_id: data.outletId, p_lines: data.lines });
+    const res = await callRpc('owner_set_expense_stock', { p_item_id: data.itemId, p_qty: data.qty });
     return res.ok ? { ok: true } : res;
   });
 
-/** Which items of one expense record already went into stock, and as what (089). */
-export const listExpenseStockLinks = createServerFn({ method: 'GET' })
-  .validator(parser(expenseRefSchema))
-  .handler(async ({ data }): Promise<ExpenseStockLink[]> => {
-    const { readRpc } = await import('./supabase.server');
-    const raw = (await readRpc<Record<string, unknown>[] | null>('owner_stock_links_for_expense', { p_expense_id: data.expenseId })) ?? [];
-    return raw.map((r) => ({
-      expenseItemId: String(r.expenseItemId ?? ''),
-      purchaseId: String(r.purchaseId ?? ''),
-      ingredientId: String(r.ingredientId ?? ''),
-      ingredientName: String(r.ingredientName ?? ''),
-      packs: Number(r.packs ?? 0),
-      active: r.active === true,
-    }));
+/** The business's expense categories, active and switched off (099). */
+export const listExpenseCategories = createServerFn({ method: 'GET' }).handler(async (): Promise<ExpenseCategory[]> => {
+  const { readRpc } = await import('./supabase.server');
+  const raw = (await readRpc<{ id: string; name: string; active: boolean }[] | null>('owner_list_expense_categories', {})) ?? [];
+  return raw.map((c) => ({ id: String(c.id), name: String(c.name), active: c.active === true }));
+});
+
+/** Adds a category (no id) or renames and switches one on or off (099). */
+export const saveExpenseCategory = createServerFn({ method: 'POST' })
+  .validator(parser(expenseCategorySchema))
+  .handler(async ({ data }): Promise<ActionResult<string>> => {
+    const { callRpc } = await import('./supabase.server');
+    const res = await callRpc<string>('owner_save_expense_category', { p_id: data.id ?? null, p_name: data.name, p_active: data.active });
+    return res.ok ? { ok: true, data: res.data } : res;
   });

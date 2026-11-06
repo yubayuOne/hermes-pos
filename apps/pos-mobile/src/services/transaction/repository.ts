@@ -489,7 +489,7 @@ export const toExpense = (d: any): Expense => ({
   drawerTotal: Number(d.drawerTotal ?? 0),
   items: ((d.items as any[]) ?? []).map((i) => ({
     name: String(i.name),
-    category: i.category === 'operasional' ? 'operasional' : 'belanja',
+    category: String(i.category ?? ''),
     quantity: Number(i.quantity),
     unit: String(i.unit),
     amount: Number(i.amount),
