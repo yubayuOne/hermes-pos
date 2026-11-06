@@ -79,7 +79,8 @@ export function FilterBar<T extends object>({
             )}
           </Button>
         )}
-        {action && <div className="w-full sm:ml-auto sm:w-auto">{action}</div>}
+        {/* The main action sits on its own row, right-aligned: the same place on every list page. */}
+        {action && <div className="flex w-full basis-full justify-end">{action}</div>}
       </div>
       {summary && (
         <p className="text-small text-mute" role="status">
@@ -98,7 +99,10 @@ export function FilterBar<T extends object>({
             </Button>
           }
         >
-          {typeof children === 'function' ? children({ values, set: stage }) : children}
+          {/* Fields pair up 50:50 on wide screens; an odd last field takes the full row. Phones: one column. */}
+          <div className="grid gap-4 sm:grid-cols-2 [&>:last-child:nth-child(odd)]:sm:col-span-2">
+            {typeof children === 'function' ? children({ values, set: stage }) : children}
+          </div>
           <FormAlert>{error && t(error)}</FormAlert>
         </Dialog>
       )}

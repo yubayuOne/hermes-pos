@@ -19,6 +19,7 @@ export function PeriodFilter({
   today,
   onChange,
   allTime,
+  note,
   children,
 }: {
   value: PeriodSearch;
@@ -28,6 +29,8 @@ export function PeriodFilter({
   /** Adds "Semua waktu" first (customers list): the whole history. */
   allTime?: boolean;
   children?: React.ReactNode;
+  /** A line under the period, such as what it applies to. */
+  note?: string;
 }) {
   const { t, lang } = useI18n();
   const options = allTime ? [['all', 'Semua waktu'] as const, ...OPTIONS] : OPTIONS;
@@ -35,7 +38,7 @@ export function PeriodFilter({
   return (
     <>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
-        <Field label={t('Periode')} className="w-full sm:w-[240px]">
+        <Field label={t('Periode')} className="w-full" help={note}>
           <Select
             value={current}
             onChange={(e) => {

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, Tag, amount, isoDay, money, useI18n } from '@hermes-pos/ui';
+import { Button, PlusIcon, ChipGroup, Dialog, Empty, Field, FormAlert, Input, Select, Switch, Tag, amount, isoDay, money, useI18n } from '@hermes-pos/ui';
 import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
 import { listProductSales } from '../../server/summary';
@@ -56,6 +56,7 @@ function Products() {
   const navigate = useNavigate({ from: '/products' });
   const set = (patch: Partial<Search>) => navigate({ search: (s: Search) => ({ ...s, ...patch }), replace: true });
   const [editing, setEditing] = useState<Product | 'new' | null>(null);
+  const [addingCat, setAddingCat] = useState(false);
   const toggle = useAction();
   const [q, setQ] = useState(search.q ?? '');
 
@@ -106,16 +107,23 @@ function Products() {
         onApply={(c) => set({ ...c, page: undefined })}
         action={
           products.length > 0 && (
-            <Button variant="fire" className="w-full sm:w-auto" onClick={() => setEditing('new')} {...lock.props}>
-              {lock.label(t('Tambah produk'))}
-            </Button>
+            // Two equal buttons side by side on phones; a plain pair on wider screens.
+            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+              <Button className="justify-center" onClick={() => setAddingCat(true)} {...lock.props}>
+                <PlusIcon size={16} />
+                {t('Kategori')}
+              </Button>
+              <Button className="justify-center" variant="fire" onClick={() => setEditing('new')} {...lock.props}>
+                <PlusIcon size={16} />
+                {lock.label(t('Produk'))}
+              </Button>
+            </div>
           )
         }
       >
         {(d) => (
           <>
-            <PeriodFilter value={d.values} range={range} today={today} onChange={d.set} />
-            <p className="-mt-2 text-small text-mute">{t('Periode untuk kolom Terjual, dari bill selesai.')}</p>
+            <PeriodFilter value={d.values} range={range} today={today} onChange={d.set} note={t('Periode untuk kolom Terjual, dari bill selesai.')} />
             {/* A dropdown, not a row of chips: an outlet can have many categories (owner's request, 17 Oct 2026). */}
             <Field label={t('Kategori')}>
               <Select value={d.values.cat ?? ''} onChange={(e) => d.set({ cat: e.target.value || undefined })}>
@@ -215,6 +223,7 @@ function Products() {
         </div>
       )}
       <Pagination page={view.page} pages={view.pages} onPage={(p) => set({ page: p > 1 ? p : undefined })} />
+      {addingCat && outletId && <CategoryDialog outletId={outletId} onClose={() => setAddingCat(false)} />}
       {editing && outletId && (
         <ProductDialog
           outletId={outletId}
