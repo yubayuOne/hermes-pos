@@ -55,16 +55,17 @@ function BarangPage() {
           search={<SearchBox label={t('Cari barang')} placeholder={t('Cari nama')} value={q} onChange={setQ} />}
           outlet={<OutletFilter all={false} value={data.outletId} onChange={(id) => navigate({ search: (s: Search) => ({ ...s, outlet: id ?? undefined }), replace: true })} />}
           action={
-            <>
-              <Button onClick={() => setCategorizing(true)} {...lock.props}>
+            // Two equal buttons side by side on phones; a plain pair on wider screens.
+            <div className="grid grid-cols-2 gap-2 sm:flex">
+              <Button className="justify-center" onClick={() => setCategorizing(true)} {...lock.props}>
                 <PlusIcon size={16} />
                 {t('Kategori')}
               </Button>
-              <Button variant="fire" onClick={() => setEditing('new')} {...lock.props}>
+              <Button className="justify-center" variant="fire" onClick={() => setEditing('new')} {...lock.props}>
                 <PlusIcon size={16} />
-                {lock.label(t('Tambah barang'))}
+                {lock.label(t('Barang'))}
               </Button>
-            </>
+            </div>
           }
         />
       </div>
