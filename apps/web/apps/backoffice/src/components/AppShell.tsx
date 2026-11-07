@@ -65,7 +65,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
       <aside
         aria-label={t('Navigasi backoffice')}
-        className="relative hidden flex-col overflow-y-auto border-r-[1.5px] border-ink bg-paper md:flex print:!hidden"
+        className="relative hidden flex-col overflow-hidden border-r-[1.5px] border-ink bg-paper md:flex print:!hidden"
       >
         <SidebarBody />
       </aside>
@@ -116,7 +116,7 @@ function SidebarBody({ close }: { close?: ReactNode }) {
     },
   ];
   return (
-    <div className={cn('flex min-h-full flex-col px-4 pb-5', close ? 'pt-3' : 'pt-6')}>
+    <div className={cn('flex h-full min-h-0 flex-col px-4 pb-5', close ? 'pt-3' : 'pt-6')}>
       <div className="px-2.5">
         <div className="flex items-center justify-between gap-2">
           <Wordmark size={close ? 26 : 32} />
@@ -124,7 +124,8 @@ function SidebarBody({ close }: { close?: ReactNode }) {
         </div>
         <p className="mt-2 truncate font-mono text-small text-mute">backoffice · {app.business.name || '[NAMA BISNIS]'}</p>
       </div>
-      <nav aria-label={t('Menu utama')} className="mt-7 grid gap-6">
+      {/* Only the menu scrolls on a short screen; the title and Pengaturan stay in view. */}
+      <nav aria-label={t('Menu utama')} className="-mx-1 mt-6 grid min-h-0 flex-1 content-start gap-4 overflow-y-auto px-1 pb-3">
         {groups.map((g, i) => (
           <section key={g.label} aria-labelledby={`${id}-${i}`}>
             <h2 id={`${id}-${i}`} className="px-2.5 pb-1.5 text-small font-semibold text-mute">
@@ -142,7 +143,6 @@ function SidebarBody({ close }: { close?: ReactNode }) {
           </section>
         ))}
       </nav>
-      <div className="min-h-8 flex-1" />
       <div className="border-t-[1.5px] border-ink pt-3">
         <NavLink to="/settings">{t('Pengaturan')}</NavLink>
       </div>
@@ -157,7 +157,7 @@ function NavLink({ to, children, meta }: { to: NavItem['to'] | '/settings'; chil
       preload="intent"
       preloadDelay={0}
       activeOptions={{ exact: to === '/', includeSearch: false }}
-      className="group flex min-h-11 items-center gap-2.5 rounded border-[1.5px] border-transparent px-2.5 text-body font-medium transition-[background-color,transform] duration-150 hover:translate-x-[3px] hover:bg-tint aria-[current=page]:translate-x-0 aria-[current=page]:border-ink aria-[current=page]:bg-slip"
+      className="group flex min-h-11 items-center gap-2.5 md:min-h-10 rounded border-[1.5px] border-transparent px-2.5 text-body font-medium transition-[background-color,transform] duration-150 hover:translate-x-[3px] hover:bg-tint aria-[current=page]:translate-x-0 aria-[current=page]:border-ink aria-[current=page]:bg-slip"
     >
       <span aria-hidden className="hidden size-2.5 flex-none bg-fire group-aria-[current=page]:block" />
       <span className="flex-1 truncate">{children}</span>
