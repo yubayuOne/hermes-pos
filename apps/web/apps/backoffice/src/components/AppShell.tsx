@@ -4,13 +4,9 @@ import { Dialog as D } from 'radix-ui';
 import { CloseIcon, MenuIcon, Wordmark, cn, useI18n } from '@hermes-pos/ui';
 import { useApp } from '../lib/app';
 import { rememberAppContext } from '../lib/appContextCache';
+import { NAV_FOLD_OVER, NAV_GROUPS, type NavTo } from '../lib/nav';
 import { Bell } from './Bell';
 
-type NavItem = {
-  to: '/' | '/transactions' | '/closing' | '/outlets' | '/cashiers' | '/products' | '/ingredients' | '/resep' | '/tables' | '/stock' | '/expenses' | '/customers' | '/vouchers';
-  label: string;
-  meta?: string | number;
-};
 
 /**
  * D1. Desktop: sidebar 264px (232px at ≤980px) and content scroll separately. ≤760px: a 60px top bar with
@@ -84,37 +80,10 @@ function SidebarBody({ close }: { close?: ReactNode }) {
   const c = app.counts;
   // The drawer and the sidebar can both be mounted, so each copy needs its own heading ids.
   const id = useId();
-  // Grouped by how often the owner opens them: the daily pages first, then records, then the store's setup.
-  const groups: { label: string; items: NavItem[] }[] = [
-    {
-      label: 'Setiap hari',
-      items: [
-        { to: '/', label: 'Ringkasan' },
-        { to: '/transactions', label: 'Transaksi' },
-        { to: '/closing', label: 'Shift' },
-      ],
-    },
-    {
-      label: 'Catatan',
-      items: [
-        { to: '/expenses', label: 'Kas' },
-        { to: '/stock', label: 'Stock Opname' },
-        { to: '/customers', label: 'Pelanggan' },
-      ],
-    },
-    {
-      label: 'Atur toko',
-      items: [
-        { to: '/products', label: 'Produk', meta: c.products },
-        { to: '/ingredients', label: 'Barang' },
-        { to: '/resep', label: 'Resep' },
-        { to: '/tables', label: 'Meja' },
-        { to: '/vouchers', label: 'Voucher', meta: c.vouchers },
-        { to: '/outlets', label: 'Outlet', meta: c.outlets },
-        { to: '/cashiers', label: 'Kasir', meta: c.cashiers },
-      ],
-    },
-  ];
+  // The owner's choice (Pengaturan > Menu): hidden menus are left out; a group left empty is left out too.
+  const hidden = app.business.sidebarHidden ?? [];
+  const meta: Partial<Record<NavTo, number>> = { '/products': c.products, '/vouchers': c.vouchers, '/outlets': c.outlets, '/cashiers': c.cashiers };
+  const groups = NAV_GROUPS.map((g) => ({ label: g.label, items: g.items.filter((i) => !hidden.includes(i.to)) })).filter((g) => g.items.length > 0);
   return (
     <div className={cn('flex h-full min-h-0 flex-col px-4 pb-5', close ? 'pt-3' : 'pt-6')}>
       <div className="px-2.5">
@@ -127,20 +96,7 @@ function SidebarBody({ close }: { close?: ReactNode }) {
       {/* Only the menu scrolls on a short screen; the title and Pengaturan stay in view. */}
       <nav aria-label={t('Menu utama')} className="-mx-1 mt-6 grid min-h-0 flex-1 content-start gap-4 overflow-y-auto px-1 pb-3">
         {groups.map((g, i) => (
-          <section key={g.label} aria-labelledby={`${id}-${i}`}>
-            <h2 id={`${id}-${i}`} className="px-2.5 pb-1.5 text-small font-semibold text-mute">
-              {t(`${g.label}|menu`)}
-            </h2>
-            <ul className="grid gap-1">
-              {g.items.map((it) => (
-                <li key={it.to}>
-                  <NavLink to={it.to} meta={it.meta}>
-                    {t(`${it.label}|menu`)}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <NavGroup key={g.label} id={`${id}-${i}`} label={g.label} items={g.items.map((it) => ({ ...it, meta: meta[it.to] }))} />
         ))}
       </nav>
       <div className="border-t-[1.5px] border-ink pt-3">
@@ -150,7 +106,54 @@ function SidebarBody({ close }: { close?: ReactNode }) {
   );
 }
 
-function NavLink({ to, children, meta }: { to: NavItem['to'] | '/settings'; children: ReactNode; meta?: string | number }) {
+/**
+ * A group of menus. With more than NAV_FOLD_OVER items it folds into a dropdown, open when the page you are on is in it.
+ */
+function NavGroup({ id, label, items }: { id: string; label: string; items: { to: NavTo; label: string; meta?: string | number }[] }) {
+  const { t } = useI18n();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const foldable = items.length > NAV_FOLD_OVER;
+  const current = items.some((i) => (i.to === '/' ? path === '/' : path.startsWith(i.to)));
+  const [open, setOpen] = useState(!foldable || current);
+  const headingId = `${id}-h`;
+  const listId = `${id}-l`;
+  const title = t(`${label}|menu`);
+  return (
+    <section aria-labelledby={headingId}>
+      {foldable ? (
+        <h2 id={headingId}>
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-controls={listId}
+            onClick={() => setOpen((o) => !o)}
+            className="flex min-h-9 w-full cursor-pointer items-center justify-between gap-2 rounded px-2.5 text-left text-small font-semibold text-mute hover:text-ink"
+          >
+            <span>{title}</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden className={cn('flex-none transition-transform duration-150', open && 'rotate-180')}>
+              <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </h2>
+      ) : (
+        <h2 id={headingId} className="px-2.5 pb-1.5 text-small font-semibold text-mute">
+          {title}
+        </h2>
+      )}
+      <ul id={listId} hidden={!open} className="grid gap-1">
+        {items.map((it) => (
+          <li key={it.to}>
+            <NavLink to={it.to} meta={it.meta}>
+              {t(`${it.label}|menu`)}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function NavLink({ to, children, meta }: { to: NavTo | '/settings'; children: ReactNode; meta?: string | number }) {
   return (
     <Link
       to={to}

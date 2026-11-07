@@ -1,3 +1,4 @@
+import type { NavTo } from '../lib/nav';
 import { DEFAULT_TZ, dayDiff, isoDay } from '@hermes-pos/ui';
 import { UNITS, type Unit } from '../lib/units';
 import type {
@@ -114,6 +115,7 @@ export function toBusiness(raw: unknown, fallbackName = ''): Business {
     timezone: str(r.timezone, 'Asia/Jakarta') as Business['timezone'],
     receipt: { ...RECEIPT_DEFAULT, ...((r.receipt ?? {}) as object) },
     notify: { subscription: true, cash_variance: true, low_stock: true, ...((r.notify ?? {}) as object) },
+    sidebarHidden: Array.isArray(r.sidebar_hidden) ? (r.sidebar_hidden as NavTo[]) : [],
   };
 }
 

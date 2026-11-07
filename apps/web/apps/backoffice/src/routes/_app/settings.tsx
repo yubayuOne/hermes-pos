@@ -38,7 +38,8 @@ import type { NotifySettings, ReceiptSettings } from '../../lib/types';
 import { useAction } from '../../lib/useAction';
 import { useForm } from '../../lib/useForm';
 import { signOut } from '../../server/auth';
-import { changePassword, saveBusiness, saveNotify, saveProfile, saveReceipt } from '../../server/settings';
+import { changePassword, saveBusiness, saveNotify, saveProfile, saveReceipt, saveSidebar } from '../../server/settings';
+import { NAV_GROUPS, type NavTo } from '../../lib/nav';
 import { pageHead } from '../../lang';
 
 // One question per tab: who am I, what is my business, what does the receipt show, what do I get told, what do I pay.
@@ -46,6 +47,7 @@ const TABS = [
   { value: 'profile', label: 'Profil', hint: 'Data pemilik akun, bahasa, kata sandi, dan keluar dari akun.' },
   { value: 'business', label: 'Bisnis', hint: 'Nama bisnis, jenis usaha, kota, dan zona waktu untuk semua outlet.' },
   { value: 'receipt', label: 'Struk', hint: 'Bagian mana yang tampil di struk kasir, dengan pratinjau.' },
+  { value: 'menu', label: 'Menu', hint: 'Menu mana yang tampil di sidebar. Pengaturan selalu tampil.' },
   { value: 'notifications', label: 'Notifikasi', hint: 'Pemberitahuan apa yang muncul di lonceng.' },
   { value: 'subscription', label: 'Langganan', hint: 'Paket, masa aktif, dan pemakaian.' },
 ] as const;
@@ -83,6 +85,11 @@ function Settings() {
         {tab === 'profile' && <ProfileTab />}
         {tab === 'business' && <BusinessTab />}
         {tab === 'receipt' && <ReceiptTab />}
+        {tab === 'menu' && (
+          <div className="max-w-[640px]">
+            <SidebarCard />
+          </div>
+        )}
         {tab === 'notifications' && (
           <div className="max-w-[640px]">
             <NotifyCard />
@@ -506,6 +513,42 @@ function NotifyCard() {
           </li>
         ))}
       </ul>
+    </Card>
+  );
+}
+
+/** Which sidebar menus show (108). A hidden menu is still reachable by its address; Pengaturan always shows. */
+function SidebarCard() {
+  const { t } = useI18n();
+  const app = useApp();
+  const [hidden, setHidden] = useState<NavTo[]>(app.business.sidebarHidden ?? []);
+  const act = useAction();
+  function toggle(to: NavTo, show: boolean) {
+    const next = show ? hidden.filter((h) => h !== to) : [...hidden, to];
+    setHidden(next);
+    act
+      .run(() => saveSidebar({ data: { hidden: next } }), { toastError: true, success: t('Menu sidebar disimpan.') })
+      .then((res) => {
+        if (!res) setHidden(hidden);
+      });
+  }
+  return (
+    <Card>
+      <CardTitle>{t('Menu di sidebar')}</CardTitle>
+      <p className="mt-1 text-small text-mute">{t('Matikan menu yang tidak dipakai. Halamannya tetap bisa dibuka lewat alamatnya.')}</p>
+      {NAV_GROUPS.map((g) => (
+        <section key={g.label} className="mt-4">
+          <h3 className="text-small font-semibold text-mute">{t(`${g.label}|menu`)}</h3>
+          <ul className="mt-1">
+            {g.items.map((i) => (
+              <li key={i.to} className="flex items-center justify-between gap-3 border-b border-rule py-1.5">
+                <span className="font-medium">{t(`${i.label}|menu`)}</span>
+                <Switch checked={!hidden.includes(i.to)} label={t(`${i.label}|menu`)} disabled={act.busy} onChange={(v) => toggle(i.to, v)} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
     </Card>
   );
 }

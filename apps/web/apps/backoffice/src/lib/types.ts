@@ -1,3 +1,4 @@
+import type { NavTo } from './nav';
 import type { Unit } from './units';
 
 export type { Unit };
@@ -31,6 +32,8 @@ export type Business = {
   timezone: TimeZone;
   receipt: ReceiptSettings;
   notify: NotifySettings;
+  /** Sidebar menus the owner hid (108). */
+  sidebarHidden: NavTo[];
 };
 export type BusinessType = 'kafe' | 'restoran' | 'kedai' | 'bakeri' | 'lainnya';
 export type TimeZone = 'Asia/Jakarta' | 'Asia/Makassar' | 'Asia/Jayapura';

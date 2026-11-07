@@ -287,6 +287,9 @@ export const receiptSchema = z.object({
 export const voidCodeSchema = z.object({ code: z.string().regex(/^\d{6}$/, 'Kode persetujuan harus 6 digit angka.') });
 
 export const notifySchema = z.object({ subscription: z.boolean(), cash_variance: z.boolean(), low_stock: z.boolean() });
+/** The sidebar menus the owner hides (108). Same keys as lib/nav.ts (NAV_KEYS): this file imports nothing, so the tests run it as plain Node. */
+const navKeys = ['/', '/transactions', '/closing', '/expenses', '/stock', '/customers', '/products', '/ingredients', '/resep', '/tables', '/vouchers', '/outlets', '/cashiers'] as const;
+export const sidebarSchema = z.object({ hidden: z.array(z.enum(navKeys)) });
 
 // ---------- Summary ----------
 export const summarySchema = z.object({ from: day, to: day, outletId: uuid.nullable() });

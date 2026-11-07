@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
-import { businessSchema, changePasswordSchema, notifySchema, parser, profileSchema, receiptSchema, voidCodeSchema } from '../lib/schemas';
+import { businessSchema, changePasswordSchema, notifySchema, parser, profileSchema, receiptSchema, sidebarSchema, voidCodeSchema } from '../lib/schemas';
 import type { ActionResult } from '../lib/types';
 
 export const saveProfile = createServerFn({ method: 'POST' })
@@ -49,6 +49,15 @@ export const saveReceipt = createServerFn({ method: 'POST' })
   .handler(async ({ data }): Promise<ActionResult> => {
     const { callRpc } = await import('./supabase.server');
     const res = await callRpc('owner_update_receipt', { p_receipt: data });
+    return res.ok ? { ok: true } : res;
+  });
+
+/** The sidebar menus the owner hides (108). */
+export const saveSidebar = createServerFn({ method: 'POST' })
+  .validator(parser(sidebarSchema))
+  .handler(async ({ data }): Promise<ActionResult> => {
+    const { callRpc } = await import('./supabase.server');
+    const res = await callRpc('owner_update_sidebar', { p_hidden: data.hidden });
     return res.ok ? { ok: true } : res;
   });
 

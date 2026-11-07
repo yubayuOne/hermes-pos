@@ -24,6 +24,7 @@ const C2 = '30000000-0000-4000-8000-000000000002';
 
 let business = {
   id: BIZ,
+  sidebar_hidden: [],
   name: 'Kopi Pojok',
   business_type: 'kafe',
   city: 'Bandung',
@@ -368,6 +369,10 @@ const RPC = {
   get_my_profile: () => (scenario.biz === 'none' ? null : { ...profile, email: user.email }),
   username_available: ({ p_username }) => !['kopipojok', 'admin'].includes(p_username),
   owner_get_business: () => business,
+  owner_update_sidebar: (a) => {
+    business = { ...business, sidebar_hidden: a.p_hidden };
+    return a.p_hidden;
+  },
   get_subscription_status: subscription,
   list_notifications: () => notifications,
   mark_notifications_read: () => {

@@ -1633,4 +1633,8 @@ export const EN: Dict = {
   'Stok awal {name}: isi angka.': 'Opening stock {name}: enter a number.',
   'Stock opname disimpan.': 'Stock opname saved.',
   '{n} barang dihitung': '{n} barang counted',
+  'Menu sidebar disimpan.': 'Sidebar menus saved.',
+  'Menu di sidebar': 'Menus in the sidebar',
+  'Matikan menu yang tidak dipakai. Halamannya tetap bisa dibuka lewat alamatnya.': 'Switch off the menus you do not use. Their pages can still be opened by their address.',
+  'Bahasa': 'Language',
 };
