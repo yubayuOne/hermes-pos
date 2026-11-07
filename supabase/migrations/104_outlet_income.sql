@@ -25,7 +25,7 @@ begin
   end if;
   if char_length(btrim(coalesce(p_reason, ''))) < 3 then raise exception 'Alasan wajib diisi, minimal 3 karakter'; end if;
   if char_length(btrim(p_reason)) > 200 then raise exception 'Alasan maksimal 200 karakter'; end if;
-  select (now() at time zone coalesce(b.timezone, 'Asia/Jakarta'))::date into v_today from public.businesses b where b.id = p_business_id;
+  v_today := (now() at time zone public.business_tz(p_business_id))::date;
   if p_business_date is null or p_business_date > v_today then raise exception 'Tanggal tidak boleh di masa depan'; end if;
   return btrim(p_reason);
 end $$;
