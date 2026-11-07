@@ -8,10 +8,11 @@
   "scripts": {
     "dev:web": "npm run dev -w @hermes-pos/web",
     "dev:backoffice": "npm run dev -w @hermes-pos/backoffice",
-    "build": "npm run build -w @hermes-pos/web && npm run build -w @hermes-pos/backoffice",
-    "typecheck": "npm run typecheck -w @hermes-pos/web && npm run typecheck -w @hermes-pos/backoffice",
+    "build": "npm run build -w @hermes-pos/web && npm run build -w @hermes-pos/backoffice && npm run build -w @hermes-pos/admin",
+    "typecheck": "npm run typecheck -w @hermes-pos/web && npm run typecheck -w @hermes-pos/backoffice && npm run typecheck -w @hermes-pos/admin",
     "mock": "node e2e/mock-supabase.mjs",
-    "test:e2e": "e2e run"
+    "test:e2e": "e2e run",
+    "dev:admin": "npm run dev -w @hermes-pos/admin"
   },
   "devDependencies": {
     "@e2e-dev/web": "^0.14.0",

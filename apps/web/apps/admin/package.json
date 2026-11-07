@@ -1,0 +1,35 @@
+{
+  "name": "@hermes-pos/admin",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev --port 3002",
+    "build": "vite build",
+    "start": "node .output/server/index.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hermes-pos/theme": "^0.0.0",
+    "@hermes-pos/ui": "^0.0.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.3",
+    "@tanstack/react-router": "^1.170.45",
+    "@tanstack/react-start": "^1.169.3",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5",
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "nitro": "^3.0.260903-beta",
+    "tailwindcss": "^4.3.3",
+    "typescript": "5.9",
+    "vite": "^8.3.4"
+  }
+}

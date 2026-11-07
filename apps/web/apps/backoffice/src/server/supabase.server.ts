@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { getCookie, getCookies, setCookie } from '@tanstack/react-start/server';
 import { describeError } from '../lib/errors';
 
@@ -16,6 +17,11 @@ export function appUrl(): string {
 
 /** "Ingat saya" off: auth cookies become session cookies that end when the browser closes. */
 export const REMEMBER_COOKIE = 'hermes-pos-remember';
+
+/** Service role: no user session, bypasses row security. Only for the Midtrans webhook and server-only writes (110). */
+export function supabaseAdmin() {
+  return createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'), { auth: { persistSession: false, autoRefreshToken: false } });
+}
 
 // One client per request. The session lives in HttpOnly cookies set by @supabase/ssr, so no token is
 // readable from browser JavaScript.

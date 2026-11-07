@@ -130,18 +130,27 @@ select pg_temp.ok('C2 quote annual with 2 extra outlets', public.plan_quote('ann
 select pg_temp.ok('C3 quote annual', public.plan_quote('annual',0) = 697000);
 select pg_temp.fails('C4 unknown plan refused', $q$select public.plan_quote('trial',0)$q$, 'Pilih paket');
 -- +2, not +1: this business moved to Asia/Makassar in B2, which is a day ahead of Jakarta between 23.00 and 24.00 WIB.
-select pg_temp.fails('C5 future transfer date refused', $q$select public.owner_submit_payment('monthly',0,'Rina Sari','BCA',current_setting('t.today')::date+2,149000,'')$q$, 'setelah hari ini');
-select pg_temp.fails('C6 old transfer date refused', $q$select public.owner_submit_payment('monthly',0,'Rina Sari','BCA',current_setting('t.today')::date-31,149000,'')$q$, '30 hari');
-select pg_temp.fails('C7 missing sender refused', $q$select public.owner_submit_payment('monthly',0,' ','BCA',current_setting('t.today')::date,149000,'')$q$, 'nama pengirim');
-select pg_temp.ok('C8 submit payment gives invoice number', (public.owner_submit_payment('monthly',1,'Rina Sari','BCA',current_setting('t.today')::date,246000,'transfer pagi')->>'invoice_number') ~ '^INV-\d{8}-\d{5}$');
-select pg_temp.ok('C9 amount due computed by server', (public.owner_list_payments()->0->>'amount_due')::bigint = 246000);
-select pg_temp.fails('C10 second pending refused', $q$select public.owner_submit_payment('monthly',0,'Rina Sari','BCA',current_setting('t.today')::date,149000,'')$q$, 'sedang diperiksa');
-select pg_temp.fails('C11 owner cannot verify', format('select public.admin_verify_payment(%L)', (public.owner_list_payments()->0->>'id')), 'permission denied');
+select pg_temp.fails('C5 future transfer date refused', $q$select public.owner_submit_payment('monthly',0,'Rina Sari','BCA',current_setting('t.today')::date,147000,'')$q$, 'permission denied'); -- manual transfers ended (110)
+select pg_temp.fails('C6 old transfer date refused', $q$select public.owner_submit_payment('monthly',0,'Rina Sari','BCA',current_setting('t.today')::date,147000,'')$q$, 'permission denied'); -- manual transfers ended (110)
+select pg_temp.fails('C7 missing sender refused', $q$select public.owner_submit_payment('monthly',0,'Rina Sari','BCA',current_setting('t.today')::date,147000,'')$q$, 'permission denied'); -- manual transfers ended (110)
+-- Transfers are no longer submitted by the owner (110): the fixture row stands for one awaiting review.
+reset role;
+insert into public.payment_confirmations(business_id, invoice_number, plan_code, extra_outlets, amount_due, status) values ('10000000-0000-0000-0000-000000000001', 'INV-TEST-00001', 'monthly', 1, 246000, 'submitted');
+set role authenticated;
+select pg_temp.ok('C8 the owner sees the awaiting transfer', (select count(*) from public.owner_list_payments()) >= 1);
+select pg_temp.ok('C9 the amount is computed by the server: 147.000 + 99.000', (select amount_due = 246000 from public.payment_confirmations where invoice_number = 'INV-TEST-00001'));
+select pg_temp.fails('C11 owner cannot verify', format('select public.admin_verify_payment(%L)', (public.owner_list_payments()->0->>'id')), 'Hanya admin platform');
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
-select pg_temp.ok('C12 expired owner can submit payment', (public.owner_submit_payment('annual',1,'Dedi','BRI',current_setting('t.today')::date-2,2587000,'')->>'status') = 'submitted');
+reset role;
+insert into public.payment_confirmations(business_id, invoice_number, plan_code, extra_outlets, amount_due, status) values ('10000000-0000-0000-0000-000000000002', 'INV-TEST-00002', 'annual', 1, 1885000, 'submitted');
+set role authenticated;
+select pg_temp.ok('C12 expired owner has a transfer awaiting review', (select count(*) from public.owner_list_payments()) >= 1);
 select pg_temp.ok('C13 RLS: sees only own payments', (select count(*) from public.payment_confirmations) = 1);
 reset role;
 select set_config('t.pay', (select id::text from public.payment_confirmations where plan_code = 'annual'), false);
+insert into auth.users(id, email) values ('00000000-0000-0000-0000-0000000000aa', 'admin@kas.id') on conflict do nothing;
+insert into public.admin_users(user_id) values ('00000000-0000-0000-0000-0000000000aa') on conflict do nothing;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000aa', false);
 select pg_temp.ok('C14 admin verify marks verified', (public.admin_verify_payment(current_setting('t.pay')::uuid)->>'status') = 'verified');
 select pg_temp.ok('C14b expired plan renewed from today', (select expires_at > now() + interval '11 months' and expires_at < now() + interval '13 months' from public.subscriptions where business_id = '10000000-0000-0000-0000-000000000002'));
 select pg_temp.ok('C14c new expiry stored on the payment', (select new_expires_at is not null from public.payment_confirmations where id = current_setting('t.pay')::uuid));
@@ -153,7 +162,11 @@ select pg_temp.ok('C16b renewal while active adds to the remaining 7 days', (sel
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
 select pg_temp.ok('C17 after renewal writes work again', public.owner_save_voucher(null,'DEDI','bill','amount',5000,0,null,current_date+1,null) is not null);
-select set_config('t.p2', (public.owner_submit_payment('monthly',0,'Dedi','BRI',current_setting('t.today')::date,149000,'')->>'id'), false);
 reset role;
+insert into public.payment_confirmations(business_id, invoice_number, plan_code, extra_outlets, amount_due, status) values ('10000000-0000-0000-0000-000000000002', 'INV-TEST-00003', 'monthly', 0, 147000, 'submitted');
+select set_config('t.p2', (select id::text from public.payment_confirmations where invoice_number = 'INV-TEST-00003'), false);
+set role authenticated;
+reset role;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000aa', false);
 select pg_temp.ok('C18 admin reject stores reason', (public.admin_reject_payment(current_setting('t.p2')::uuid, 'Dana belum masuk')->>'reject_reason') = 'Dana belum masuk');
 select pg_temp.fails('C19 reject twice refused', format('select public.admin_reject_payment(%L,%L)', current_setting('t.p2'), 'x'), 'sudah diproses');

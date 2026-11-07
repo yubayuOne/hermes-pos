@@ -296,6 +296,8 @@ export function toPayment(r: Row): Payment {
     transferDate: str(r.transfer_date),
     note: str(r.note),
     status: str(r.status, 'submitted') as Payment['status'],
+    provider: str(r.provider, 'manual') as Payment['provider'],
+    paymentUrl: (r.payment_url as string | null) ?? null,
     rejectReason: (r.reject_reason as string | null) ?? null,
     newExpiresAt: (r.new_expires_at as string | null) ?? null,
     createdAt: str(r.created_at),

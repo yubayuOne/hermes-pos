@@ -1,0 +1,8 @@
+@import 'tailwindcss';
+@import '@hermes-pos/theme/theme.css';
+@source '../src';
+@source '../../../packages/ui/src';
+
+.page-t {
+  font-size: clamp(38px, 4.4vw, 60px);
+}

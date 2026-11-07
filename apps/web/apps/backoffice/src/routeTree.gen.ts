@@ -32,6 +32,7 @@ import { Route as AppTablesRouteImport } from './routes/_app/tables'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
 import { Route as AppVouchersRouteImport } from './routes/_app/vouchers'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as ApiMidtransNotifyRouteImport } from './routes/api/midtrans/notify'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -147,6 +148,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMidtransNotifyRoute = ApiMidtransNotifyRouteImport.update({
+  id: '/api/midtrans/notify',
+  path: '/api/midtrans/notify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof AppTransactionsRoute
   '/vouchers': typeof AppVouchersRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/api/midtrans/notify': typeof ApiMidtransNotifyRoute
 }
 export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/vouchers': typeof AppVouchersRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/': typeof AppIndexRoute
+  '/api/midtrans/notify': typeof ApiMidtransNotifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/_app/vouchers': typeof AppVouchersRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/_app/': typeof AppIndexRoute
+  '/api/midtrans/notify': typeof ApiMidtransNotifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/vouchers'
     | '/auth/callback'
+    | '/api/midtrans/notify'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/vouchers'
     | '/auth/callback'
     | '/'
+    | '/api/midtrans/notify'
   id:
     | '__root__'
     | '/_app'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/_app/vouchers'
     | '/auth/callback'
     | '/_app/'
+    | '/api/midtrans/notify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -307,6 +319,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SubscriptionRoute: typeof SubscriptionRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  ApiMidtransNotifyRoute: typeof ApiMidtransNotifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -472,6 +485,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/midtrans/notify': {
+      id: '/api/midtrans/notify'
+      path: '/api/midtrans/notify'
+      fullPath: '/api/midtrans/notify'
+      preLoaderRoute: typeof ApiMidtransNotifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -522,6 +542,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SubscriptionRoute: SubscriptionRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  ApiMidtransNotifyRoute: ApiMidtransNotifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

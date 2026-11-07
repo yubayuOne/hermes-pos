@@ -1,38 +1,30 @@
 import { useState } from 'react';
-import { Link, createFileRoute, redirect, useNavigate, useRouter } from '@tanstack/react-router';
+import { Link, createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import {
   Button,
   Chip,
-  Field,
   FormAlert,
-  Input,
   LangToggle,
   RCut,
   RRow,
   RTotal,
   Receipt,
-  StepNum,
-  StepsBar,
   Tag,
-  Textarea,
   ToastHost,
   Wordmark,
-  addDays,
   btn,
   cn,
   dateShort,
   isoDay,
   money,
-  toast,
   useI18n,
 } from '@hermes-pos/ui';
-import { BANK, PAID_PLANS, PLAN_NAME, SUPPORT, addPeriod, planByCode, quote, saving, type PaidCode } from '../lib/plans';
-import { paymentSchema } from '../lib/schemas';
+import { PAID_PLANS, PLAN_NAME, addPeriod, planByCode, quote, saving, type PaidCode } from '../lib/plans';
 import type { Payment } from '../lib/types';
-import { useForm } from '../lib/useForm';
+import { useAction } from '../lib/useAction';
 import { getAppContext } from '../server/app';
 import { getSession } from '../server/auth';
-import { listPayments, submitPayment } from '../server/billing';
+import { listPayments, startMidtransPayment } from '../server/billing';
 import { pageHead } from '../lang';
 
 export const Route = createFileRoute('/subscription')({
@@ -51,7 +43,6 @@ export const Route = createFileRoute('/subscription')({
   component: Checkout,
 });
 
-const STEP_NAMES = ['Paket', 'Transfer', 'Konfirmasi', 'Verifikasi'];
 
 /** E3. Manual bank transfer in four steps, plus billing history. Expired plans count from activation day. */
 function Checkout() {
@@ -60,7 +51,7 @@ function Checkout() {
   const payments = Route.useLoaderData();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: '/subscription' });
-  const pending = payments.find((p) => p.status === 'submitted') ?? null;
+  const pending = payments.find((p) => p.status === 'pending' || p.status === 'submitted') ?? null;
   const extraOutlets = Math.max(app.subscription.extraOutlets, app.counts.outlets - 1);
 
   return (
@@ -102,14 +93,11 @@ function Checkout() {
 function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extraOutlets: number; latest: Payment | null }) {
   const { t, lang } = useI18n();
   const { app } = Route.useRouteContext();
-  const router = useRouter();
+  const act = useAction();
   const sub = app.subscription;
   const tz = app.business.timezone;
   const expired = sub.state === 'expired';
-  // The plan of a pending payment, else the current plan when it can be bought again; Bulanan otherwise.
   const [plan, setPlan] = useState<PaidCode>(planByCode(pending?.planCode ?? sub.plan).code);
-  const [step, setStep] = useState(pending ? 3 : 0);
-  const [submitted, setSubmitted] = useState<Payment | null>(pending);
   const p = planByCode(plan);
   const total = quote(p, extraOutlets);
   const today = isoDay(new Date(), tz);
@@ -118,10 +106,16 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
   const newEnd = addPeriod(base, p);
   const justVerified = latest?.status === 'verified' && latest.newExpiresAt && Date.now() - new Date(latest.createdAt).getTime() < 7 * 86_400_000;
 
+  // The database prices the plan and keeps one open order; Midtrans hosts the page the owner pays on.
+  async function pay() {
+    const res = await act.run(() => startMidtransPayment({ data: { plan, extraOutlets } }));
+    if (res && res.ok && res.data) window.location.assign(res.data.url);
+  }
+
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,650px)_minmax(0,1fr)] lg:gap-11">
       <div className="min-w-0">
-        {justVerified && !pending && step === 0 && (
+        {justVerified && (
           <div role="status" className="mb-6 rounded border-[1.5px] border-ink bg-pine-soft p-4">
             <p className="font-bold">{t('Pembayaran {inv} terverifikasi.', { inv: latest!.invoiceNumber })}</p>
             <p className="mt-1">{t('Paket aktif sampai {date}.', { date: dateShort(latest!.newExpiresAt!, lang, tz) })}</p>
@@ -130,95 +124,80 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
             </Link>
           </div>
         )}
-        <StepsBar steps={STEP_NAMES.map((s) => t(s))} current={step} label={t('Langkah pembayaran')} />
-        <p className="mt-7 font-mono text-small text-mute">{t('Langkah {n} dari 4', { n: step + 1 })}</p>
-        {step === 0 && (
-          <section aria-labelledby="s-t" className="animate-pop">
-            <h1 id="s-t" className="page-t mt-1">
-              {t('Pilih paket.')}
-            </h1>
-            <p className="mt-4 max-w-[34em] text-mute">
-              {expired
-                ? t('Langganan berakhir. Data aman; pilih paket untuk membuka kunci.')
-                : t('Aktif sampai {date}. Perpanjangan menambah sisa waktu.', {
-                    date: dateShort(sub.expiresAt, lang, tz),
-                  })}
-            </p>
-            <div role="radiogroup" aria-label={t('Paket')} className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {PAID_PLANS.map((x) => {
-                const on = x.code === plan;
-                return (
-                  <button
-                    key={x.code}
-                    type="button"
-                    role="radio"
-                    aria-checked={on}
-                    onClick={() => setPlan(x.code)}
-                    className={cn(
-                      'min-h-[140px] rounded border-[1.5px] border-ink p-4 text-left transition-colors',
-                      on ? 'border-l-[12px] border-l-pine bg-pine-soft' : 'bg-slip hover:bg-tint-3',
-                    )}
-                  >
-                    <span className="block font-mono text-small">{t(x.name)}</span>
-                    <span className="mt-1 block font-mono text-small text-mute">
-                      <s>{money(x.list)}</s>
-                    </span>
-                    <span className="mt-1 block font-display text-[clamp(26px,2.4vw,30px)] font-extrabold leading-none tracking-[-0.03em]">
-                      {money(x.price)}
-                    </span>
-                    <span className="mt-2 block font-mono text-small text-mute">{t('per {unit}', { unit: t(x.unit) })}</span>
-                    {saving(x) > 0 && (
-                      <Tag tone="fire" className="mt-2">
-                        {t('hemat {amount}', { amount: money(saving(x)) })}
-                      </Tag>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="slipc mt-5">
-              <h2 className="card-t">{t('Yang termasuk')}</h2>
-              <ul className="mt-3 list-disc space-y-1.5 pl-5">
-                <li>{t('1 outlet. Outlet tambahan {price} per {unit}.', { price: money(p.extraOutlet), unit: t(p.unit) })}</li>
-                <li>{t('3 kasir dan 100 produk per outlet.')}</li>
-                <li>{t('Satu tanggal berakhir untuk seluruh bisnis.')}</li>
-                <li>{t('Saat paket berakhir, data tidak dihapus. Fitur tulis terkunci sampai Anda memperpanjang.')}</li>
-              </ul>
-            </div>
-            <div className="mt-6 flex flex-wrap items-center gap-4">
-              <Button variant="fire" onClick={() => setStep(1)}>
-                {t('Lanjut ke pembayaran')}
-              </Button>
-              <span className="font-mono text-body text-mute">Total {money(total)}</span>
-            </div>
-          </section>
+        {pending?.provider === 'midtrans' && (
+          <div role="status" className="mb-6 rounded border-[1.5px] border-ink bg-fire-soft p-4">
+            <p className="font-bold">{t('Pembayaran {inv} belum selesai.', { inv: pending.invoiceNumber })}</p>
+            <p className="mt-1">{t('Paket aktif setelah Midtrans menerima pembayaran.')}</p>
+          </div>
         )}
-        {step === 1 && <Transfer total={total} onBack={() => setStep(0)} onNext={() => setStep(2)} />}
-        {step === 2 && (
-          <Confirm
-            plan={plan}
-            extraOutlets={extraOutlets}
-            total={total}
-            today={today}
-            onBack={() => setStep(1)}
-            onDone={async (pay) => {
-              setSubmitted(pay);
-              setStep(3);
-              await router.invalidate();
-            }}
-          />
+        {pending?.provider === 'manual' && (
+          <div role="status" className="mb-6 rounded border-[1.5px] border-ink bg-slip p-4">
+            <p className="font-bold">{t('Transfer {inv} sedang diperiksa.', { inv: pending.invoiceNumber })}</p>
+          </div>
         )}
-        {step === 3 && submitted && <Verify payment={submitted} />}
+        <h1 className="page-t mt-1">{t('Pilih paket.')}</h1>
+        <p className="mt-4 max-w-[34em] text-mute">
+          {expired
+            ? t('Langganan berakhir. Data aman; pilih paket untuk membuka kunci.')
+            : t('Aktif sampai {date}. Perpanjangan menambah sisa waktu.', { date: dateShort(sub.expiresAt, lang, tz) })}
+        </p>
+        <div role="radiogroup" aria-label={t('Paket')} className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {PAID_PLANS.map((x) => {
+            const on = x.code === plan;
+            return (
+              <button
+                key={x.code}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => setPlan(x.code)}
+                className={cn(
+                  'min-h-[140px] rounded border-[1.5px] border-ink p-4 text-left transition-colors',
+                  on ? 'border-l-[12px] border-l-pine bg-pine-soft' : 'bg-slip hover:bg-tint-3',
+                )}
+              >
+                <span className="block font-mono text-small">{t(x.name)}</span>
+                <span className="mt-1 block font-mono text-small text-mute">
+                  <s>{money(x.list)}</s>
+                </span>
+                <span className="mt-1 block font-display text-[clamp(26px,2.4vw,30px)] font-extrabold leading-none tracking-[-0.03em]">
+                  {money(x.price)}
+                </span>
+                <span className="mt-2 block font-mono text-small text-mute">{t('per {unit}', { unit: t(x.unit) })}</span>
+                {saving(x) > 0 && (
+                  <Tag tone="fire" className="mt-2">
+                    {t('hemat {amount}', { amount: money(saving(x)) })}
+                  </Tag>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <div className="slipc mt-5">
+          <h2 className="card-t">{t('Yang termasuk')}</h2>
+          <ul className="mt-3 list-disc space-y-1.5 pl-5">
+            <li>{t('1 outlet. Outlet tambahan {price} per {unit}.', { price: money(p.extraOutlet), unit: t(p.unit) })}</li>
+            <li>{t('3 kasir dan 100 produk per outlet.')}</li>
+            <li>{t('Satu tanggal berakhir untuk seluruh bisnis.')}</li>
+            <li>{t('Saat paket berakhir, data tidak dihapus. Fitur tulis terkunci sampai Anda memperpanjang.')}</li>
+          </ul>
+        </div>
+        <FormAlert>{act.error && t(act.error)}</FormAlert>
+        <div className="mt-6 flex flex-wrap items-center gap-4">
+          <Button variant="fire" onClick={pay} busy={act.busy} busyLabel={t('Menyiapkan pembayaran...')}>
+            {pending?.provider === 'midtrans' ? t('Lanjutkan pembayaran') : t('Bayar dengan Midtrans')}
+          </Button>
+          <span className="font-mono text-body text-mute">Total {money(total)}</span>
+        </div>
       </div>
       <aside aria-label={t('Rincian pesanan')} className="min-w-0">
         <Receipt ink torn>
           <div className="flex items-center justify-between gap-3">
             <span className="font-semibold uppercase">{t('Rincian pesanan')}</span>
-            <Tag>{submitted ? t('Diperiksa') : t('Draf')}</Tag>
+            <Tag>{pending ? t('Menunggu') : t('Draf')}</Tag>
           </div>
           <RCut />
-          <RRow l={t('Faktur')} r={submitted?.invoiceNumber ?? t('belum terbit')} className="border-0 py-1.5" />
-          <RRow l={t('Tanggal')} r={submitted ? dateShort(submitted.createdAt, lang, tz) : '-'} className="border-0 py-1.5" />
+          <RRow l={t('Faktur')} r={pending?.invoiceNumber ?? t('belum terbit')} className="border-0 py-1.5" />
           <RRow l={t('Paket')} r={`${t(p.name)} · ${p.months > 0 ? t('{n} bulan', { n: p.months }) : t('{n} hari', { n: p.days })}`} className="border-0 py-1.5" />
           <RCut />
           <RRow l={t('Harga paket')} r={money(p.price)} className="border-0 py-1.5" />
@@ -229,208 +208,16 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
               className="border-0 py-1.5"
             />
           )}
-          <RTotal l="Total" r={money(submitted?.amountDue ?? total)} />
+          <RTotal l="Total" r={money(pending?.amountDue ?? total)} />
           <RCut />
           {p.months > 0 && <RRow l={t('Setara per bulan')} r={money(Math.round(total / p.months))} className="border-0 py-1.5" />}
           <RRow l={expired ? t('Berlaku sampai (perkiraan)') : t('Berlaku sampai')} r={dateShort(newEnd, lang, tz)} className="border-0 py-1.5" />
           <p className="mt-2 text-small text-mute">
-            {expired ? t('Masa aktif dihitung dari hari paket diaktifkan.') : t('Sisa waktu sekarang ditambahkan, tidak ada hari yang hilang.')}{' '}
-            {extraOutlets > 0 && t('Outlet tambahan adalah perkiraan, jumlah akhir kami cocokkan saat verifikasi.')}
+            {expired ? t('Masa aktif dihitung dari hari paket diaktifkan.') : t('Sisa waktu sekarang ditambahkan, tidak ada hari yang hilang.')}
           </p>
         </Receipt>
       </aside>
     </div>
-  );
-}
-
-function Transfer({ total, onBack, onNext }: { total: number; onBack: () => void; onNext: () => void }) {
-  const { t } = useI18n();
-  async function copy(text: string, done: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success(t(done));
-    } catch {
-      toast.error(t('Belum bisa disalin. Pilih dan salin manual.'));
-    }
-  }
-  return (
-    <section aria-labelledby="s-t" className="animate-pop">
-      <h1 id="s-t" className="page-t mt-1">
-        {t('Transfer ke rekening kami.')}
-      </h1>
-      <div className="slipc mt-7">
-        <p className="font-mono text-small text-mute">{t('Jumlah yang ditransfer')}</p>
-        <div className="mt-2 flex flex-wrap items-center gap-4">
-          <p className="big-num">{money(total)}</p>
-          <Button onClick={() => copy(String(total), 'Jumlah disalin.')}>{t('Salin jumlah')}</Button>
-        </div>
-        <dl className="mt-6 grid gap-3 border-t-[1.5px] border-ink pt-5 sm:grid-cols-3">
-          {[
-            ['Bank', BANK.bank],
-            ['Nomor rekening', BANK.account],
-            ['Atas nama', BANK.holder],
-          ].map(([k, v]) => (
-            <div key={k}>
-              <dt className="font-mono text-small text-mute">{t(k)}</dt>
-              <dd className="mt-1 break-words font-mono font-semibold">{v}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-      <ol className="mt-5 grid gap-3">
-        {['Transfer tepat sesuai jumlah di atas supaya mudah dicocokkan.', 'Simpan bukti transfer.', 'Isi konfirmasi di langkah berikutnya.'].map((x, i) => (
-          <li key={x} className="flex gap-3">
-            <StepNum n={i + 1} state="todo" />
-            <span className="pt-1">{t(x)}</span>
-          </li>
-        ))}
-      </ol>
-      <div className="mt-5 rounded border-[1.5px] border-ink bg-fire-soft p-4">
-        <p className="font-semibold">{t('Belum ada pembayaran otomatis.')}</p>
-        <p className="mt-1 text-body">
-          {t('Transfer diperiksa manual pada {hours}.', { hours: t(SUPPORT.hours) })}
-        </p>
-      </div>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Button onClick={onBack}>{t('Kembali')}</Button>
-        <Button variant="fire" onClick={onNext}>
-          {t('Saya sudah transfer')}
-        </Button>
-      </div>
-    </section>
-  );
-}
-
-function Confirm({
-  plan,
-  extraOutlets,
-  total,
-  today,
-  onBack,
-  onDone,
-}: {
-  plan: PaidCode;
-  extraOutlets: number;
-  total: number;
-  today: string;
-  onBack: () => void;
-  onDone: (p: Payment) => void;
-}) {
-  const { t } = useI18n();
-  const f = useForm({ sender: '', bank: '', date: today, amount: String(total), note: '' });
-  const [busy, setBusy] = useState(false);
-  const differs = f.values.amount !== '' && Number(f.values.amount) !== total;
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    if (f.values.date > today) return f.setErrors({ date: 'Tanggal transfer tidak boleh setelah hari ini.' });
-    const data = f.check(paymentSchema, {
-      plan,
-      extraOutlets,
-      sender: f.values.sender,
-      bank: f.values.bank,
-      date: f.values.date,
-      amount: f.values.amount === '' ? NaN : Number(f.values.amount),
-      note: f.values.note,
-    });
-    if (!data) return;
-    setBusy(true);
-    const res = await submitPayment({ data }).catch(() => ({
-      ok: false as const,
-      error: 'Tidak dapat terhubung ke server. Periksa koneksi internet lalu coba lagi.',
-    }));
-    setBusy(false);
-    if (!res.ok || !res.data) return f.fail(res.ok ? 'Terjadi kesalahan. Coba lagi.' : res.error);
-    onDone(res.data);
-  }
-  return (
-    <section aria-labelledby="s-t" className="animate-pop">
-      <h1 id="s-t" className="page-t mt-1">
-        {t('Konfirmasi transfer.')}
-      </h1>
-      <p className="mt-4 text-mute">{t('Data ini kami cocokkan dengan mutasi rekening.')}</p>
-      <form method="post" noValidate onSubmit={send} className="slipc mt-7 grid gap-4">
-        <Field label={t('Nama pengirim')} error={f.errors.sender && t(f.errors.sender)} help={t('Sesuai nama di rekening pengirim.')}>
-          <Input autoComplete="name" value={f.values.sender} onChange={(e) => f.set('sender', e.target.value)} />
-        </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t('Bank asal')} error={f.errors.bank && t(f.errors.bank)}>
-            <Input placeholder={t('Contoh: BCA')} value={f.values.bank} onChange={(e) => f.set('bank', e.target.value)} />
-          </Field>
-          <Field label={t('Tanggal transfer')} error={f.errors.date && t(f.errors.date)}>
-            <Input type="date" max={today} min={addDays(today, -30)} value={f.values.date} onChange={(e) => f.set('date', e.target.value)} />
-          </Field>
-        </div>
-        <Field
-          label={t('Jumlah yang ditransfer (Rp)')}
-          error={f.errors.amount && t(f.errors.amount)}
-          help={
-            differs ? (
-              <span className="font-semibold text-error">
-                {t('Berbeda dari tagihan {amount}. Tetap bisa dikirim; kami cocokkan saat verifikasi.', { amount: money(total) })}
-              </span>
-            ) : undefined
-          }
-        >
-          <Input inputMode="numeric" className="font-mono" value={f.values.amount} onChange={(e) => f.set('amount', e.target.value.replace(/\D/g, ''))} />
-        </Field>
-        <Field
-          label={t('Catatan')}
-          optional
-          error={f.errors.note && t(f.errors.note)}
-          help={t('Bukti transfer bisa dikirim ke WhatsApp {wa}.', { wa: SUPPORT.whatsapp })}
-        >
-          <Textarea rows={3} className="min-h-0" maxLength={300} value={f.values.note} onChange={(e) => f.set('note', e.target.value)} />
-        </Field>
-        <FormAlert>{f.errors._ && t(f.errors._)}</FormAlert>
-        <div className="flex flex-wrap gap-3">
-          <Button onClick={onBack}>{t('Kembali')}</Button>
-          <Button type="submit" variant="fire" busy={busy} busyLabel={t('Mengirim...')}>
-            {t('Kirim konfirmasi')}
-          </Button>
-        </div>
-      </form>
-    </section>
-  );
-}
-
-function Verify({ payment }: { payment: Payment }) {
-  const { t, lang } = useI18n();
-  const { app } = Route.useRouteContext();
-  const stages: [string, string, 'done' | 'now' | 'todo'][] = [
-    [t('Paket dipilih'), t(PLAN_NAME[payment.planCode]), 'done'],
-    [t('Transfer'), money(payment.amountPaid), 'done'],
-    [t('Konfirmasi terkirim'), dateShort(payment.createdAt, lang, app.business.timezone), 'done'],
-    [t('Diperiksa tim kami'), t('Pada {hours}', { hours: t(SUPPORT.hours) }), 'now'],
-    [t('Paket aktif'), t('Tanggal berakhir baru tampil di sidebar'), 'todo'],
-  ];
-  return (
-    <section aria-labelledby="s-t" className="animate-pop">
-      <h1 id="s-t" className="page-t mt-1">
-        {t('Sedang kami periksa.')}
-      </h1>
-      <p className="mt-4 text-mute">
-        {t('Konfirmasi {inv} sudah masuk. Halaman ini boleh ditutup.', {
-          inv: payment.invoiceNumber,
-        })}
-      </p>
-      <ol className="slipc mt-7 grid gap-0">
-        {stages.map(([title, sub, s], i) => (
-          <li key={title} aria-current={s === 'now' ? 'step' : undefined} className="relative flex gap-4 pb-5 last:pb-0">
-            {i < stages.length - 1 && <span aria-hidden className="absolute left-[15px] top-8 h-[calc(100%-32px)] border-l-[1.5px] border-dashed border-ink" />}
-            <StepNum n={i + 1} state={s} />
-            <span className="pt-0.5">
-              <span className={cn('block font-semibold', s === 'todo' && 'text-mute')}>{title}</span>
-              <span className="block text-small text-mute">{sub}</span>
-            </span>
-          </li>
-        ))}
-      </ol>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link to="/" className={btn('plain')}>
-          {t('Kembali ke backoffice')}
-        </Link>
-      </div>
-    </section>
   );
 }
 
@@ -439,7 +226,7 @@ function History({ payments, selected, onSelect }: { payments: Payment[]; select
   const { app } = Route.useRouteContext();
   const tz = app.business.timezone;
   const current = payments.find((p) => p.id === selected) ?? payments[0];
-  const STATUS = { submitted: ['Diperiksa', 'fire'], verified: ['Lunas', 'pine'], rejected: ['Ditolak', 'mute'] } as const;
+  const STATUS = { pending: ['Menunggu bayar', 'mute'], submitted: ['Diperiksa', 'fire'], verified: ['Lunas', 'pine'], rejected: ['Ditolak', 'mute'] } as const;
   if (payments.length === 0) {
     return (
       <div className="slipc py-10">

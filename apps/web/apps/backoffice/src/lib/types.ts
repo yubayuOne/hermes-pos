@@ -395,7 +395,10 @@ export type Payment = {
   bankName: string;
   transferDate: string;
   note: string;
-  status: 'submitted' | 'verified' | 'rejected';
+  /** pending: a Midtrans order not paid yet; submitted: a bank transfer waiting for review (110). */
+  status: 'pending' | 'submitted' | 'verified' | 'rejected';
+  provider: 'manual' | 'midtrans';
+  paymentUrl: string | null;
   rejectReason: string | null;
   newExpiresAt: string | null;
   createdAt: string;
