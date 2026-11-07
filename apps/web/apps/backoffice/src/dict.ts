@@ -1145,7 +1145,7 @@ export const EN: Dict = {
   'Pilih kategori.': 'Choose a category.',
   'Pilih satuan.': 'Choose a unit.',
   // Stock (migration 074)
-  'Stok produk|menu': 'Product stock',
+  'Stock Opname|menu': 'Stock opname',
   'Bagian stok': 'Stock sections',
   'Stok sekarang': 'Current stock',
   Riwayat: 'History',
@@ -1623,4 +1623,14 @@ export const EN: Dict = {
   'Modal tambahan': 'Additional capital',
   'Uang titipan': 'Money held for others',
   'Tidak dibatasi': 'No end date',
+  'Stok akhir': 'Closing stock',
+  'Ubah catatan': 'Edit note',
+  'Catatan selisih {name}': 'Difference note for {name}',
+  'Misalnya tumpah, rusak, atau salah hitung. Catatan ikut tersimpan saat stock opname disimpan.': 'For example spilled, damaged, or miscounted. The note is saved with the stock opname.',
+  'Belum ada barang yang dihitung stoknya.': 'No barang with a stock count yet.',
+  'Atur di halaman Barang, lalu isi stok di sini.': 'Set it up on the Barang page, then enter the stock here.',
+  'Simpan stock opname': 'Save stock opname',
+  'Stok awal {name}: isi angka.': 'Opening stock {name}: enter a number.',
+  'Stock opname disimpan.': 'Stock opname saved.',
+  '{n} barang dihitung': '{n} barang counted',
 };

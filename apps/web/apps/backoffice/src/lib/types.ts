@@ -398,42 +398,24 @@ export type Payment = {
   createdAt: string;
 };
 
-/** A tracked product on the Stok page (owner_list_stock, 074). Value = stock x HPP, from the database. */
-export type StockItem = {
-  productId: string;
+/** One barang on the Stock Opname sheet of a day (owner_list_stock_opname, 106). Quantities are in the barang's base unit. */
+export type OpnameRow = {
+  ingredientId: string;
   name: string;
   category: string;
-  stock: number;
-  hpp: number;
-  value: number;
-  isActive: boolean;
-  lastCount: string | null;
+  unit: string;
+  /** Stok Awal: the barang's first count (typed), or the Stok Akhir of the row before. null = never counted, typed on the first day. */
+  opening: number | null;
+  openingEditable: boolean;
+  /** Stok Masuk: expense moves since the row before, up to this day. */
+  incoming: number;
+  out: number;
+  closing: number | null;
+  /** Selisih: closing - (opening + incoming - out). null until counted. */
+  difference: number | null;
+  note: string | null;
+  saved: boolean;
 };
-export type StockDocumentKind = 'opening' | 'initial' | 'tracking_off' | 'stock_in' | 'adjustment' | 'opname';
-/** A stock document: every change of stock that is not a sale, void, or refund (074). */
-export type StockDocument = {
-  id: string;
-  kind: StockDocumentKind;
-  reason: string;
-  createdAt: string;
-  lines: {
-    productId: string;
-    productName: string;
-    qty: number;
-    counted: number | null;
-    bookQty: number | null;
-    value: number;
-    /** Count sheet columns (096); 0 and '' for other kinds. Variance is set only for a count. */
-    opening: number;
-    received: number;
-    issued: number;
-    note: string;
-    variance: number | null;
-  }[];
-};
-/** The opening (Awal) a count sheet starts from; null when the product was never counted (096). */
-export type StockOpening = { productId: string; opening: number | null };
-export type StockDocumentList = { rows: StockDocument[]; total: number };
 
 /** Customers by the name typed on paid bills (owner_customers, migration 081). */
 export type Customer = { name: string; bills: number; total: number; lastAt: string };

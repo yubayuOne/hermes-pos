@@ -5,10 +5,7 @@ import type {
   OutletTable,
   CountResultLine,
   RecipeCost,
-  StockDocument,
-  StockDocumentList,
-  StockOpening,
-  StockItem,
+  OpnameRow,
   DayShift,
   ExpenseItem,
   Bill,
@@ -450,48 +447,21 @@ export function toDayClose(raw: unknown): DayClose {
   };
 }
 
-export function toStockItem(r: Row): StockItem {
+export function toOpnameRow(r: Row): OpnameRow {
   return {
-    productId: str(r.productId),
+    ingredientId: str(r.ingredientId),
     name: str(r.name),
     category: str(r.category),
-    stock: num(r.stock),
-    hpp: num(r.hpp),
-    value: num(r.value),
-    isActive: r.isActive !== false,
-    lastCount: r.lastCount ? str(r.lastCount) : null,
+    unit: str(r.unit, 'g'),
+    opening: nullable(r.opening),
+    openingEditable: r.openingEditable === true,
+    incoming: num(r.incoming),
+    out: num(r.out),
+    closing: nullable(r.closing),
+    difference: nullable(r.difference),
+    note: r.note ? str(r.note) : null,
+    saved: r.saved === true,
   };
-}
-
-export function toStockDocument(r: Row): StockDocument {
-  return {
-    id: str(r.id),
-    kind: str(r.kind, 'stock_in') as StockDocument['kind'],
-    reason: str(r.reason),
-    createdAt: str(r.createdAt),
-    lines: rows(r.lines).map((l) => ({
-      productId: str(l.productId),
-      productName: str(l.productName),
-      qty: num(l.qty),
-      counted: nullable(l.counted),
-      bookQty: nullable(l.bookQty),
-      value: num(l.value),
-      opening: num(l.opening),
-      received: num(l.received),
-      issued: num(l.issued),
-      note: str(l.note),
-      variance: nullable(l.variance),
-    })),
-  };
-}
-
-export function toStockOpenings(raw: unknown): StockOpening[] {
-  return rows(raw).map((r) => ({ productId: str(r.id), opening: nullable(r.opening) }));
-}
-
-export function toStockDocumentList(raw: unknown): StockDocumentList {
-  const r = (raw ?? {}) as Row;
-  return { total: num(r.total), rows: rows(r.rows).map(toStockDocument) };
 }
 
 // ---------- Ingredients and recipes (084) ----------

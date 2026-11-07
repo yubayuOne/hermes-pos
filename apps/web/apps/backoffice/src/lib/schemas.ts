@@ -358,57 +358,31 @@ export const incomeIdSchema = z.object({ id: uuid });
 export const incomeListSchema = z
   .object({ outletId: uuid.nullable(), from: day, to: day, page: z.number().int().min(1).max(10_000) })
   .refine(...rangeCheck);
-// ---------- Stock (074) ----------
+// ---------- Stock Opname of barang (106) ----------
+/** Quantity of a barang or a count: at most 3 decimals. Used by the Barang counts too. */
 const stockQty = z
   .number({ error: 'Jumlah harus angka.' })
   .refine((v) => Number.isFinite(v) && Math.abs(v * 1000 - Math.round(v * 1000)) < 1e-6, 'Jumlah maksimal 3 angka di belakang koma.')
   .refine((v) => Math.abs(v) < 1_000_000, 'Jumlah terlalu besar.');
-/** Same rules as owner_stock_document: stock in > 0, an adjustment signed and not 0 with a reason. Counts use stockSheetSchema. */
-export const stockDocumentSchema = z
-  .object({
-    outletId: uuid,
-    kind: z.enum(['stock_in', 'adjustment']),
-    reason: z.string().trim().max(200, 'Maksimal 200 karakter.'),
-    lines: z
-      .array(z.object({ productId: uuid, qty: stockQty }))
-      .min(1, 'Isi jumlah minimal satu produk.')
-      .max(500, 'Maksimal 500 produk.')
-      .refine((ls) => new Set(ls.map((l) => l.productId)).size === ls.length, 'Satu produk hanya boleh sekali.'),
-  })
-  .superRefine((v, ctx) => {
-    if (v.kind === 'adjustment' && v.reason.length < 3) ctx.addIssue({ code: 'custom', path: ['reason'], message: 'Tulis alasan, minimal 3 huruf.' });
-    for (const l of v.lines) {
-      if (v.kind === 'stock_in' && l.qty <= 0) ctx.addIssue({ code: 'custom', path: ['lines'], message: 'Jumlah stok masuk harus lebih dari 0.' });
-      if (v.kind === 'adjustment' && l.qty === 0) ctx.addIssue({ code: 'custom', path: ['lines'], message: 'Jumlah penyesuaian tidak boleh 0.' });
-    }
-  });
-/** Count sheet (096): one row per product. Blank cells are null; a row without a count is skipped by the server. */
-const sheetAmount = stockQty.refine((v) => v >= 0, 'Jumlah tidak boleh minus.').nullable();
-export const stockSheetSchema = z
-  .object({
-    outletId: uuid,
-    date: day.nullable(),
-    lines: z
-      .array(
-        z.object({
-          productId: uuid,
-          opening: sheetAmount,
-          received: sheetAmount,
-          issued: sheetAmount,
-          counted: sheetAmount,
-          note: z.string().trim().max(200, 'Catatan maksimal 200 karakter.'),
-        }),
-      )
-      .min(1, 'Isi minimal satu produk.')
-      .max(500, 'Maksimal 500 produk.')
-      .refine((ls) => new Set(ls.map((l) => l.productId)).size === ls.length, 'Satu produk hanya boleh sekali.'),
-  })
-  .refine((v) => v.lines.some((l) => l.counted !== null), { message: 'Isi hasil hitung minimal satu produk.', path: ['lines'] });
-export const stockOpeningsSchema = z.object({ outletId: uuid, date: day });
-export const stockDocumentListSchema = z
-  .object({ outletId: uuid, from: day, to: day, tz: z.enum(timezones), page: z.number().int().min(1).max(10_000) })
-  .refine(...rangeCheck);
-
+/** One counted barang of the sheet. Opening is typed only for a barang's first count; out is 0 when left blank. */
+const opnameQty = z.number({ error: 'Isi angka.' }).refine((v) => Number.isFinite(v) && v >= 0, 'Jumlah tidak boleh minus.').refine((v) => v < 1_000_000_000, 'Jumlah terlalu besar.');
+export const opnameListSchema = z.object({ outletId: uuid, date: day });
+export const opnameSaveSchema = z.object({
+  outletId: uuid,
+  date: day,
+  rows: z
+    .array(
+      z.object({
+        ingredientId: uuid,
+        opening: opnameQty.nullable(),
+        out: opnameQty,
+        closing: opnameQty,
+        note: z.string().trim().max(200, 'Catatan maksimal 200 huruf.'),
+      }),
+    )
+    .min(1, 'Isi stok akhir minimal satu barang.')
+    .max(500, 'Maksimal 500 barang.'),
+});
 // ---------- Ingredient counts (088, 099) ----------
 const oncePerIngredient = (ls: { ingredientId: string }[]) => new Set(ls.map((l) => l.ingredientId)).size === ls.length;
 /** A count may be 0 (the shelf is empty); same limits as owner_count_ingredients. */

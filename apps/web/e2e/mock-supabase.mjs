@@ -359,6 +359,10 @@ function summary(args) {
 const expired = () => scenario.status === 'expired';
 const fail = (message, code = 'P0001') => ({ status: 400, body: { code, message, details: null, hint: null } });
 let incomes = [];
+// Stock Opname rows of counted barang: { ingredientId, date, openingFirst, out, closing, note }.
+let opnameDays = [];
+// The database gives every barang a uuid; the mock maps its own ids to fixed uuids.
+const opnameUuid = (id) => `70000000-0000-4000-8000-${String(id).replace(/\D/g, '').padStart(12, '0')}`;
 const RPC = {
   my_business_id: () => (scenario.biz === 'none' ? null : BIZ),
   get_my_profile: () => (scenario.biz === 'none' ? null : { ...profile, email: user.email }),
@@ -681,6 +685,39 @@ const RPC = {
   ],
   owner_save_barang: () => 'mock-barang-id',
   owner_set_expense_stock: () => null,
+  owner_list_stock_opname: (a) =>
+    RPC.owner_list_ingredients()
+      .filter((i) => i.dihitungStok)
+      .map((i) => {
+        const id = opnameUuid(i.id);
+        const prev = opnameDays.filter((d) => d.ingredientId === id && d.date < a.p_date).sort((x, y) => (x.date < y.date ? 1 : -1))[0];
+        const cur = opnameDays.find((d) => d.ingredientId === id && d.date === a.p_date);
+        const opening = prev ? prev.closing : (cur?.openingFirst ?? null);
+        const out = cur?.out ?? 0;
+        return {
+          ingredientId: id,
+          name: i.name,
+          category: '',
+          unit: i.baseUnit,
+          opening,
+          openingEditable: !prev,
+          incoming: 0,
+          out,
+          closing: cur?.closing ?? null,
+          difference: cur && opening !== null ? cur.closing - (opening + 0 - out) : null,
+          note: cur?.note ?? null,
+          saved: !!cur,
+        };
+      }),
+  owner_save_stock_opname: (a) => {
+    for (const r of a.p_rows) {
+      const cur = opnameDays.find((d) => d.ingredientId === r.ingredientId && d.date === a.p_date);
+      const prev = opnameDays.some((d) => d.ingredientId === r.ingredientId && d.date < a.p_date);
+      if (cur) Object.assign(cur, { out: r.out, closing: r.closing, note: r.note || null });
+      else opnameDays.push({ ingredientId: r.ingredientId, date: a.p_date, openingFirst: prev ? null : r.opening, out: r.out, closing: r.closing, note: r.note || null });
+    }
+    return a.p_rows.length;
+  },
   owner_list_outlet_income: (a) => {
     const mine = incomes
       .filter((i) => (!a.p_outlet_id || i.outletId === a.p_outlet_id) && i.businessDate >= a.p_from && i.businessDate <= a.p_to)

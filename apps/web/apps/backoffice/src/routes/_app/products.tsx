@@ -369,10 +369,7 @@ function ProductDialog({
           {f.values.trackStock &&
             (product?.trackStock ? (
               <p className="text-body">
-                {t('Stok sekarang {n}.', { n: amount(product.stock) })}{' '}
-                <Link to="/stock" search={{ outlet: outletId }} className="lnk lnk-inline">
-                  {t('Ubah lewat menu Stok')}
-                </Link>
+                {t('Stok sekarang {n}.', { n: amount(product.stock) })}
               </p>
             ) : (
               <Field label={t('Stok awal')} error={f.errors.stock && t(f.errors.stock)}>

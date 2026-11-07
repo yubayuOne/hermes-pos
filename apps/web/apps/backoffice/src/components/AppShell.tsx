@@ -98,7 +98,7 @@ function SidebarBody({ close }: { close?: ReactNode }) {
       label: 'Catatan',
       items: [
         { to: '/expenses', label: 'Kas' },
-        { to: '/stock', label: 'Stok produk' },
+        { to: '/stock', label: 'Stock Opname' },
         { to: '/customers', label: 'Pelanggan' },
       ],
     },
