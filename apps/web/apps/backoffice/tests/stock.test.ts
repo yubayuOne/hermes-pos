@@ -4,7 +4,7 @@ import { opnameSaveSchema } from '../src/lib/schemas.ts';
 
 const outletId = '11111111-1111-4111-8111-111111111111';
 const barang = '22222222-2222-4222-8222-222222222222';
-const row = (over: Record<string, unknown> = {}) => ({ ingredientId: barang, opening: null, out: 0, closing: 5, note: '', ...over });
+const row = (over: Record<string, unknown> = {}) => ({ ingredientId: barang, opening: null, in: 0, out: 0, closing: 5, note: '', ...over });
 const save = (rows: unknown[]) => opnameSaveSchema.safeParse({ outletId, date: '2026-11-06', rows });
 
 test('a counted row saves', () => {

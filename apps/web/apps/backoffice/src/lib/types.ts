@@ -407,7 +407,7 @@ export type OpnameRow = {
   /** Stok Awal: the barang's first count (typed), or the Stok Akhir of the row before. null = never counted, typed on the first day. */
   opening: number | null;
   openingEditable: boolean;
-  /** Stok Masuk: expense moves since the row before, up to this day. */
+  /** Stok Masuk, typed by the owner (107). 0 until the day is saved. */
   incoming: number;
   out: number;
   closing: number | null;

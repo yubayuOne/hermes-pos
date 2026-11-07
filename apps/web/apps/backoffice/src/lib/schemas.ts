@@ -375,6 +375,7 @@ export const opnameSaveSchema = z.object({
       z.object({
         ingredientId: uuid,
         opening: opnameQty.nullable(),
+        in: opnameQty,
         out: opnameQty,
         closing: opnameQty,
         note: z.string().trim().max(200, 'Catatan maksimal 200 huruf.'),

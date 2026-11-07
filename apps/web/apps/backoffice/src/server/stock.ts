@@ -20,7 +20,7 @@ export const saveStockOpname = createServerFn({ method: 'POST' })
     const res = await callRpc('owner_save_stock_opname', {
       p_outlet_id: data.outletId,
       p_date: data.date,
-      p_rows: data.rows.map((r) => ({ ingredientId: r.ingredientId, opening: r.opening, out: r.out, closing: r.closing, note: r.note })),
+      p_rows: data.rows.map((r) => ({ ingredientId: r.ingredientId, opening: r.opening, in: r.in, out: r.out, closing: r.closing, note: r.note })),
     });
     return res.ok ? { ok: true } : res;
   });

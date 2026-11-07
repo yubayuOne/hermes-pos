@@ -27,8 +27,8 @@ select set_config('t.listrik', public.owner_save_barang(current_setting('t.o')::
 reset role;
 update public.subscriptions set plan_code = 'monthly', expires_at = now() + interval '20 days' where business_id = current_setting('t.b')::uuid;
 
--- Dates: d1 two days ago (first count), d2 yesterday, d3 today. Expense moves are written directly, as the owner's
--- expenses would write them (kind expense, positive qty).
+-- Dates: d1 two days ago (first count), d2 yesterday, d3 today. An expense move is written on d2 to show that Stok Masuk
+-- is typed by the owner (107), not taken from it.
 select set_config('t.d1', (current_date - 2)::text, false);
 select set_config('t.d2', (current_date - 1)::text, false);
 select set_config('t.d3', current_date::text, false);
@@ -49,16 +49,17 @@ select pg_temp.ok('O3 the first day: opening 10, out 2, closing 7, difference -1
   (pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d1')::date, 'Gula') ->> 'opening')::numeric = 10
   and (pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d1')::date, 'Gula') ->> 'difference')::numeric = -1
   and pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d1')::date, 'Gula') ->> 'note' = 'tumpah');
-select pg_temp.ok('O4 the next day opens with the closing of the day before, and shows the expense moves in',
+select pg_temp.ok('O4 the next day opens with the closing of the day before; the expense move is not counted as incoming',
   (pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d2')::date, 'Gula') ->> 'opening')::numeric = 7
-  and (pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d2')::date, 'Gula') ->> 'incoming')::numeric = 5
+  and (pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d2')::date, 'Gula') ->> 'incoming')::numeric = 0
   and (pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d2')::date, 'Gula') ->> 'openingEditable')::boolean = false);
 select pg_temp.ok('O5 a day not counted yet has no closing and no difference',
   pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d2')::date, 'Gula') ->> 'closing' is null
   and pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d2')::date, 'Gula') ->> 'difference' is null);
-select pg_temp.ok('O6 counting the next day: 7 + 5 - 1 = 11 expected, 10 counted, difference -1',
+select pg_temp.ok('O6 counting the next day with 5 in and 1 out: 7 + 5 - 1 = 11 expected, 10 counted, difference -1',
   public.owner_save_stock_opname(current_setting('t.o')::uuid, current_setting('t.d2')::date,
-    format('[{"ingredientId":"%s","out":1,"closing":10}]', current_setting('t.gula'))::jsonb) = 1
+    format('[{"ingredientId":"%s","in":5,"out":1,"closing":10}]', current_setting('t.gula'))::jsonb) = 1
+  and (pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d2')::date, 'Gula') ->> 'incoming')::numeric = 5
   and (pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d2')::date, 'Gula') ->> 'difference')::numeric = -1);
 select pg_temp.ok('O7 the third day opens with 10, no moves, and counts through a skipped day',
   (pg_temp.row(current_setting('t.o')::uuid, current_setting('t.d3')::date, 'Gula') ->> 'opening')::numeric = 10

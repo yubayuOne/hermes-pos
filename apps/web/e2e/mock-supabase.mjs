@@ -694,6 +694,7 @@ const RPC = {
         const cur = opnameDays.find((d) => d.ingredientId === id && d.date === a.p_date);
         const opening = prev ? prev.closing : (cur?.openingFirst ?? null);
         const out = cur?.out ?? 0;
+        const incoming = cur?.in ?? 0;
         return {
           ingredientId: id,
           name: i.name,
@@ -701,10 +702,10 @@ const RPC = {
           unit: i.baseUnit,
           opening,
           openingEditable: !prev,
-          incoming: 0,
+          incoming,
           out,
           closing: cur?.closing ?? null,
-          difference: cur && opening !== null ? cur.closing - (opening + 0 - out) : null,
+          difference: cur && opening !== null ? cur.closing - (opening + incoming - out) : null,
           note: cur?.note ?? null,
           saved: !!cur,
         };
@@ -713,8 +714,8 @@ const RPC = {
     for (const r of a.p_rows) {
       const cur = opnameDays.find((d) => d.ingredientId === r.ingredientId && d.date === a.p_date);
       const prev = opnameDays.some((d) => d.ingredientId === r.ingredientId && d.date < a.p_date);
-      if (cur) Object.assign(cur, { out: r.out, closing: r.closing, note: r.note || null });
-      else opnameDays.push({ ingredientId: r.ingredientId, date: a.p_date, openingFirst: prev ? null : r.opening, out: r.out, closing: r.closing, note: r.note || null });
+      if (cur) Object.assign(cur, { in: r.in, out: r.out, closing: r.closing, note: r.note || null });
+      else opnameDays.push({ ingredientId: r.ingredientId, date: a.p_date, openingFirst: prev ? null : r.opening, in: r.in, out: r.out, closing: r.closing, note: r.note || null });
     }
     return a.p_rows.length;
   },

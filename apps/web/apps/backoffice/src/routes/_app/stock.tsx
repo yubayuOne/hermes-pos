@@ -13,7 +13,7 @@ import { pageHead } from '../../lang';
 
 type Search = { outlet?: string; date?: string };
 /** One barang's typed cells. Blank = not typed. */
-type Line = { opening: string; out: string; closing: string; note: string };
+type Line = { opening: string; in: string; out: string; closing: string; note: string };
 
 export const Route = createFileRoute('/_app/stock')({
   validateSearch: (s: Record<string, unknown>): Search => ({
@@ -47,7 +47,7 @@ function difference(r: OpnameRow, l: Line): number | null {
   const closing = parse(l.closing);
   const opening = r.openingEditable ? parse(l.opening) : r.opening;
   if (closing === null || opening === null) return null;
-  return Math.round((closing - (opening + r.incoming - (parse(l.out) ?? 0))) * 1000) / 1000;
+  return Math.round((closing - (opening + (parse(l.in) ?? 0) - (parse(l.out) ?? 0))) * 1000) / 1000;
 }
 
 function initial(rows: OpnameRow[]): Record<string, Line> {
@@ -56,6 +56,7 @@ function initial(rows: OpnameRow[]): Record<string, Line> {
       r.ingredientId,
       {
         opening: r.openingEditable && r.opening !== null ? String(r.opening) : '',
+        in: r.saved ? String(r.incoming) : '',
         out: r.saved ? String(r.out) : '',
         closing: r.closing !== null ? String(r.closing) : '',
         note: r.note ?? '',
@@ -65,9 +66,8 @@ function initial(rows: OpnameRow[]): Record<string, Line> {
 }
 
 /**
- * Stock Opname (106): every counted barang of one day. Stok Awal is carried from the day before (typed only the first
- * time), Stok Masuk comes from expenses, Stok Keluar and Stok Akhir are typed, Selisih is worked out. The note button
- * keeps a reason for a difference.
+ * Stock Opname (106, 107): every counted barang of one day. Stok Awal is carried from the day before (typed only the first
+ * time). Stok Masuk, Stok Keluar and Stok Akhir are typed, Selisih is worked out. The note button keeps a reason.
  */
 function StockOpname() {
   const { t } = useI18n();
@@ -124,6 +124,7 @@ function OpnameSheet({ outletId, date, rows }: { outletId: string; date: string;
         return {
           ingredientId: r.ingredientId,
           opening: r.openingEditable ? parse(l.opening) : null,
+          in: parse(l.in) ?? 0,
           out: parse(l.out) ?? 0,
           closing: parse(l.closing) as number,
           note: l.note,
@@ -165,7 +166,7 @@ function OpnameSheet({ outletId, date, rows }: { outletId: string; date: string;
           </thead>
           <tbody>
             {rows.map((r) => {
-              const l = lines[r.ingredientId] ?? { opening: '', out: '', closing: '', note: '' };
+              const l = lines[r.ingredientId] ?? { opening: '', in: '', out: '', closing: '', note: '' };
               const diff = difference(r, l);
               return (
                 <tr key={r.ingredientId}>
@@ -189,7 +190,13 @@ function OpnameSheet({ outletId, date, rows }: { outletId: string; date: string;
                     )}
                   </td>
                   <td data-l={t('Stok masuk')} className="num">
-                    {amount(r.incoming)}
+                    <Input
+                      inputMode="decimal"
+                      className="font-mono text-right"
+                      aria-label={`${t('Stok masuk')} ${r.name}`}
+                      value={l.in}
+                      onChange={(e) => set(r.ingredientId, { in: e.target.value })}
+                    />
                   </td>
                   <td data-l={t('Stok keluar')} className="num">
                     <Input
