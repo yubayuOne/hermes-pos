@@ -25,7 +25,7 @@ export const addCashMovement = createServerFn({ method: 'POST' })
     return res.ok ? { ok: true } : res;
   });
 
-/** The shifts of a period, ten a page, newest first; total counts every shift of the period (104). */
+/** The shifts of a period, ten a page, newest first; total counts every shift of the period (103). */
 export const listShifts = createServerFn({ method: 'GET' })
   .validator(parser(shiftListSchema))
   .handler(async ({ data }): Promise<ShiftList> => {

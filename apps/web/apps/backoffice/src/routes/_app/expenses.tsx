@@ -5,8 +5,10 @@ import { Button, Card, Dialog, Empty, Field, FormAlert, Input, Loading, PencilIc
 import { OutletFilter } from '../../components/OutletFilter';
 import { Page } from '../../components/Page';
 import { Pagination } from '../../components/Pagination';
-import type { DayShift, Expense, ExpenseItem, Ingredient } from '../../lib/types';
+import type { DayShift, Expense, ExpenseItem, Ingredient, OutletIncome, OutletIncomeList } from '../../lib/types';
 import { listIngredients } from '../../server/ingredients';
+import { listOutletIncome } from '../../server/income';
+import { IncomeDialog } from '../../components/IncomeDialog';
 
 import { getSummary } from '../../server/summary';
 import { describeError } from '../../lib/errors';
@@ -24,7 +26,7 @@ import { PeriodFilter, usePeriodLabel } from '../../components/PeriodFilter';
 import { FilterBar } from '../../components/Filters';
 import { type PeriodSearch, parsePeriod, periodError, periodRange } from '../../lib/period';
 
-type Search = PeriodSearch & { outlet?: string };
+type Search = PeriodSearch & { outlet?: string; tab?: 'pengeluaran' | 'pemasukan'; ipage?: number };
 
 export const Route = createFileRoute('/_app/expenses')({
   // The expense page opens on this month (owner's request, 7 Nov 2026).
@@ -32,6 +34,8 @@ export const Route = createFileRoute('/_app/expenses')({
     ...parsePeriod(s),
     period: parsePeriod(s).period ?? 'month',
     outlet: typeof s.outlet === 'string' ? s.outlet : undefined,
+    tab: s.tab === 'pemasukan' ? 'pemasukan' : undefined,
+    ipage: Number(s.ipage) > 1 ? Math.floor(Number(s.ipage)) : undefined,
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ deps, context }) => {
@@ -39,15 +43,17 @@ export const Route = createFileRoute('/_app/expenses')({
     const today = isoDay(new Date(), tz);
     const range = periodRange(deps, today);
     // Kas Outlet is the sales of the same days and outlet (owner's definition, 7 Nov 2026); Sisa Kas is that minus the expenses.
-    const [list, summary] = await Promise.all([
+    // Money into the outlet (104) is part of Kas Outlet; its page and sum follow the tab's page.
+    const [list, summary, income] = await Promise.all([
       listExpenses({ data: { outletId: deps.outlet ?? null, ...range, tz, before: null } }),
       getSummary({ data: { outletId: deps.outlet ?? null, from: range.from, to: range.to, today, tz } }),
+      listOutletIncome({ data: { outletId: deps.outlet ?? null, from: range.from, to: range.to, page: deps.ipage ?? 1 } }),
     ]);
-    return { ...list, range, today, tz, kasOutlet: summary.period.sales };
+    return { ...list, range, today, tz, income, kasOutlet: summary.period.sales + income.sum };
   },
   pendingMs: 150,
   pendingComponent: ExpensesLoading,
-  head: ({ match }) => pageHead(match.context.lang, 'Pengeluaran|menu'),
+  head: ({ match }) => pageHead(match.context.lang, 'Kas|menu'),
   component: Expenses,
 });
 
@@ -82,6 +88,8 @@ function Expenses() {
   const periodLabel = usePeriodLabel(search, data.range);
   const lock = useLock();
   const [recording, setRecording] = useState(false);
+  const [incomeDialog, setIncomeDialog] = useState<null | 'new' | OutletIncome>(null);
+  const tab = search.tab ?? 'pengeluaran';
   // Pages of 50 shift records (server cursor: createdAt of the last row). Pages already seen are kept, so Sebelumnya
   // needs no request; a new filter or a saved edit starts again at page 1.
   const [pages, setPages] = useState<Expense[][]>([data.rows]);
@@ -119,7 +127,7 @@ function Expenses() {
   }, []);
 
   return (
-    <Page title={t('Pengeluaran')}>
+    <Page title={t('Kas')}>
       <FilterBar
         outlet={<OutletFilter value={search.outlet ?? null} onChange={(id) => set({ outlet: id ?? undefined })} />}
         active={search.period && search.period !== 'month' ? 1 : 0}
@@ -128,14 +136,45 @@ function Expenses() {
         validate={(v) => periodError(v, data.today)}
         onApply={set}
         action={
-          <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
-            {lock.label(t('Catat pengeluaran'))}
-          </Button>
+          tab === 'pemasukan' ? (
+            <Button variant="fire" onClick={() => setIncomeDialog('new')} {...lock.props}>
+              <PlusIcon size={16} />
+              {lock.label(t('Pemasukan'))}
+            </Button>
+          ) : (
+            <Button variant="fire" onClick={() => setRecording(true)} {...lock.props}>
+              <PlusIcon size={16} />
+              {lock.label(t('Pengeluaran'))}
+            </Button>
+          )
         }
       >
         {(d) => <PeriodFilter value={d.values} range={data.range} today={data.today} onChange={d.set} />}
       </FilterBar>
       {recording && <AddDialog outletId={search.outlet ?? null} today={data.today} onClose={() => setRecording(false)} />}
+      {incomeDialog && (
+        <IncomeDialog
+          income={incomeDialog === 'new' ? null : incomeDialog}
+          outlets={app.outlets}
+          outletId={search.outlet ?? null}
+          today={data.today}
+          onClose={() => setIncomeDialog(null)}
+        />
+      )}
+      <div role="tablist" aria-label={t('Kas')} className="mt-5 flex flex-wrap gap-2">
+        {(['pengeluaran', 'pemasukan'] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            role="tab"
+            aria-selected={tab === k}
+            onClick={() => set({ tab: k === 'pemasukan' ? 'pemasukan' : undefined, ipage: undefined })}
+            className={`cursor-pointer rounded border-[1.5px] px-4 py-2 font-semibold ${tab === k ? 'border-pine bg-pine text-paper' : 'border-rule bg-paper'}`}
+          >
+            {t(k === 'pengeluaran' ? 'Pengeluaran' : 'Pemasukan')}
+          </button>
+        ))}
+      </div>
 
       <Card className="mt-5" aria-label={t('Ringkasan kas')}>
         <p className="font-mono text-small text-mute">{periodLabel}</p>
@@ -155,14 +194,23 @@ function Expenses() {
             </dd>
           </div>
         </dl>
+        {data.income.sum !== 0 && <p className="mt-4 text-small text-mute">{t('Termasuk pemasukan {amount}', { amount: money(data.income.sum) })}</p>}
         {data.totals.adjustments !== 0 && (
           <p className="mt-4 text-small text-mute">{t('Termasuk koreksi pengeluaran lama: {amount}', { amount: money(data.totals.adjustments) })}</p>
         )}
       </Card>
 
-      {data.rows.length === 0 ? (
+      {tab === 'pemasukan' ? (
+        <IncomeSection
+          income={data.income}
+          page={search.ipage ?? 1}
+          outlets={app.outlets}
+          onEdit={(i) => setIncomeDialog(i)}
+          onPage={(p) => set({ ipage: p > 1 ? p : undefined })}
+        />
+      ) : data.rows.length === 0 ? (
         <Empty className="mt-5" title={t('Belum ada pengeluaran di periode ini.')}>
-          {t('Tekan Catat pengeluaran untuk mulai.')}
+          {t('Tekan + Pengeluaran untuk mulai.')}
         </Empty>
       ) : (
         <div className="mt-6 grid gap-8">
@@ -187,6 +235,73 @@ function Expenses() {
         </div>
       )}
     </Page>
+  );
+}
+
+/** The Pemasukan tab: money into the outlet from outside the shifts (104), ten a page, newest first. */
+function IncomeSection({
+  income,
+  page,
+  outlets,
+  onEdit,
+  onPage,
+}: {
+  income: OutletIncomeList;
+  page: number;
+  outlets: { id: string; name: string }[];
+  onEdit: (i: OutletIncome) => void;
+  onPage: (page: number) => void;
+}) {
+  const { t, lang } = useI18n();
+  const lock = useLock();
+  if (income.rows.length === 0) {
+    return (
+      <Empty className="mt-5" title={t('Belum ada pemasukan di periode ini.')}>
+        {t('Tekan + Pemasukan untuk mencatat uang masuk dari luar shift.')}
+      </Empty>
+    );
+  }
+  return (
+    <div className="mt-6 grid gap-5">
+      <div className="tbl-wrap">
+        <table className="tbl tbl-card">
+          <thead>
+            <tr>
+              <th scope="col">{t('Tanggal')}</th>
+              <th scope="col">{t('Alasan')}</th>
+              <th scope="col">{t('Outlet')}</th>
+              <th scope="col" className="num">
+                {t('Jumlah')}
+              </th>
+              <th scope="col">
+                <span className="sr-only">{t('Aksi')}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {income.rows.map((r) => (
+              <tr key={r.id}>
+                <td data-l={t('Tanggal')}>{dateLong(`${r.businessDate}T12:00:00Z`, lang, 'UTC')}</td>
+                <td data-l={t('Alasan')}>{r.reason}</td>
+                <td data-l={t('Outlet')}>{outlets.find((o) => o.id === r.outletId)?.name ?? '—'}</td>
+                <td data-l={t('Jumlah')} className="num">
+                  {money(r.amount)}
+                </td>
+                <td data-l="" className="text-right">
+                  <IconAction label={`${t('Ubah')} ${r.reason}`} onClick={() => onEdit(r)} {...lock.props}>
+                    <PencilIcon size={18} />
+                  </IconAction>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="grid justify-items-center gap-3">
+        <p className="font-mono text-small text-mute">{t('{total} pemasukan di periode ini', { total: income.total })}</p>
+        <Pagination page={page} pages={Math.max(1, Math.ceil(income.total / 10))} onPage={onPage} />
+      </div>
+    </div>
   );
 }
 

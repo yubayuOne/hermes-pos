@@ -328,7 +328,7 @@ export const billCorrectionSchema = z.object({
 
 // ---------- Tutup hari (073) ----------
 export const dayCloseSchema = z.object({ outletId: uuid, date: day });
-/** A period of shifts, ten a page (owner_list_shifts, 104). */
+/** A period of shifts, ten a page (owner_list_shifts, 103). */
 export const shiftListSchema = z.object({ outletId: uuid, from: day, to: day, page: z.number().int().min(1).max(10_000) });
 export const cashMovementSchema = z.object({
   shiftId: uuid,
@@ -340,6 +340,23 @@ export const cashMovementSchema = z.object({
     .max(1_000_000_000, 'Nominal maksimal Rp1.000.000.000.'),
   reason,
 });
+// ---------- Kas: pemasukan (104) ----------
+/** Money into the outlet from outside the shifts. The date is a business day, checked again on the server. */
+export const incomeSchema = z.object({
+  outletId: uuid,
+  businessDate: day,
+  amount: z
+    .number({ error: 'Isi nominal.' })
+    .int('Nominal tanpa koma.')
+    .gt(0, 'Nominal harus lebih dari Rp0.')
+    .max(1_000_000_000, 'Nominal maksimal Rp1.000.000.000.'),
+  reason,
+});
+export const incomeEditSchema = incomeSchema.omit({ outletId: true }).extend({ id: uuid });
+export const incomeIdSchema = z.object({ id: uuid });
+export const incomeListSchema = z
+  .object({ outletId: uuid.nullable(), from: day, to: day, page: z.number().int().min(1).max(10_000) })
+  .refine(...rangeCheck);
 // ---------- Stock (074) ----------
 const stockQty = z
   .number({ error: 'Jumlah harus angka.' })

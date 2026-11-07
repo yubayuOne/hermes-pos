@@ -358,6 +358,7 @@ function summary(args) {
 
 const expired = () => scenario.status === 'expired';
 const fail = (message, code = 'P0001') => ({ status: 400, body: { code, message, details: null, hint: null } });
+let incomes = [];
 const RPC = {
   my_business_id: () => (scenario.biz === 'none' ? null : BIZ),
   get_my_profile: () => (scenario.biz === 'none' ? null : { ...profile, email: user.email }),
@@ -680,6 +681,27 @@ const RPC = {
   ],
   owner_save_barang: () => 'mock-barang-id',
   owner_set_expense_stock: () => null,
+  owner_list_outlet_income: (a) => {
+    const mine = incomes
+      .filter((i) => (!a.p_outlet_id || i.outletId === a.p_outlet_id) && i.businessDate >= a.p_from && i.businessDate <= a.p_to)
+      .sort((x, y) => (x.businessDate < y.businessDate ? 1 : x.businessDate > y.businessDate ? -1 : 0));
+    const page = Math.max(1, a.p_page ?? 1);
+    return { total: mine.length, sum: mine.reduce((n, i) => n + i.amount, 0), rows: mine.slice((page - 1) * 10, page * 10) };
+  },
+  owner_add_outlet_income: (a) => {
+    const row = { id: `mock-income-${incomes.length + 1}`, outletId: a.p_outlet_id, businessDate: a.p_business_date, amount: a.p_amount, reason: a.p_reason, createdAt: new Date().toISOString() };
+    incomes.push(row);
+    return row;
+  },
+  owner_update_outlet_income: (a) => {
+    const row = incomes.find((i) => i.id === a.p_id);
+    if (row) Object.assign(row, { businessDate: a.p_business_date, amount: a.p_amount, reason: a.p_reason });
+    return row ?? null;
+  },
+  owner_delete_outlet_income: (a) => {
+    incomes = incomes.filter((i) => i.id !== a.p_id);
+    return null;
+  },
   owner_update_expense_item: () => null,
   owner_delete_expense_item: () => null,
   owner_list_expense_categories: () => [

@@ -250,6 +250,9 @@ export type TrailEntry = {
 };
 /** A page of shifts over a period (owner_list_shifts, 104). */
 export type ShiftList = { total: number; rows: DayShift[] };
+/** Money into the outlet from outside the shifts (104). `sum` and `total` cover the whole period; `rows` is one page. */
+export type OutletIncome = { id: string; outletId: string; businessDate: string; amount: number; reason: string; createdAt: string };
+export type OutletIncomeList = { total: number; sum: number; rows: OutletIncome[] };
 export type DayClose = { date: string; closed: DayLock | null; log: DayLogEntry[]; trail: TrailEntry[]; shifts: DayShift[]; checks: CheckFailure[] };
 /** A bill from owner_list_bills (migrations 028, 034). Money comes from the database. */
 export type Bill = {
