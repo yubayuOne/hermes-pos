@@ -1,10 +1,10 @@
 import { btn, money, useI18n } from '@hermes-pos/ui';
-import { EXTRA_OUTLET, LINKS, PLANS, perMonth, saving } from '../content';
+import { EXTRA_OUTLET, LINKS, PLANS, saving } from '../content';
 
 /** C7. Four plans, no plan highlighted. ≤980px each plan becomes a two-column card. */
 export function Pricing() {
   const { t } = useI18n();
-  const cols = ['Paket', 'Durasi', 'Harga', 'Setara per bulan', 'Hemat dari bulanan'];
+  const cols = ['Paket', 'Durasi', 'Harga', 'Hemat'];
   return (
     <section id="pricing" aria-labelledby="pricing-t" className="wrap scroll-mt-6 pt-28">
       <h2 id="pricing-t" className="max-w-[14em] text-[clamp(36px,4.4vw,64px)]">
@@ -26,12 +26,12 @@ export function Pricing() {
         </thead>
         <tbody className="grid gap-4 lg:table-row-group">
           {PLANS.map((p) => {
-            const trial = p.months === 0;
+            // Only the trial is free: Harian and Mingguan have no months, so months alone cannot tell them apart.
+            const trial = p.code === 'trial';
             const cells: [string, string, boolean][] = [
               [t('Durasi'), t(p.duration), false],
-              [t('Harga'), trial ? t('Gratis') : money(p.price), true],
-              [t('Setara per bulan'), trial ? '-' : money(perMonth(p.price, p.months)), false],
-              [t('Hemat dari bulanan'), trial || p.months === 1 ? '-' : money(saving(p.price, p.months)), false],
+              [t('Harga'), trial ? t('Gratis') : `${money(p.list)} → ${money(p.price)}`, true],
+              [t('Hemat'), trial ? '-' : money(saving(p.list, p.price)), false],
             ];
             return (
               <tr

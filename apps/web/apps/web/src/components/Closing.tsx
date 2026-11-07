@@ -13,7 +13,7 @@ export function Closing() {
           </h2>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <a href={LINKS.register} className={btn('fire')}>
-              {t('Coba gratis 3 hari')}
+              {t('Coba gratis 14 hari')}
             </a>
             <a href={LINKS.login} className={btn('plain')}>
               {t('Saya sudah punya akun')}
@@ -27,7 +27,7 @@ export function Closing() {
           </div>
           <RCut />
           <RRow l={t('Paket')} r="Trial" />
-          <RRow l={t('Durasi')} r={t('3 hari')} />
+          <RRow l={t('Durasi')} r={t('14 hari')} />
           <RRow l="Outlet" r="1" />
           <RRow l={t('Kasir|menu')} r="2" />
           <RRow l={t('Produk per outlet')} r="40" />

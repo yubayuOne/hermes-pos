@@ -3,7 +3,7 @@ import { FAQ, PLANS, SITE } from './content';
 
 export const TITLE = 'Hermes POS: aplikasi kasir Android dengan kontrol kas untuk kafe';
 export const DESCRIPTION =
-  'Aplikasi kasir Android untuk kafe dan restoran kecil: void dan refund butuh kode pemilik, kas laci terhitung, tetap jalan saat offline. Trial gratis 3 hari.';
+  'Aplikasi kasir Android untuk kafe dan restoran kecil: void dan refund butuh kode pemilik, kas laci terhitung, tetap jalan saat offline. Trial gratis 14 hari.';
 
 // head() runs outside the language provider, so it looks up the dictionary directly.
 export const tr = (lang: string | undefined, text: string) => (lang === 'en' ? (EN[text] ?? text) : text);

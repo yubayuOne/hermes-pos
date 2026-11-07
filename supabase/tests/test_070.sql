@@ -24,6 +24,10 @@ insert into auth.users(id, email) values ('e7000000-0000-0000-0000-000000000001'
 select set_config('request.jwt.claim.sub', 'e7000000-0000-0000-0000-000000000001', false);
 set role authenticated;
 select set_config('t.b', public.register_business('Kopi Gita', 'Pusat', null) ->> 'business_id', false);
+reset role;
+-- A trial lasts 14 days now (109); this test is about the reminder of a trial on its last 3 days.
+update public.subscriptions set expires_at = now() + interval '3 days' where business_id = current_setting('t.b')::uuid;
+set role authenticated;
 select public.get_subscription_status();
 reset role;
 select pg_temp.ok('T1 a 3-day trial is reminded on its first day', pg_temp.reminders() = 1

@@ -1,6 +1,6 @@
 {
   "name": "hermes-pos",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "private": true,
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
@@ -56,5 +56,12 @@
     "supabase": "^2.34.3",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.9.2"
+  },
+  "overrides": {
+    "node-forge": "1.4.3",
+    "postcss-selector-parser": "6.1.5",
+    "xcode": {
+      "uuid": "11.1.1"
+    }
   }
 }

@@ -37,7 +37,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           </Receipt>
         </div>
         <ul className="mt-auto hidden flex-wrap gap-2.5 pt-12 lg:flex">
-          {['trial gratis 3 hari', 'jalan saat offline', 'tanpa kartu kredit'].map((x) => (
+          {['trial gratis 14 hari', 'jalan saat offline', 'tanpa kartu kredit'].map((x) => (
             <li key={x}>
               <Tag>{t(x)}</Tag>
             </li>

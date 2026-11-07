@@ -1,23 +1,45 @@
 import type { BusinessType, PlanCode, TimeZone } from './types';
 
-// Prices in rupiah (PRD section 6). The database computes the amount due with the same numbers (plan_quote).
-export const EXTRA_OUTLET = 99_000;
-export const MONTHLY = 149_000;
+// Prices in rupiah (owner's request, 7 Nov 2026). `list` is the struck-through price, `price` is what the buyer pays.
+// The database computes the amount due with the same numbers (plan_quote, migration 109).
+export const TRIAL_DAYS = 14;
 export const PAID_PLANS = [
-  { code: 'monthly', name: 'Bulanan', months: 1, price: 149_000 },
-  { code: 'semiannual', name: '6 bulan', months: 6, price: 699_000 },
-  { code: 'annual', name: 'Tahunan', months: 12, price: 1_399_000 },
+  { code: 'daily', name: 'Harian', unit: 'hari', months: 0, days: 1, list: 15_000, price: 7_000, extraOutlet: 3_000 },
+  { code: 'weekly', name: 'Mingguan', unit: 'minggu', months: 0, days: 7, list: 100_000, price: 47_000, extraOutlet: 23_000 },
+  { code: 'monthly', name: 'Bulanan', unit: 'bulan', months: 1, days: 0, list: 500_000, price: 147_000, extraOutlet: 99_000 },
+  { code: 'annual', name: 'Tahunan', unit: 'tahun', months: 12, days: 0, list: 1_500_000, price: 697_000, extraOutlet: 1_188_000 },
 ] as const;
 export type PaidPlan = (typeof PAID_PLANS)[number];
 export type PaidCode = PaidPlan['code'];
 
-export const PLAN_NAME: Record<PlanCode, string> = { trial: 'Trial', monthly: 'Bulanan', semiannual: '6 bulan', annual: 'Tahunan', unlimited: 'Unlimited' };
+export const PLAN_NAME: Record<PlanCode, string> = {
+  trial: 'Trial',
+  daily: 'Harian',
+  weekly: 'Mingguan',
+  monthly: 'Bulanan',
+  semiannual: '6 bulan',
+  annual: 'Tahunan',
+  unlimited: 'Unlimited',
+};
 
-export const planByCode = (c: string): PaidPlan => PAID_PLANS.find((p) => p.code === c) ?? PAID_PLANS[0];
-export const perMonth = (p: PaidPlan) => Math.round(p.price / p.months);
-export const saving = (p: PaidPlan) => MONTHLY * p.months - p.price;
-/** Approximate extra outlet charge: Rp99.000 x plan months (DESIGN.md H4 item 1). */
-export const quote = (p: PaidPlan, extra: number) => p.price + extra * EXTRA_OUTLET * p.months;
+/** Unknown or trial codes fall back to Bulanan. */
+export const planByCode = (c: string): PaidPlan => PAID_PLANS.find((p) => p.code === c) ?? PAID_PLANS[2];
+/** What the buyer saves against the struck-through price. */
+export const saving = (p: PaidPlan) => p.list - p.price;
+/** Amount due: the plan price plus each extra outlet at the plan's extra price (same as plan_quote). */
+export const quote = (p: PaidPlan, extra: number) => p.price + extra * p.extraOutlet;
+
+/** Extra outlet price of the Bulanan plan (kept for the copy that quotes one month). */
+export const EXTRA_OUTLET = planByCode('monthly').extraOutlet;
+
+/** New expiry date (YYYY-MM-DD) shown before payment. Months clamp to the month's last day, as Postgres does (31 Jan + 1 = 28 Feb). */
+export function addPeriod(day: string, p: PaidPlan) {
+  return p.months > 0 ? addMonths(day, p.months) : addDays(day, p.days);
+}
+export function addDays(day: string, days: number) {
+  const [y, m, d] = day.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
 
 /** New expiry date (YYYY-MM-DD) shown before payment. Clamps to the month's last day, as Postgres does (31 Jan + 1 = 28 Feb). */
 export function addMonths(day: string, months: number) {

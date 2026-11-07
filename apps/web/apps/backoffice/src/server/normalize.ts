@@ -38,16 +38,18 @@ const num = (v: unknown, d = 0) => (v === null || v === undefined || v === '' ||
 const str = (v: unknown, d = '') => (typeof v === 'string' ? v : v === null || v === undefined ? d : String(v));
 const pick = (r: Row, ...keys: string[]) => keys.map((k) => r[k]).find((v) => v !== undefined && v !== null);
 
-const PLAN_CODES: PlanCode[] = ['trial', 'monthly', 'semiannual', 'annual', 'unlimited'];
+const PLAN_CODES: PlanCode[] = ['trial', 'daily', 'weekly', 'monthly', 'semiannual', 'annual', 'unlimited'];
 function planCode(v: unknown): PlanCode {
   const s = str(v).toLowerCase();
   if ((PLAN_CODES as string[]).includes(s)) return s as PlanCode;
   if (s.includes('6') || s.includes('semi') || s.includes('half')) return 'semiannual';
+  if (s.includes('week') || s.includes('minggu')) return 'weekly';
+  if (s.includes('day') || s.includes('hari')) return 'daily';
   if (s.includes('year') || s.includes('annual') || s.includes('tahun') || s.includes('12')) return 'annual';
   if (s.includes('trial')) return 'trial';
   return 'monthly';
 }
-const PERIOD_DAYS: Record<PlanCode, number> = { trial: 3, monthly: 30, semiannual: 182, annual: 365, unlimited: 0 };
+const PERIOD_DAYS: Record<PlanCode, number> = { trial: 14, daily: 1, weekly: 7, monthly: 30, semiannual: 182, annual: 365, unlimited: 0 };
 
 export function toSubscription(raw: unknown): Subscription {
   const r = (raw ?? {}) as Row;

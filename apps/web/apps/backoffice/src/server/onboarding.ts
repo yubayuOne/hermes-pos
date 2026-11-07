@@ -46,7 +46,7 @@ export const getOnboardingState = createServerFn({ method: 'GET' }).handler(asyn
 });
 
 /**
- * Steps 1 and 2 together: creates the business, its first outlet, and the 3-day trial (register_business),
+ * Steps 1 and 2 together: creates the business, its first outlet, and the 14-day trial (register_business),
  * then saves the profile (username from sign-up) and the business type and city.
  */
 export const createBusiness = createServerFn({ method: 'POST' })

@@ -48,7 +48,7 @@ export function Header() {
             {t('Masuk')}
           </a>
           <a href={LINKS.register} className={`${btn('ink', { sm: true })} hidden sm:inline-flex`}>
-            {t('Coba gratis 3 hari')}
+            {t('Coba gratis 14 hari')}
           </a>
         </div>
       </div>

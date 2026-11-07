@@ -35,8 +35,8 @@ export const TERMS: Record<'id' | 'en', LegalDoc> = {
       {
         h: '3. Trial dan paket',
         p: [
-          'Bisnis baru mendapat trial 3 hari satu kali, dengan batas satu outlet, dua kasir, dan 40 produk per outlet.',
-          'Setelah trial, layanan berlanjut dengan paket berbayar (Bulanan, 6 bulan, atau Tahunan) dengan harga yang tertera di hermes-pos.com saat pembelian. Outlet tambahan ditagih per bulan.',
+          'Bisnis baru mendapat trial 14 hari satu kali, dengan batas satu outlet, dua kasir, dan 40 produk per outlet.',
+          'Setelah trial, layanan berlanjut dengan paket berbayar (Harian, Mingguan, Bulanan, atau Tahunan) dengan harga yang tertera di hermes-pos.com saat pembelian. Outlet tambahan ditagih per bulan.',
           'Pembayaran dilakukan dengan transfer bank ke rekening yang tertera di backoffice. Kami memeriksa setiap transfer secara manual; masa aktif ditambahkan setelah transfer terverifikasi. Perpanjangan menambah sisa waktu, jadi tidak ada hari yang hilang.',
           'Paket yang sudah aktif tidak dapat dikembalikan dananya, kecuali kami gagal mengaktifkan paket setelah transfer terverifikasi atau terjadi kesalahan tagihan dari pihak kami.',
         ],
@@ -112,8 +112,8 @@ export const TERMS: Record<'id' | 'en', LegalDoc> = {
       {
         h: '3. Trial and plans',
         p: [
-          'A new business gets one 3-day trial, limited to one outlet, two cashiers, and 40 products per outlet.',
-          'After the trial the service continues on a paid plan (Monthly, 6 months, or Annual) at the price shown on hermes-pos.com at the time of purchase. Extra outlets are billed per month.',
+          'A new business gets one 14-day trial, limited to one outlet, two cashiers, and 40 products per outlet.',
+          'After the trial the service continues on a paid plan (Daily, Weekly, Monthly, or Annual) at the price shown on hermes-pos.com at the time of purchase. Extra outlets are billed per month.',
           'Payment is by bank transfer to the account shown in the backoffice. We check every transfer by hand; time is added once the transfer is verified. A renewal adds to the time left, so no days are lost.',
           'An active plan is not refundable, unless we fail to activate a plan after a verified transfer or we made a billing error.',
         ],

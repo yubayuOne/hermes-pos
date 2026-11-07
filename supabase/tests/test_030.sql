@@ -28,12 +28,12 @@ select set_config('t.reg', public.register_business('Kopi Pojok', 'Outlet Utama'
 select set_config('t.b1', current_setting('t.reg')::jsonb ->> 'business_id', false);
 select set_config('t.o1', current_setting('t.reg')::jsonb ->> 'outlet_id', false);
 select pg_temp.ok('T1 bisnis baru mendapat trial', (public.get_subscription_status() ->> 'state') = 'trial');
-select pg_temp.ok('T2 trial 3 hari', (public.get_subscription_status() ->> 'days_left')::int = 3);
+select pg_temp.ok('T2 trial 14 hari', (public.get_subscription_status() ->> 'days_left')::int = 14);
 select pg_temp.ok('T3 batas trial 1 outlet, 2 kasir, 40 produk',
   (public.get_subscription_status() -> 'limits') = '{"outlets": 1, "cashiers_per_outlet": 2, "products_per_outlet": 40}'::jsonb);
 select pg_temp.ok('T4 pemakaian per outlet tersedia', jsonb_array_length(public.get_subscription_status() -> 'usage') = 1);
 select pg_temp.ok('T5 langganan terbaca lewat RLS', (select count(*) from public.subscriptions) = 1);
-select pg_temp.ok('T6 paket terbaca publik', (select count(*) from public.plans) = 4);
+select pg_temp.ok('T6 paket aktif terbaca publik: trial, harian, mingguan, bulanan, tahunan', (select count(*) from public.plans where is_active) = 5);
 
 -- ===== batas trial
 select pg_temp.ok('L1 kasir 1', public.owner_create_cashier(current_setting('t.o1')::uuid, 'Sari', '123456') is not null);
@@ -169,6 +169,11 @@ set role authenticated;
 select pg_temp.fails('I1 akun tanpa bisnis tidak punya status', 'select public.get_subscription_status()', 'Hanya owner');
 select public.register_business('Warung Dedi', 'Dedi 1', null);
 select pg_temp.ok('I2 bisnis kedua mendapat trial sendiri', (public.get_subscription_status() ->> 'state') = 'trial');
+-- The trial reminder starts two days before the end (14-day trial): move the second business to two days left.
+reset role;
+update public.subscriptions set expires_at = now() + interval '2 days' where business_id <> current_setting('t.b1')::uuid;
+select public.refresh_subscription_notifications(business_id) from public.subscriptions where business_id <> current_setting('t.b1')::uuid;
+set role authenticated;
 -- A new trial (3 days) gets its own daily reminder (070); nothing from the first business shows up.
 select pg_temp.ok('I3 notifikasi bisnis lain tidak terlihat', jsonb_array_length(public.list_notifications()) = 1
   and public.list_notifications() -> 0 ->> 'kind' = 'trial_expiring');

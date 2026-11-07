@@ -19,7 +19,7 @@ export function Hero() {
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <a href={LINKS.register} className={btn('fire')}>
-              {t('Coba gratis 3 hari')}
+              {t('Coba gratis 14 hari')}
             </a>
             <a href="#control" className={btn('plain')}>
               {t('Lihat kontrol kas')}

@@ -50,7 +50,7 @@ function Onboarding() {
           <Wordmark size={32} />
           <LangToggle />
         </div>
-        <p className="mt-2 font-mono text-small text-mute">{t('data awal · trial 3 hari')}</p>
+        <p className="mt-2 font-mono text-small text-mute">{t('data awal · trial 14 hari')}</p>
         <ol className="mt-8 hidden gap-2 md:grid">
           {STEPS.map(([title, sub], i) => {
             const n = i + 1;
@@ -354,7 +354,7 @@ function StepDone() {
     [t('Produk'), String(s.products)],
   ];
   return (
-    <StepCard n={5} title={t('Siap jualan.')} sub={t('Trial 3 hari dimulai hari ini. Data yang Anda isi tetap ada setelah trial berakhir.')}>
+    <StepCard n={5} title={t('Siap jualan.')} sub={t('Trial 14 hari dimulai hari ini. Data yang Anda isi tetap ada setelah trial berakhir.')}>
       <dl className="slip slip-ink">
         {rows.map(([k, v]) => (
           <div key={k} className="row">

@@ -618,7 +618,7 @@ function SubscriptionTab() {
               />
             ))}
           </ul>
-          <p className="mt-4 text-small text-mute">{t('Outlet tambahan {price} per bulan, dihitung proporsional.', { price: money(EXTRA_OUTLET) })}</p>
+          <p className="mt-4 text-small text-mute">{t('Outlet tambahan {price} per bulan untuk paket Bulanan. Paket lain sesuai lamanya.', { price: money(EXTRA_OUTLET) })}</p>
         </Card>
       </div>
       <Receipt torn className={cn('border-[1.5px] border-ink font-sans text-body', expired && 'bg-fire-soft')}>

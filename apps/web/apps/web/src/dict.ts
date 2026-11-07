@@ -5,8 +5,8 @@ import type { Dict } from '@hermes-pos/ui';
 export const EN: Dict = {
   // Page title and description
   'Hermes POS: aplikasi kasir Android dengan kontrol kas untuk kafe': 'Hermes POS: an Android till with cash control for cafes',
-  'Aplikasi kasir Android untuk kafe dan restoran kecil: void dan refund butuh kode pemilik, kas laci terhitung, tetap jalan saat offline. Trial gratis 3 hari.':
-    'An Android till for cafes and small restaurants: voids and refunds need the owner’s code, drawer cash adds up, and it keeps working offline. Free 3-day trial.',
+  'Aplikasi kasir Android untuk kafe dan restoran kecil: void dan refund butuh kode pemilik, kas laci terhitung, tetap jalan saat offline. Trial gratis 14 hari.':
+    'An Android till for cafes and small restaurants: voids and refunds need the owner’s code, drawer cash adds up, and it keeps working offline. Free 14-day trial.',
   // Header
   'Hermes POS, kembali ke atas': 'Hermes POS, back to top',
   'Bagian halaman': 'Page sections',
@@ -17,7 +17,7 @@ export const EN: Dict = {
   'Tanya jawab': 'FAQ',
   Kontak: 'Contact',
   Masuk: 'Sign in',
-  'Coba gratis 3 hari': 'Try free for 3 days',
+  'Coba gratis 14 hari': 'Try free for 14 days',
   'Langsung ke isi': 'Skip to content',
 
   // Hero and facts
@@ -163,7 +163,7 @@ export const EN: Dict = {
   Bulanan: 'Monthly',
   '6 bulan': '6 months',
   Tahunan: 'Annual',
-  '3 hari': '3 days',
+  '14 hari': '14 days',
   '1 bulan': '1 month',
   '12 bulan': '12 months',
   Gratis: 'Free',
@@ -204,9 +204,9 @@ export const EN: Dict = {
   'Bisa bayar pelanggan dengan QRIS atau e-wallet?': 'Can customers pay with QRIS or e-wallets?',
   'Bisa, lewat QRIS milik outlet (termasuk dari e-wallet). Kasir mengonfirmasi setelah pembayaran berhasil; belum terhubung otomatis ke bank.':
     "Yes, through the outlet's own QRIS (e-wallets included). The cashier confirms once the payment succeeds; it is not linked to the bank automatically yet.",
-  'Apa batasan selama trial 3 hari?': 'What are the limits during the 3-day trial?',
-  'Satu outlet, dua kasir, dan 40 produk per outlet. Trial berlaku sekali untuk bisnis baru. Setelah 3 hari, pilih paket untuk membuka kunci; data yang sudah Anda isi tetap ada.':
-    'One outlet, two cashiers, and 40 products per outlet. The trial applies once, to new businesses. After 3 days, choose a plan to unlock; the data you entered stays.',
+  'Apa batasan selama trial 14 hari?': 'What are the limits during the 14-day trial?',
+  'Satu outlet, dua kasir, dan 40 produk per outlet. Trial berlaku sekali untuk bisnis baru. Setelah 14 hari, pilih paket untuk membuka kunci; data yang sudah Anda isi tetap ada.':
+    'One outlet, two cashiers, and 40 products per outlet. The trial applies once, to new businesses. After 14 days, choose a plan to unlock; the data you entered stays.',
   'Apa yang terjadi saat langganan berakhir?': 'What happens when the subscription ends?',
   'Aplikasi dan backoffice tetap bisa dibuka, tetapi penjualan baru, shift baru, dan penambahan kasir atau produk terkunci. Laporan dan riwayat tetap bisa dilihat. Data tidak dihapus.':
     'The app and backoffice still open, but new sales, new shifts, and adding cashiers or products are locked. Reports and history stay visible. No data is deleted.',
@@ -221,4 +221,9 @@ export const EN: Dict = {
   'Uang masuk: kasir mengganti': 'Money in: the cashier paid it back',
   'Selisih sesudah': 'Difference after',
   'Shift 2': 'Shift 2',
+  'Harian': 'Daily',
+  'Mingguan': 'Weekly',
+  'Hemat': 'Saves',
+  '1 hari': '1 day',
+  '7 hari': '7 days',
 };

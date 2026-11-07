@@ -407,7 +407,7 @@ export const countSchema = z.object({
 
 // ---------- Billing ----------
 export const paymentSchema = z.object({
-  plan: z.enum(['monthly', 'semiannual', 'annual']),
+  plan: z.enum(['daily', 'weekly', 'monthly', 'annual']),
   extraOutlets: z.number().int().min(0).max(50),
   sender: z.string().trim().min(2, 'Isi nama pengirim sesuai nama di rekening.').max(80, 'Maksimal 80 karakter.'),
   bank: z.string().trim().min(2, 'Isi nama bank asal transfer.').max(40, 'Maksimal 40 karakter.'),

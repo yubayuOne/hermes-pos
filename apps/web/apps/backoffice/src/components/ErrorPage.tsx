@@ -77,7 +77,7 @@ export function ErrorPage({ code, path }: { code: 404 | 500; path?: string }) {
                 {(
                   [
                     ['/login', 'Masuk'],
-                    ['/register', 'Daftar trial 3 hari'],
+                    ['/register', 'Daftar trial 14 hari'],
                     ['/subscription', 'Bayar langganan'],
                   ] as const
                 ).map(([to, label]) => (

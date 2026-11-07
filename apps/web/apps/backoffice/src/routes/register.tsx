@@ -80,7 +80,7 @@ function Register() {
 
   return (
     <AuthLayout>
-      <AuthTitle title={t('Coba gratis 3 hari.')} sub={t('1 outlet, 2 kasir, 40 produk. Tidak perlu kartu kredit.')} />
+      <AuthTitle title={t('Coba gratis 14 hari.')} sub={t('1 outlet, 2 kasir, 40 produk. Tidak perlu kartu kredit.')} />
       <form method="post" noValidate onSubmit={submit} className="grid gap-4">
         <Field label={t('Nama bisnis')} error={f.errors.business && t(f.errors.business)}>
           <Input

@@ -16,14 +16,17 @@ export const LINKS = {
   register: `${SITE.backoffice}/register`,
 };
 
-/** Prices in rupiah. Per month and savings are computed, not typed, so they always match. */
-export const MONTHLY = 149_000;
+/**
+ * Prices in rupiah (owner's request, 7 Nov 2026). `list` is the struck-through price; the saving is computed, not typed.
+ * The same numbers as the backoffice (lib/plans.ts) and plan_quote (migration 109).
+ */
 export const EXTRA_OUTLET = 99_000;
 export const PLANS = [
-  { code: 'trial', name: 'Trial', months: 0, duration: '3 hari', price: 0, note: 'Bisnis baru, satu kali. 2 kasir, 40 produk per outlet.' },
-  { code: 'monthly', name: 'Bulanan', months: 1, duration: '1 bulan', price: 149_000 },
-  { code: 'semiannual', name: '6 bulan', months: 6, duration: '6 bulan', price: 699_000 },
-  { code: 'annual', name: 'Tahunan', months: 12, duration: '12 bulan', price: 1_399_000 },
+  { code: 'trial', name: 'Trial', months: 0, duration: '14 hari', price: 0, list: 0, note: 'Bisnis baru, satu kali. 2 kasir, 40 produk per outlet.' },
+  { code: 'daily', name: 'Harian', months: 0, duration: '1 hari', price: 7_000, list: 15_000 },
+  { code: 'weekly', name: 'Mingguan', months: 0, duration: '7 hari', price: 47_000, list: 100_000 },
+  { code: 'monthly', name: 'Bulanan', months: 1, duration: '1 bulan', price: 147_000, list: 500_000 },
+  { code: 'annual', name: 'Tahunan', months: 12, duration: '12 bulan', price: 697_000, list: 1_500_000 },
 ] as const;
 
 /**
@@ -64,8 +67,8 @@ export const FAQ: [string, string][] = [
     'Bisa, lewat QRIS milik outlet (termasuk dari e-wallet). Kasir mengonfirmasi setelah pembayaran berhasil; belum terhubung otomatis ke bank.',
   ],
   [
-    'Apa batasan selama trial 3 hari?',
-    'Satu outlet, dua kasir, dan 40 produk per outlet. Trial berlaku sekali untuk bisnis baru. Setelah 3 hari, pilih paket untuk membuka kunci; data yang sudah Anda isi tetap ada.',
+    'Apa batasan selama trial 14 hari?',
+    'Satu outlet, dua kasir, dan 40 produk per outlet. Trial berlaku sekali untuk bisnis baru. Setelah 14 hari, pilih paket untuk membuka kunci; data yang sudah Anda isi tetap ada.',
   ],
   [
     'Apa yang terjadi saat langganan berakhir?',
@@ -73,5 +76,5 @@ export const FAQ: [string, string][] = [
   ],
 ];
 
-export const perMonth = (price: number, months: number) => Math.round(price / months);
-export const saving = (price: number, months: number) => MONTHLY * months - price;
+/** What the buyer saves against the struck-through price. */
+export const saving = (list: number, price: number) => list - price;

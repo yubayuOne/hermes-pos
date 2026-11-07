@@ -26,7 +26,7 @@ import {
   toast,
   useI18n,
 } from '@hermes-pos/ui';
-import { BANK, PAID_PLANS, PLAN_NAME, SUPPORT, addMonths, perMonth, planByCode, quote, saving, type PaidCode } from '../lib/plans';
+import { BANK, PAID_PLANS, PLAN_NAME, SUPPORT, addPeriod, planByCode, quote, saving, type PaidCode } from '../lib/plans';
 import { paymentSchema } from '../lib/schemas';
 import type { Payment } from '../lib/types';
 import { useForm } from '../lib/useForm';
@@ -106,9 +106,8 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
   const sub = app.subscription;
   const tz = app.business.timezone;
   const expired = sub.state === 'expired';
-  const [plan, setPlan] = useState<PaidCode>(
-    (pending?.planCode as PaidCode | undefined) ?? (sub.plan === 'trial' || sub.plan === 'unlimited' ? 'monthly' : sub.plan),
-  );
+  // The plan of a pending payment, else the current plan when it can be bought again; Bulanan otherwise.
+  const [plan, setPlan] = useState<PaidCode>(planByCode(pending?.planCode ?? sub.plan).code);
   const [step, setStep] = useState(pending ? 3 : 0);
   const [submitted, setSubmitted] = useState<Payment | null>(pending);
   const p = planByCode(plan);
@@ -116,7 +115,7 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
   const today = isoDay(new Date(), tz);
   // Active or trial: added to the remaining time. Expired: counted from the activation day.
   const base = expired ? today : isoDay(new Date(sub.expiresAt), tz);
-  const newEnd = addMonths(base, p.months);
+  const newEnd = addPeriod(base, p);
   const justVerified = latest?.status === 'verified' && latest.newExpiresAt && Date.now() - new Date(latest.createdAt).getTime() < 7 * 86_400_000;
 
   return (
@@ -145,7 +144,7 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
                     date: dateShort(sub.expiresAt, lang, tz),
                   })}
             </p>
-            <div role="radiogroup" aria-label={t('Paket')} className="mt-7 grid gap-3 sm:grid-cols-3">
+            <div role="radiogroup" aria-label={t('Paket')} className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {PAID_PLANS.map((x) => {
                 const on = x.code === plan;
                 return (
@@ -161,12 +160,13 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
                     )}
                   >
                     <span className="block font-mono text-small">{t(x.name)}</span>
+                    <span className="mt-1 block font-mono text-small text-mute">
+                      <s>{money(x.list)}</s>
+                    </span>
                     <span className="mt-1 block font-display text-[clamp(26px,2.4vw,30px)] font-extrabold leading-none tracking-[-0.03em]">
                       {money(x.price)}
                     </span>
-                    <span className="mt-2 block font-mono text-small text-mute">
-                      {x.months === 1 ? t('per bulan') : t('{amount} per bulan', { amount: money(perMonth(x)) })}
-                    </span>
+                    <span className="mt-2 block font-mono text-small text-mute">{t('per {unit}', { unit: t(x.unit) })}</span>
                     {saving(x) > 0 && (
                       <Tag tone="fire" className="mt-2">
                         {t('hemat {amount}', { amount: money(saving(x)) })}
@@ -179,7 +179,7 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
             <div className="slipc mt-5">
               <h2 className="card-t">{t('Yang termasuk')}</h2>
               <ul className="mt-3 list-disc space-y-1.5 pl-5">
-                <li>{t('1 outlet. Outlet tambahan {price} per bulan.', { price: money(99_000) })}</li>
+                <li>{t('1 outlet. Outlet tambahan {price} per {unit}.', { price: money(p.extraOutlet), unit: t(p.unit) })}</li>
                 <li>{t('3 kasir dan 100 produk per outlet.')}</li>
                 <li>{t('Satu tanggal berakhir untuk seluruh bisnis.')}</li>
                 <li>{t('Saat paket berakhir, data tidak dihapus. Fitur tulis terkunci sampai Anda memperpanjang.')}</li>
@@ -219,19 +219,19 @@ function Buy({ pending, extraOutlets, latest }: { pending: Payment | null; extra
           <RCut />
           <RRow l={t('Faktur')} r={submitted?.invoiceNumber ?? t('belum terbit')} className="border-0 py-1.5" />
           <RRow l={t('Tanggal')} r={submitted ? dateShort(submitted.createdAt, lang, tz) : '-'} className="border-0 py-1.5" />
-          <RRow l={t('Paket')} r={`${t(p.name)} · ${t(p.months === 1 ? '1 bulan' : '{n} bulan', { n: p.months })}`} className="border-0 py-1.5" />
+          <RRow l={t('Paket')} r={`${t(p.name)} · ${p.months > 0 ? t('{n} bulan', { n: p.months }) : t('{n} hari', { n: p.days })}`} className="border-0 py-1.5" />
           <RCut />
           <RRow l={t('Harga paket')} r={money(p.price)} className="border-0 py-1.5" />
           {extraOutlets > 0 && (
             <RRow
-              l={t('Outlet tambahan {n} x {m} bln', { n: extraOutlets, m: p.months })}
-              r={money(extraOutlets * 99_000 * p.months)}
+              l={t('Outlet tambahan {n} x {m}', { n: extraOutlets, m: money(p.extraOutlet) })}
+              r={money(extraOutlets * p.extraOutlet)}
               className="border-0 py-1.5"
             />
           )}
           <RTotal l="Total" r={money(submitted?.amountDue ?? total)} />
           <RCut />
-          <RRow l={t('Setara per bulan')} r={money(Math.round(total / p.months))} className="border-0 py-1.5" />
+          {p.months > 0 && <RRow l={t('Setara per bulan')} r={money(Math.round(total / p.months))} className="border-0 py-1.5" />}
           <RRow l={expired ? t('Berlaku sampai (perkiraan)') : t('Berlaku sampai')} r={dateShort(newEnd, lang, tz)} className="border-0 py-1.5" />
           <p className="mt-2 text-small text-mute">
             {expired ? t('Masa aktif dihitung dari hari paket diaktifkan.') : t('Sisa waktu sekarang ditambahkan, tidak ada hari yang hilang.')}{' '}
@@ -509,7 +509,7 @@ function History({ payments, selected, onSelect }: { payments: Payment[]; select
           <RRow l={t('Harga paket')} r={money(planByCode(current.planCode).price)} className="border-0 py-1.5" />
           {current.extraOutlets > 0 && (
             <RRow
-              l={t('Outlet tambahan {n} x {m} bln', { n: current.extraOutlets, m: planByCode(current.planCode).months })}
+              l={t('Outlet tambahan {n} x {m}', { n: current.extraOutlets, m: money(planByCode(current.planCode).extraOutlet) })}
               r={money(current.amountDue - planByCode(current.planCode).price)}
               className="border-0 py-1.5"
             />
