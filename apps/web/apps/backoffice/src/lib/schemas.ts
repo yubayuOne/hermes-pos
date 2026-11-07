@@ -175,7 +175,8 @@ export const voucherSchema = z
     value: z.number({ error: 'Isi nilai potongan.' }),
     minSpend: z.number().min(0, 'Minimal belanja tidak boleh negatif.'),
     quota: z.number().int().min(1, 'Kuota minimal 1, atau kosongkan untuk tanpa batas.').nullable(),
-    expiresOn: day,
+    /** null = no end date (Tidak dibatasi, migration 105). */
+    expiresOn: day.nullable(),
     productIds: z.array(uuid),
   })
   .superRefine((v, ctx) => {

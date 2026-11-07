@@ -374,7 +374,8 @@ export type Voucher = {
   minSpend: number;
   quota: number | null;
   usedCount: number;
-  expiresOn: string;
+  /** null = no end date (Tidak dibatasi, migration 105). */
+  expiresOn: string | null;
   isActive: boolean;
   status: VoucherStatus;
   productIds: string[];

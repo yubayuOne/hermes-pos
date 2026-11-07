@@ -275,7 +275,7 @@ export function toVoucher(r: Row): Voucher {
     minSpend: num(r.min_spend),
     quota: r.quota === null || r.quota === undefined ? null : num(r.quota),
     usedCount: num(r.used_count),
-    expiresOn: str(r.expires_on),
+    expiresOn: r.expires_on ? str(r.expires_on) : null,
     isActive: Boolean(r.is_active),
     status: str(r.status, 'active') as Voucher['status'],
     productIds: Array.isArray(r.product_ids) ? (r.product_ids as string[]) : [],

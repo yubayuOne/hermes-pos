@@ -1622,4 +1622,5 @@ export const EN: Dict = {
   'Misalnya modal tambahan': 'For example additional capital',
   'Modal tambahan': 'Additional capital',
   'Uang titipan': 'Money held for others',
+  'Tidak dibatasi': 'No end date',
 };

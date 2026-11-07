@@ -124,7 +124,7 @@ function Vouchers() {
                     )}
                   </td>
                   <td data-l={t('Berlaku sampai')} className="font-mono text-body">
-                    {dateShort(v.expiresOn, lang)}
+                    {v.expiresOn ? dateShort(v.expiresOn, lang) : <span className="font-sans text-small text-mute">{t('Tidak dibatasi')}</span>}
                   </td>
                   <td data-l={t('Aktif')}>
                     <Switch
@@ -165,7 +165,8 @@ function VoucherDialog({ voucher, onClose }: { voucher: Voucher | null; onClose:
     value: voucher ? String(voucher.value) : '',
     minSpend: voucher ? String(voucher.minSpend) : '0',
     quota: voucher?.quota ? String(voucher.quota) : '',
-    expiresOn: voucher?.expiresOn ?? addDays(today, 30),
+    // '' = no end date; a new voucher starts 30 days ahead.
+    expiresOn: voucher ? (voucher.expiresOn ?? '') : addDays(today, 30),
     productIds: voucher?.productIds ?? ([] as string[]),
   });
   async function save(e: React.FormEvent) {
@@ -180,7 +181,7 @@ function VoucherDialog({ voucher, onClose }: { voucher: Voucher | null; onClose:
       value: v.value === '' ? NaN : Number(v.value),
       minSpend: Number(v.minSpend || 0),
       quota: v.quota ? Number(v.quota) : null,
-      expiresOn: v.expiresOn,
+      expiresOn: v.expiresOn || null,
       productIds: v.productIds,
     });
     if (!data) return;
@@ -264,8 +265,19 @@ function VoucherDialog({ voucher, onClose }: { voucher: Voucher | null; onClose:
           </Field>
         </div>
         <Field label={t('Berlaku sampai')} error={f.errors.expiresOn && t(f.errors.expiresOn)}>
-          <Input type="date" min={today} value={f.values.expiresOn} onChange={(e) => f.set('expiresOn', e.target.value)} />
+          <Input
+            type="date"
+            min={today}
+            disabled={f.values.expiresOn === ''}
+            value={f.values.expiresOn}
+            onChange={(e) => f.set('expiresOn', e.target.value)}
+          />
         </Field>
+        <Check
+          label={t('Tidak dibatasi')}
+          checked={f.values.expiresOn === ''}
+          onChange={(e) => f.set('expiresOn', e.target.checked ? '' : addDays(today, 30))}
+        />
         <FormAlert>{act.error && t(act.error)}</FormAlert>
       </form>
     </Dialog>
